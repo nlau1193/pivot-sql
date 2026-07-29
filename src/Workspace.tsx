@@ -423,7 +423,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
           } else {
             verdict = {
               kind: 'unavailable',
-              message: 'Your query is correct, but Pivot could not bind the evidence to this attempt. Return to Your desk and start the audition again; your draft is still here.',
+              message: 'Your query is correct, but Pivot could not save it to this practice attempt. Return to Your desk and start the practice again; your draft is still here.',
             }
           }
         }
@@ -776,7 +776,13 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
                 : 'Saved on this device, waiting for hosted sync'}
             </span>
           )}
-          <span className="topbar-progress">{completedCount} of {DATA.missions.length} missions complete</span>
+          <span className="topbar-progress">
+            {activeScenarioProgress
+              ? `${activeScenarioProgress.completed} of ${activeScenarioProgress.total} tasks in this project`
+              : completedCount === 0
+                ? 'Your first task is ready'
+                : `${completedCount} ${completedCount === 1 ? 'task' : 'tasks'} complete`}
+          </span>
           <button ref={deskButtonRef} className="btn-ghost" onClick={(event) => { event.currentTarget.focus(); onOpenDesk() }}>Your desk</button>
         </div>
       </header>
@@ -899,7 +905,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
               <div className="ask-body">
                 <p>
                   No ask selected — the whole warehouse is yours to poke at. Same editor, same data,
-                  nothing you run here can break anything. Your saved pulls and seals stay put while
+                  nothing you run here can break anything. Your saved queries and skill progress stay put while
                   you explore; reopen Your desk anytime and continue the last direction.
                 </p>
                 <div className="chips">
@@ -1472,7 +1478,7 @@ function ResultsPanel({ run, solvedThis, mission, simQuestion, onNext, nextLabel
           {verdict.coaching && <p className="coaching-note"><strong>One production guard:</strong> {verdict.coaching}</p>}
           {simQuestion && <p className="narration"><strong>How you'd say it in the room:</strong> {simQuestion.narration}</p>}
           {mission && <p className="sayit"><strong>Say it like an analyst:</strong> {mission.sayIt}</p>}
-          {mission && <p className="saved-note">Saved to Your Pulls.</p>}
+          {mission && <p className="saved-note">Query saved.</p>}
           <button className="btn-primary" onClick={onNext}>{nextLabel} →</button>
         </div>
       )}
@@ -1496,7 +1502,7 @@ function ResultsPanel({ run, solvedThis, mission, simQuestion, onNext, nextLabel
       )}
       <TableSheet
         result={result}
-        title={mission ? `${mission.title} result` : simQuestion ? 'Audition result' : 'Query result'}
+        title={mission ? `${mission.title} result` : simQuestion ? 'Practice result' : 'Query result'}
         variant="embedded"
         formatCell={formatCell}
         emptyMessage="Zero rows — not an error, just nothing matched. Check the date range for the table you queried; text filters match exactly, including capitalization."

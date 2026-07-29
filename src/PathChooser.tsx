@@ -10,7 +10,7 @@ interface PathChooserProps {
 }
 
 export function PathChooser({ screensUnlocked, onChoose }: PathChooserProps) {
-  const paths = deskPathsForActivePack({ screensUnlocked })
+  const paths = deskPathsForActivePack({ screensUnlocked }).filter((path) => path.id !== 'career-dossier')
   const [session, setSession] = useState(() => loadPathSession(ACTIVE_PACK_ID))
   const lastPath = useMemo(() => {
     if (!session) return null
@@ -25,17 +25,17 @@ export function PathChooser({ screensUnlocked, onChoose }: PathChooserProps) {
   return (
     <section className="path-chooser" aria-labelledby="path-chooser-title">
       <div className="path-chooser-head">
-        <h2 id="path-chooser-title">Choose a direction</h2>
+        <h2 id="path-chooser-title">What would you like to do?</h2>
         <p>
-          Pivot is an open desk — pick a path, switch anytime. This is practical learning with
-          several directions, not a score chase or a single interview funnel.
+          Start with the next guided task, choose a finance project, or explore the data.
+          You can switch anytime, and your work stays saved.
         </p>
       </div>
       {lastPath && !lastPath.lockedReason && (
         <div className="path-continue" data-last-path={lastPath.id}>
           <div className="path-continue-copy">
             <div className="path-continue-label">Continue where you left off</div>
-            <p className="path-continue-summary">{pathTitle(lastPath.id)} — same direction, no progress lost for exploring.</p>
+            <p className="path-continue-summary">{pathTitle(lastPath.id)} · your work is saved.</p>
           </div>
           <button
             type="button"

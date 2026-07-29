@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
-const [seal, reveal, path, crew, crewRegistry, story, app, css, workspace] = await Promise.all([
+const [seal, reveal, path, crew, crewRegistry, story, app, css, workspace, progressView] = await Promise.all([
   readFile(new URL('../src/EvidenceSeal.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/BadgeReveal.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/CasebookPath.tsx', import.meta.url), 'utf8'),
@@ -11,6 +11,7 @@ const [seal, reveal, path, crew, crewRegistry, story, app, css, workspace] = awa
   readFile(new URL('../src/App.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/styles.css', import.meta.url), 'utf8'),
   readFile(new URL('../src/Workspace.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/CareerDossier.tsx', import.meta.url), 'utf8'),
 ])
 
 let passed = 0
@@ -74,7 +75,7 @@ check('reduced motion has explicit static final states', () => {
   assert.match(reduced, /stroke-dashoffset: 0/)
 })
 
-check('small buttons and dossier tabs keep visible keyboard targets', () => {
+check('small buttons and progress tabs keep visible keyboard targets', () => {
   assert.match(css, /\.btn-small \{[^}]*min-height: 44px/)
   assert.match(css, /\.tab \{[^}]*min-height: 44px/)
   assert.match(css, /\.tab:focus-visible/)
@@ -89,15 +90,15 @@ check('narrow screens keep Database objects in a viewport-safe drawer', () => {
   assert.doesNotMatch(css, /Pivot needs a bigger desk/i)
 })
 
-check('career dossier layout is styled, not bare unstyled markup', () => {
+check('plain-language progress layout is styled, not bare unstyled markup', () => {
   assert.match(css, /\.career-dossier\s*\{/)
   assert.match(css, /\.dossier-hero\s*\{/)
   assert.match(css, /\.evidence-seal-grid\s*\{[^}]*grid/)
-  assert.match(css, /\.company-card-grid\s*\{[^}]*grid/)
-  assert.match(css, /\.company-card\s*\{/)
-  assert.match(css, /\.company-status\s*\{/)
-  assert.match(css, /data-readiness='audition-ready'/)
-  assert.match(css, /data-readiness='practice-complete'/)
+  assert.match(css, /\.future-skills\s*\{/)
+  assert.match(css, /\.progress-complete\s*\{/)
+  assert.match(progressView, />Your progress</)
+  assert.match(progressView, />Your next skill badge</)
+  assert.doesNotMatch(progressView, /Target-company readiness|Career dossier|saved pulls/i)
 })
 
 check('local save state is plain copy while actionable sync states keep emphasis', () => {
@@ -108,12 +109,11 @@ check('local save state is plain copy while actionable sync states keep emphasis
   assert.match(css, /\.topbar-runtime, \.topbar-sync[\s\S]*?text-overflow:\s*ellipsis/)
 })
 
-check('narrow casebook stacks path, seals, and company cards', () => {
+check('narrow progress view stacks badges and preserves the optional details control', () => {
   const narrow = css.slice(css.indexOf('@media (max-width: 520px)'))
   assert.match(narrow, /\.dossier-hero\s*\{[^}]*grid-template-columns:\s*1fr/)
   assert.match(narrow, /\.evidence-seal-grid[\s\S]*?grid-template-columns:\s*1fr/)
-  assert.match(narrow, /\.company-card-grid[\s\S]*?grid-template-columns:\s*1fr/)
-  assert.match(narrow, /\.casebook-path__list\s*\{[^}]*flex-direction:\s*column/)
+  assert.match(css, /\.future-skills > summary\s*\{[^}]*min-height:\s*44px/)
 })
 
 console.log(`Casebook visual contract: ${passed}/${passed}`)

@@ -187,7 +187,7 @@ export default function App() {
         <div className="card intro-card error-card">
           <h1 ref={errorHeadingRef} tabIndex={-1}>{interrupted ? 'The warehouse download was interrupted.' : "Hm — the warehouse didn't wake up."}</h1>
           <p role="alert">{interrupted
-            ? 'The warehouse download stopped before it finished. Your saved pulls are safe. Check your connection, then try again.'
+            ? 'The warehouse download stopped before it finished. Your completed queries are safe. Check your connection, then try again.'
             : "The warehouse didn't finish waking up. Try again. If it keeps happening, open the technical details and include them in a GitHub issue."}</p>
           <button className="btn-primary btn-large" onClick={begin}>Try again</button>
           {bootError && (
@@ -224,10 +224,10 @@ export default function App() {
         onNavigate={goToMission}
       />
       {deskOpen && (
-        <Desk
-          progress={progress}
-          currentId={currentId}
-          activeScenarioId={activeScenarioId}
+          <Desk
+            progress={progress}
+            currentId={currentId}
+            activeScenarioId={activeScenarioId}
           onClose={() => setDeskOpen(false)}
           onNavigate={goToMission}
           onAcknowledgeBadge={handleAcknowledgeBadge}
@@ -242,12 +242,12 @@ function Intro({ returning, onBegin }: { returning: boolean; onBegin: () => void
     <main className="fullpage-card">
       <div className="card intro-card">
         <div className="wordmark">Pivot</div>
-        <p className="tagline">from spreadsheets to the warehouse</p>
+        <p className="tagline">from spreadsheets to company data</p>
         {returning ? (
           <>
-            <h1>Welcome back to {DATA.company}'s casebook.</h1>
+            <h1>Welcome back to {DATA.company}.</h1>
             <p>
-              Your solved pulls are saved, and the next operating mystery is waiting.
+              Your completed queries are saved, and your next finance task is ready.
             </p>
           </>
         ) : (
@@ -255,16 +255,14 @@ function Intro({ returning, onBegin }: { returning: boolean; onBegin: () => void
             <p className="story-year">New York · {STAR67_STORY.year}</p>
             <h1>You've joined {DATA.company} as FP&amp;A Manager.</h1>
             <p>
-              <em>*67</em> once hid who was calling. {DATA.company} does the opposite for machine
-              work: every AI action gets an identity, cost trace, data lineage, policy verdict,
-              and business outcome.
+              {DATA.company} helps companies track the cost and results of work done by AI agents.
+              Every action has an owner, a cost, and a business outcome.
             </p>
             <p>
-              The product is years ahead of the finance stack. Riff, the CFO, does not hand you a
-              tutorial. She opens the <strong>{fmtInt(DATA.totalRows)}-row warehouse frozen on June
-              30, 2026</strong>—the incident archive from the year usage exploded, ARR and the ledger
-              stopped agreeing, and all of it became one connected mess. You will replay that
-              operating queue and rebuild its controls before touching the live 2030 plan.
+              Riff, the CFO, is waiting. She opens the <strong>{fmtInt(DATA.totalRows)}-row finance
+              database frozen on June 30, 2026</strong>. Usage exploded, ARR and revenue stopped
+              agreeing, and Finance needs one trusted answer. You will rebuild those controls
+              with SQL before touching the live 2030 plan.
             </p>
           </>
         )}

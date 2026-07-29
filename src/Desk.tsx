@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { DATA, PEOPLE, nextMission, nextSimVariant, simByQuestionId, simIsComplete, type CompiledMission } from './missions'
+import { DATA, nextMission, simByQuestionId, simIsComplete } from './missions'
 import { exportProgress, importProgress, type ProgressV2 } from './progress-store'
 import { CareerDossier } from './CareerDossier'
 import { PathChooser } from './PathChooser'
@@ -18,7 +18,7 @@ interface Props {
 }
 
 type Tab = 'queue' | 'dossier' | 'pulls'
-type QueueView = 'directions' | 'scenarios'
+type QueueView = 'directions' | 'scenarios' | 'practice'
 
 export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigate, onAcknowledgeBadge }: Props) {
   const [tab, setTab] = useState<Tab>('queue')
@@ -29,7 +29,6 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
   const completedCount = Object.keys(completed).length
   const unlockId = screenUnlockMissionId()
   const capstoneDone = unlockId ? !!completed[unlockId] : false
-  const completedSimCount = DATA.sims.filter((sim) => simIsComplete(sim, progress)).length
   const activeSim = currentId ? simByQuestionId(currentId) : undefined
   const lastPull = useMemo(() => {
     const all = Object.values(completed).sort((a, b) => b.completedAt.localeCompare(a.completedAt))
@@ -56,9 +55,7 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
     }
     if (id === 'screen-practice') {
       if (!capstoneDone) return
-      const sim = nextSimVariant(progress) ?? DATA.sims[0]
-      const firstQ = sim?.questions[0]?.id ?? null
-      if (firstQ) onNavigate(firstQ, true, true)
+      setQueueView('practice')
     }
   }
 
@@ -122,9 +119,9 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
         )}
 
         <div className="desk-tabs">
-          <button className={tab === 'queue' ? 'tab active' : 'tab'} onClick={() => setTab('queue')}>The queue</button>
-          <button className={tab === 'dossier' ? 'tab active' : 'tab'} onClick={() => setTab('dossier')}>Career dossier</button>
-          <button className={tab === 'pulls' ? 'tab active' : 'tab'} onClick={() => setTab('pulls')}>Your pulls ({completedCount})</button>
+          <button className={tab === 'queue' ? 'tab active' : 'tab'} onClick={() => setTab('queue')}>My work</button>
+          <button className={tab === 'dossier' ? 'tab active' : 'tab'} onClick={() => setTab('dossier')}>Progress</button>
+          <button className={tab === 'pulls' ? 'tab active' : 'tab'} onClick={() => setTab('pulls')}>Saved SQL ({completedCount})</button>
         </div>
 
         {tab === 'queue' && (
@@ -136,38 +133,16 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
                 onBack={() => setQueueView('directions')}
                 onOpen={(scenarioId, missionId) => onNavigate(missionId, false, false, scenarioId)}
               />
+            ) : queueView === 'practice' ? (
+              <PracticeLibrary
+                progress={progress}
+                activeSimId={activeSim?.id ?? null}
+                onBack={() => setQueueView('directions')}
+                onOpen={(questionId) => onNavigate(questionId, true, true)}
+              />
             ) : (
               <>
                 <PathChooser screensUnlocked={capstoneDone} onChoose={choosePath} />
-                {DATA.parts.map((part) => {
-                  const missions = DATA.missions.filter((m) => m.part === part.id)
-                  if (!missions.length) return null
-                  return (
-                    <div key={part.id} className="queue-part">
-                      <div className="queue-part-name">{part.name}</div>
-                      {missions.map((m) => <QueueRow key={m.id} m={m} done={!!completed[m.id]} current={m.id === currentId} unlocked={isUnlocked(m, completed)} onGo={() => onNavigate(m.id)} />)}
-                    </div>
-                  )
-                })}
-                <div className="queue-part">
-                  <div className="queue-part-name">Company auditions</div>
-                  <p className="ready-intro">{capstoneDone
-                    ? `${completedSimCount} of ${DATA.sims.length} distinct auditions complete. Each new attempt starts blank and keeps its own evidence.`
-                    : `Auditions unlock after the ARR bridge capstone. They use ${DATA.company} data and do not claim to reproduce a company interview.`}</p>
-                  {DATA.sims.map((sim) => {
-                    const done = simIsComplete(sim, progress)
-                    const active = activeSim?.id === sim.id
-                    return (
-                      <div key={sim.id} className={`queue-row ${!capstoneDone ? 'queue-dim' : ''} ${done ? 'queue-done' : ''} ${active ? 'queue-current' : ''}`}>
-                        <div>
-                          <div className="queue-row-title">{done ? '✓ ' : ''}{sim.company} audition</div>
-                          <div className="queue-row-sub">{active ? 'Attempt in progress · restart begins blank' : sim.title}</div>
-                        </div>
-                        {capstoneDone && <button className={done || active ? 'btn-ghost btn-small' : 'btn-primary btn-small'} onClick={() => onNavigate(sim.questions[0]?.id ?? null, true, true)} aria-label={`${active ? 'Restart' : done ? 'Retake' : 'Start'} ${sim.company} audition`}>{active ? 'Restart' : done ? 'Retake' : 'Start'}</button>}
-                      </div>
-                    )
-                  })}
-                </div>
                 <div className="desk-footnote">
                   <WorkplaceTools />
                   <ProgressPorter progress={progress} />
@@ -178,12 +153,12 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
         )}
 
         {tab === 'dossier' && (
-          <CareerDossier progress={progress} onNavigate={onNavigate} onAcknowledgeBadge={onAcknowledgeBadge} />
+          <CareerDossier progress={progress} onAcknowledgeBadge={onAcknowledgeBadge} />
         )}
 
         {tab === 'pulls' && (
           <div className="pulls">
-            {completedCount === 0 && <p className="ready-intro">Every ask you deliver gets saved here — a growing query library you can pattern-match from at your actual job.</p>}
+            {completedCount === 0 && <p className="ready-intro">Every task you complete saves its final query here. Reuse one as a starting point at work.</p>}
             {Object.values(completed).sort((a, b) => b.completedAt.localeCompare(a.completedAt)).map((p) => (
               <div key={p.missionId} className="pull-item">
                 <div className="pull-head">
@@ -198,6 +173,58 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
         )}
       </div>
     </div>
+  )
+}
+
+function PracticeLibrary({
+  progress,
+  activeSimId,
+  onBack,
+  onOpen,
+}: {
+  progress: ProgressV2
+  activeSimId: string | null
+  onBack: () => void
+  onOpen: (questionId: string) => void
+}) {
+  const completed = DATA.sims.filter((sim) => simIsComplete(sim, progress)).length
+
+  return (
+    <section className="scenario-library" aria-labelledby="practice-library-title">
+      <div className="scenario-library-head">
+        <button className="scenario-library-back" type="button" onClick={onBack}>← All directions</button>
+        <div className="scenario-library-era">Optional practice</div>
+        <h2 id="practice-library-title">Choose an interview practice set</h2>
+        <p>
+          {completed} of {DATA.sims.length} complete. These use fictional Star67 data and do not
+          claim to reproduce any company’s interview.
+        </p>
+      </div>
+      <div className="scenario-list">
+        {DATA.sims.map((sim) => {
+          const done = simIsComplete(sim, progress)
+          const active = activeSimId === sim.id
+          const action = active ? 'Restart' : done ? 'Retake' : 'Start'
+          return (
+            <article className={`scenario-row${active ? ' scenario-row-active' : ''}`} key={sim.id}>
+              <div className="scenario-copy">
+                <div className="scenario-kicker">{sim.questions.length} questions · {done ? 'Complete' : active ? 'In progress' : 'Not started'}</div>
+                <h3>{sim.company}</h3>
+                <p>{sim.title}</p>
+              </div>
+              <button
+                className={done || active ? 'btn-ghost btn-small' : 'btn-primary btn-small'}
+                type="button"
+                aria-label={`${action} ${sim.company} audition`}
+                onClick={() => onOpen(sim.questions[0]?.id ?? '')}
+              >
+                {action}
+              </button>
+            </article>
+          )
+        })}
+      </div>
+    </section>
   )
 }
 
@@ -239,22 +266,22 @@ function ScenarioLibrary({
     <section className="scenario-library" aria-labelledby="scenario-library-title">
       <div className="scenario-library-head">
         <button className="scenario-library-back" type="button" onClick={onBack}>← All directions</button>
-        <div className="scenario-library-era">Star67 · the 2026 casebook</div>
-        <h2 ref={titleRef} id="scenario-library-title" tabIndex={-1}>The Star67 operating story</h2>
+        <div className="scenario-library-era">Star67 · archived finance projects</div>
+        <h2 ref={titleRef} id="scenario-library-title" tabIndex={-1}>Choose a finance project</h2>
         <p>
-          Every workday is a chapter in the same company: growth outruns controls, unit economics
+          Every project happens inside the same company: growth outruns controls, unit economics
           get strange, and Finance has to turn conflicting systems into one decision. Pick the
-          pressure you want to solve; correct pulls carry across the whole casebook.
+          pressure you want to solve; completed tasks carry across every project.
         </p>
         <div className="scenario-library-tools">
           <label>
-            <span className="sr-only">Find a workday</span>
-            <input type="search" value={query} placeholder="Find a workday" onChange={(event) => setQuery(event.target.value)} />
+            <span className="sr-only">Find a project</span>
+            <input type="search" value={query} placeholder="Find a project" onChange={(event) => setQuery(event.target.value)} />
           </label>
           <label>
-            <span className="sr-only">Filter workdays</span>
-            <select aria-label="Filter workdays" value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}>
-              <option value="all">All workdays</option>
+            <span className="sr-only">Filter projects</span>
+            <select aria-label="Filter projects" value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}>
+              <option value="all">All projects</option>
               <option value="in-progress">In progress</option>
               <option value="not-started">Not started</option>
               <option value="complete">Completed</option>
@@ -269,33 +296,13 @@ function ScenarioLibrary({
           const active = scenario.id === activeScenarioId
           const status = state.completed === state.total ? 'complete' : state.completed > 0 ? 'in-progress' : 'not-started'
           return <article className={`scenario-row${active ? ' scenario-row-active' : ''}`} key={scenario.id} data-scenario={scenario.id} data-parts={state.total} data-active={active} data-status={status}>
-            <div className="scenario-copy"><div className="scenario-kicker">{state.total} parts · {state.completed} delivered{active ? ' · Active workday' : ''}</div><h3>{scenario.title}</h3><p>{scenario.brief}</p></div>
+            <div className="scenario-copy"><div className="scenario-kicker">{state.completed} of {state.total} tasks complete{active ? ' · Current project' : ''}</div><h3>{scenario.title}</h3><p>{scenario.brief}</p></div>
             {target && <button className="btn-ghost btn-small" type="button" onClick={() => onOpen(scenario.id, target.id)}>{!state.next ? 'Revisit' : state.completed ? 'Continue' : 'Start'}</button>}
           </article>
         })}
-        {scenarios.length === 0 && <p className="scenario-library-empty">No workdays match that view.</p>}
+        {scenarios.length === 0 && <p className="scenario-library-empty">No projects match that view.</p>}
       </div>
     </section>
-  )
-}
-
-/** Missions unlock in order: a mission is open when everything before it is done
- * (with a 2-ahead grace so one stubborn ask never walls the queue). */
-function isUnlocked(m: CompiledMission, completed: Record<string, unknown>): boolean {
-  const idx = DATA.missions.findIndex((x) => x.id === m.id)
-  const doneBefore = DATA.missions.slice(0, idx).filter((x) => completed[x.id]).length
-  return idx - doneBefore <= 2
-}
-
-function QueueRow({ m, done, current, unlocked, onGo }: { m: CompiledMission; done: boolean; current: boolean; unlocked: boolean; onGo: () => void }) {
-  return (
-    <div className={`queue-row ${done ? 'queue-done' : ''} ${!unlocked && !done ? 'queue-dim' : ''} ${current ? 'queue-current' : ''}`}>
-      <div>
-        <div className="queue-row-title">{done ? '✓ ' : ''}{m.title}</div>
-        <div className="queue-row-sub">from {PEOPLE[m.from].name}{current ? ' · on your screen now' : ''}</div>
-      </div>
-      {(unlocked || done) && !current && <button className="btn-ghost btn-small" onClick={onGo}>{done ? 'Revisit' : 'Open'}</button>}
-    </div>
   )
 }
 
@@ -304,7 +311,7 @@ function ProgressPorter({ progress }: { progress: ProgressV2 }) {
   const copyProgress = async () => {
     try {
       await navigator.clipboard.writeText(exportProgress(progress))
-      setMsg('Copied a v2 progress envelope.')
+      setMsg('Progress code copied.')
     } catch {
       setMsg('Copy failed. Your browser may block clipboard access.')
     }

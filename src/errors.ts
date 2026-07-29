@@ -20,7 +20,7 @@ export function translateError(rawIn: string, userSQL: string): FriendlyError {
   if (/__readonly__/.test(r)) {
     return {
       headline: `This warehouse is read-only — same as the one you'll have at work.`,
-      detail: `FP&A always gets read-only warehouse access: you can look at everything and change nothing, by design, so nobody can break the books. SELECT is the whole job — and everything the missions teach fits inside it.`,
+      detail: `FP&A always gets read-only data access: you can look at everything and change nothing, by design, so nobody can break the books. SELECT is the whole job — and everything the tasks teach fits inside it.`,
       raw: 'Write statements (CREATE, DROP, INSERT, UPDATE, SET…) are disabled in Pivot.',
     }
   }
@@ -41,7 +41,7 @@ export function translateError(rawIn: string, userSQL: string): FriendlyError {
   if (/detached|postMessage.*Worker/i.test(r)) {
     return {
       headline: `The warehouse needs a fresh start — reload the page and it comes back exactly as it was.`,
-      detail: `Your progress and saved pulls are stored safely in the browser; reloading just restarts the engine. (This is a rare engine hiccup, not something you did.)`,
+      detail: `Your progress and completed queries are stored safely in the browser; reloading just restarts the engine. (This is a rare engine hiccup, not something you did.)`,
       raw,
     }
   }

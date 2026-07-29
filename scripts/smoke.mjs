@@ -6,8 +6,6 @@ import { chromium, webkit, firefox } from 'playwright'
 import { MISSIONS, SCREEN_SIMS } from './missions-source.mjs'
 
 const compiledContent = JSON.parse(readFileSync(new URL('../src/missions.compiled.json', import.meta.url), 'utf8'))
-const compiledCompanyCards = compiledContent.progression.companyCards
-const expectedCompanyCardCount = compiledCompanyCards.length
 const expectedBadgeCount = compiledContent.progression.badges.length
 const expectedDeskCrew = ['Riff', 'Rex', 'Coco', 'Zi', 'Fin', 'Frosty']
 const scenarioSource = readFileSync(new URL('../src/packs/parkline-fpa/scenarios.ts', import.meta.url), 'utf8')
@@ -91,7 +89,7 @@ async function runQuery(page) {
 
 async function openScenarioLibrary(page) {
   await page.locator('.path-chooser').waitFor()
-  await page.getByRole('button', { name: /Browse scenarios: Scenario library/i }).click()
+  await page.getByRole('button', { name: /Browse projects: Finance projects/i }).click()
   await page.locator('.scenario-library').waitFor()
 }
 
@@ -299,8 +297,21 @@ try {
   })
   await runQuery(racePage)
   await racePage.waitForFunction(() => window.__pivotRaceStarted === true, null, { timeout: 30000 })
+  await racePage.evaluate((mission) => {
+    const key = 'pivot.progress.v1'
+    const progress = JSON.parse(localStorage.getItem(key) ?? '{"pulls":{}}')
+    progress.pulls ??= {}
+    progress.pulls[mission.id] = {
+      missionId: mission.id,
+      completedAt: new Date().toISOString(),
+      sql: mission.canonical,
+      title: mission.title,
+    }
+    localStorage.setItem(key, JSON.stringify(progress))
+    window.dispatchEvent(new StorageEvent('storage', { key, newValue: JSON.stringify(progress) }))
+  }, MISSIONS[0])
   await racePage.getByRole('button', { name: 'Your desk' }).click()
-  await racePage.locator('.queue-row').filter({ hasText: MISSIONS[1].title }).getByRole('button', { name: 'Open' }).click()
+  await racePage.getByRole('button', { name: /Start next task: Next guided task/i }).click()
   await setEditor(racePage, MISSIONS[1].canonical)
   await runQuery(racePage)
   await racePage.locator('.verdict-correct').waitFor({ timeout: 30000 })
@@ -617,8 +628,7 @@ try {
   )
   await scenarioRoutePage.getByRole('button', { name: 'Your desk' }).click()
   await scenarioRoutePage.locator('.path-chooser').waitFor()
-  const globalFirstRow = scenarioRoutePage.locator('.queue-row').filter({ hasText: globalFirst.title }).first()
-  await globalFirstRow.getByRole('button', { name: 'Open' }).click()
+  await scenarioRoutePage.getByRole('button', { name: /Start next task: Next guided task/i }).click()
   await scenarioRoutePage.locator('.ask-title', { hasText: globalFirst.title }).waitFor({ timeout: 15000 })
   const departedScenarioSession = await scenarioRoutePage.evaluate(() => {
     const raw = localStorage.getItem('pivot.pathSession.v1.parkline-fpa')
@@ -2234,11 +2244,11 @@ try {
   await page.locator('[data-table-sheet="true"]').waitFor({ timeout: 60000 })
   step('engine recovered after restart', true)
 
-  // 11. Desk: queue + interview ready + progress persisted
+  // 11. Desk: simple directions + interview ready + progress persisted
   const deskOpener = page.getByRole('button', { name: 'Your desk' })
   await deskOpener.click()
-  await page.locator('.queue-part').first().waitFor()
-  step('desk opens with queue', true)
+  await page.locator('.path-chooser').waitFor()
+  step('desk opens with simple directions', true)
   const pathChooser = await page.evaluate(() => {
     const root = document.querySelector('.path-chooser')
     const cards = Array.from(document.querySelectorAll('.path-card')).map((card) => ({
@@ -2253,14 +2263,14 @@ try {
       ids: cards.map((c) => c.id),
       screenLocked: cards.find((c) => c.id === 'screen-practice')?.locked === true,
       noHud: !/\bXP\b|earn XP|daily streak|coins?|confetti|level up|lives remaining/i.test(copy),
-      openWorld: /open desk|choose a direction|switch anytime/i.test(copy),
+      openWorld: /what would you like to do|switch anytime/i.test(copy),
     }
   })
   step(
-    'desk shows open-world path chooser with five directions',
+    'desk shows four plain-language directions',
     pathChooser.present
-      && pathChooser.count === 5
-      && pathChooser.ids.join(',') === 'mission-ladder,scenario-library,free-explore,career-dossier,screen-practice'
+      && pathChooser.count === 4
+      && pathChooser.ids.join(',') === 'mission-ladder,scenario-library,free-explore,screen-practice'
       && pathChooser.screenLocked
       && pathChooser.noHud
       && pathChooser.openWorld,
@@ -2341,7 +2351,7 @@ try {
     }
   }, AUTHORED_SCENARIO_SHAPE.map(({ id, parts }) => ({ id, parts })))
   step(
-    'Browse scenarios opens a focused scenario-only workday view',
+    'Browse projects opens a focused project view',
     scenarioLibrary.present && scenarioLibrary.isolated && scenarioLibrary.focused,
     JSON.stringify({ present: scenarioLibrary.present, isolated: scenarioLibrary.isolated, focused: scenarioLibrary.focused }),
   )
@@ -2352,7 +2362,7 @@ try {
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === 'seat-book-review' && scenario.parts === SEAT_BOOK_SCENARIO?.parts && new RegExp(`${SEAT_BOOK_SCENARIO?.parts} parts`, 'i').test(scenario.copy))
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === 'arr-subledger-control' && scenario.parts === ARR_SUBLEDGER_SCENARIO?.parts)
       && ARR_SUBLEDGER_SCENARIO?.missionIds.join(',') === ARR_SUBLEDGER_MISSION_IDS.join(',')
-      && scenarioLibrary.scenarios.every((scenario) => /delivered/i.test(scenario.copy)),
+      && scenarioLibrary.scenarios.every((scenario) => /tasks complete/i.test(scenario.copy)),
     JSON.stringify(scenarioLibrary),
   )
   step(
@@ -2432,7 +2442,7 @@ try {
   )
   const newestAuthoredScenario = AUTHORED_SCENARIO_SHAPE.at(-1)
   if (!newestAuthoredScenario) throw new Error('scenario source has no authored workdays')
-  const scenarioSearch = page.getByRole('searchbox', { name: 'Find a workday' })
+  const scenarioSearch = page.getByRole('searchbox', { name: 'Find a project' })
   await scenarioSearch.fill(newestAuthoredScenario.title)
   await page.waitForFunction((id) => {
     const rows = Array.from(document.querySelectorAll('.scenario-row'))
@@ -2440,28 +2450,27 @@ try {
   }, newestAuthoredScenario.id)
   const searchedScenarioIds = await page.locator('.scenario-row').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-scenario')))
   step(
-    'scenario search narrows the library to the matching workday',
+    'project search narrows the library to the matching project',
     searchedScenarioIds.length === 1 && searchedScenarioIds[0] === newestAuthoredScenario.id,
     JSON.stringify(searchedScenarioIds),
   )
   await scenarioSearch.fill('')
-  const scenarioFilter = page.getByRole('combobox', { name: 'Filter workdays' })
+  const scenarioFilter = page.getByRole('combobox', { name: 'Filter projects' })
   await scenarioFilter.selectOption('in-progress')
   await page.waitForFunction(() => {
     const rows = Array.from(document.querySelectorAll('.scenario-row'))
     return rows.length > 0 && rows.every((row) => row.getAttribute('data-status') === 'in-progress')
   })
   const inProgressScenarioIds = await page.locator('.scenario-row').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-scenario')))
-  step('scenario status filter shows only in-progress workdays', inProgressScenarioIds.length > 0, JSON.stringify(inProgressScenarioIds))
+  step('project status filter shows only in-progress projects', inProgressScenarioIds.length > 0, JSON.stringify(inProgressScenarioIds))
   await scenarioFilter.selectOption('all')
   await page.getByRole('button', { name: /All directions/i }).click()
   await page.locator('.path-chooser').waitFor()
   const scenarioBackState = await page.evaluate(() => ({
     directions: !!document.querySelector('.path-chooser'),
-    queue: !!document.querySelector('.queue-part'),
     scenarios: !!document.querySelector('.scenario-library'),
   }))
-  step('scenario Back returns to directions and the mission queue', scenarioBackState.directions && scenarioBackState.queue && !scenarioBackState.scenarios, JSON.stringify(scenarioBackState))
+  step('project Back returns to the simple directions', scenarioBackState.directions && !scenarioBackState.scenarios, JSON.stringify(scenarioBackState))
   await openScenarioLibrary(page)
   await page.locator('[data-scenario="first-week"] button').click()
   await page.locator('.ask-card').waitFor({ timeout: 15000 })
@@ -2606,10 +2615,10 @@ try {
   await page.locator('.verdict-correct').waitFor({ timeout: 30000 })
   await page.getByRole('button', { name: 'Your desk' }).click()
   await page.locator('.path-chooser').waitFor()
-  await page.getByRole('button', { name: /Explore freely: Explore the warehouse/i }).click()
+  await page.getByRole('button', { name: /Explore data: Explore company data/i }).click()
   await page.locator('.explore-card').waitFor({ timeout: 15000 })
   const exploreVisible = await page.locator('.explore-card').textContent()
-  step('explore path opens free warehouse mode', /No ask selected|Explore Star67/i.test(exploreVisible ?? '') && /saved pulls and seals stay put|continue the last direction/i.test(exploreVisible ?? ''), (exploreVisible ?? '').slice(0, 120))
+  step('explore path opens free data mode', /No ask selected|Explore Star67/i.test(exploreVisible ?? '') && /saved queries and skill progress stay put|continue the last direction/i.test(exploreVisible ?? ''), (exploreVisible ?? '').slice(0, 120))
   await page.getByRole('button', { name: 'Your desk' }).click()
   await page.locator('.path-chooser').waitFor()
   const pathPersisted = await page.evaluate(() => {
@@ -2631,18 +2640,18 @@ try {
       && pathPersisted.currentId === 'free-explore'
       && pathPersisted.sessionPath === 'free-explore'
       && /Continue where you left off/i.test(pathPersisted.continueCopy)
-      && /no progress lost/i.test(pathPersisted.continueCopy),
+      && /your work is saved/i.test(pathPersisted.continueCopy),
     JSON.stringify(pathPersisted),
   )
-  await page.getByRole('button', { name: /Continue: Explore the warehouse/i }).click()
+  await page.getByRole('button', { name: /Continue: Explore company data/i }).click()
   await page.locator('.explore-card').waitFor({ timeout: 15000 })
   step('continue strip restores free explore without punishing progress', true)
   await page.getByRole('button', { name: 'Your desk' }).click()
   await page.locator('.path-chooser').waitFor()
-  await page.getByRole('button', { name: /Open next ask: Mission ladder/i }).click()
+  await page.getByRole('button', { name: /Start next task: Next guided task/i }).click()
   await page.locator('.ask-card').waitFor({ timeout: 15000 })
   const missionAsk = await page.locator('.ask-card').first().evaluate((el) => !el.classList.contains('explore-card'))
-  step('mission ladder path returns to a guided ask', missionAsk)
+  step('next guided task returns to a checked finance request', missionAsk)
   await page.getByRole('button', { name: 'Your desk' }).click()
   await page.locator('.path-chooser').waitFor()
   const deskA11y = await page.evaluate(() => {
@@ -2668,19 +2677,7 @@ try {
     focused: document.activeElement?.textContent?.trim() ?? '',
   }))
   step('desk wraps Tab from its true last control to Close', deskTrapped.inside && deskTrapped.focused === 'Close', JSON.stringify(deskTrapped))
-  await page.locator('.desk-tabs').getByRole('button', { name: 'Career dossier', exact: true }).click()
-  const quote = await page.locator('.company-card blockquote').first().textContent()
-  step('career dossier JD quotes render', !!quote && quote.length > 20, quote.slice(0, 70))
-  const figmaSim = SCREEN_SIMS.find((sim) => sim.id === 'sim04')
-  if (!figmaSim) throw new Error('sim04 is missing from the authored audition source')
-  const figmaCard = page.locator('.company-card', { has: page.getByRole('heading', { name: 'Figma', exact: true }) })
-  const figmaAudition = await figmaCard.locator('.company-audition').textContent()
-  step(
-    'Figma dossier card reflects its authored audition depth',
-    figmaAudition?.includes(figmaSim.title)
-      && figmaAudition.includes(`${figmaSim.questions.length} authored ${figmaSim.questions.length === 1 ? 'question' : 'questions'}`),
-    figmaAudition?.slice(0, 160) ?? '',
-  )
+  await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).click()
   const hightouchSim = SCREEN_SIMS.find((sim) => sim.id === 'sim01')
   const affirmSim = SCREEN_SIMS.find((sim) => sim.id === 'sim05')
   if (!hightouchSim || !affirmSim) throw new Error('sim01 and sim05 must both exist in the authored audition source')
@@ -2697,47 +2694,24 @@ try {
       && /interview|process/i.test(affirmSim.intro),
     `sim01=${hightouchSim.intro.slice(0, 100)} | sim05=${affirmSim.intro.slice(0, 100)}`,
   )
-  const affirmCard = page.locator('.company-card', { has: page.getByRole('heading', { name: 'Affirm', exact: true }) })
-  const affirmAudition = await affirmCard.locator('.company-audition').textContent()
-  step(
-    'Affirm dossier card owns the new distinct audition',
-    affirmAudition?.includes(affirmSim.title)
-      && affirmAudition.includes(`${affirmSim.questions.length} authored ${affirmSim.questions.length === 1 ? 'question' : 'questions'}`),
-    affirmAudition?.slice(0, 160) ?? '',
-  )
-  const navanCard = page.locator('.company-card', { has: page.getByRole('heading', { name: 'Navan', exact: true }) })
-  const navanQuote = await navanCard.locator('blockquote').textContent()
-  const navanEvidenceOnly = await navanCard.locator('.company-evidence-only').textContent()
-  step(
-    'Navan dossier card stays a verified evidence map without a borrowed audition',
-    /complex SQL, including multi-table joins and analytical functions/i.test(navanQuote ?? '')
-      && /Evidence map only/i.test(navanEvidenceOnly ?? '')
-      && await navanCard.locator('.company-audition').count() === 0,
-    `${navanQuote?.slice(0, 100) ?? ''} | ${navanEvidenceOnly ?? ''}`,
-  )
 
-  // CASEBOOK-007 — visual system, motion gates, narrow/zoom, reduced-motion
+  // PROGRESS-007 — focused progress, motion gates, narrow/zoom, reduced-motion
   await page.waitForFunction((expectedCount) => {
     const images = Array.from(document.querySelectorAll('.desk-crew img'))
     return images.length === expectedCount && images.every((image) => image.complete && image.naturalWidth > 0)
   }, expectedDeskCrew.length)
-  const casebookVisual = await page.evaluate(() => {
-    const path = document.querySelector('.casebook-path')
+  const progressVisual = await page.evaluate(() => {
     const crew = document.querySelector('.desk-crew')
     const crewMembers = Array.from(document.querySelectorAll('.desk-crew__member'))
     const crewImages = crewMembers.map((member) => member.querySelector('img')).filter(Boolean)
     const seals = Array.from(document.querySelectorAll('.evidence-seal'))
-    const cards = document.querySelectorAll('.company-card')
     const hero = document.querySelector('.dossier-hero')
     const kicker = document.querySelector('.dossier-kicker')
     const sealGrid = document.querySelector('.evidence-seal-grid')
-    const companyGrid = document.querySelector('.company-card-grid')
+    const future = document.querySelector('.future-skills')
     const overflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
       || (document.querySelector('.desk')?.scrollWidth ?? 0) > (document.querySelector('.desk')?.clientWidth ?? 0) + 1
     return {
-      pathLabel: path?.getAttribute('aria-label') ?? '',
-      chapters: path?.querySelectorAll('[data-chapter-id]').length ?? 0,
-      currentChapter: path?.querySelector('[data-state="current"]')?.getAttribute('data-chapter-id') ?? '',
       crewLabel: crew?.getAttribute('aria-label') ?? '',
       crewMembers: crewMembers.length,
       crewNames: crewMembers.map((member) => member.querySelector('strong')?.textContent?.trim() ?? ''),
@@ -2749,57 +2723,59 @@ try {
         objectFit: getComputedStyle(image).objectFit,
       })),
       seals: seals.length,
+      visibleSeals: seals.filter((seal) => seal.getClientRects().length > 0).length,
+      earned: seals.filter((seal) => seal.getAttribute('data-earned') === 'true').length,
       building: seals.filter((seal) => seal.getAttribute('data-earned') === 'false').length,
       revealing: seals.filter((seal) => seal.getAttribute('data-reveal') === 'true').length,
       guided: seals.filter((seal) => !!seal.getAttribute('data-guide')).length,
       described: seals.filter((seal) => !!seal.querySelector('.evidence-seal__description')?.textContent?.trim()).length,
       progressLabels: seals.filter((seal) => !!seal.querySelector('.evidence-seal__progress')?.textContent?.trim()).length,
       nextEvidence: seals.filter((seal) => !!seal.querySelector('.evidence-seal__next')?.textContent?.trim()).length,
-      cards: cards.length,
+      companyCards: document.querySelectorAll('.company-card').length,
       heroOk: !!hero && !!document.getElementById('dossier-title'),
       kicker: kicker?.textContent?.trim() ?? '',
       sealGridDisplay: sealGrid ? getComputedStyle(sealGrid).display : '',
-      companyGridDisplay: companyGrid ? getComputedStyle(companyGrid).display : '',
+      futureClosed: !!future && !future.hasAttribute('open'),
+      futureSummary: future?.querySelector('summary')?.textContent?.trim() ?? '',
       overflow,
       runtime: document.querySelector('.topbar-runtime')?.textContent?.trim() ?? '',
     }
   })
   step(
-    'career dossier mounts path, Star67 desk crew, full evidence catalog, and every company card',
-    casebookVisual.heroOk
-      && casebookVisual.pathLabel.toLowerCase().includes('capability')
-      && casebookVisual.chapters === 6
-      && /Star67 desk crew/i.test(casebookVisual.crewLabel)
-      && casebookVisual.crewMembers === expectedDeskCrew.length
-      && JSON.stringify(casebookVisual.crewNames) === JSON.stringify(expectedDeskCrew)
-      && new Set(casebookVisual.crewImages.map((image) => image.src)).size === expectedDeskCrew.length
-      && casebookVisual.crewImages.every((image) => image.naturalWidth === 1024
+    'progress mounts the Star67 crew, one next badge, earned badges, and a closed later-skills list',
+    progressVisual.heroOk
+      && /Star67 desk crew/i.test(progressVisual.crewLabel)
+      && progressVisual.crewMembers === expectedDeskCrew.length
+      && JSON.stringify(progressVisual.crewNames) === JSON.stringify(expectedDeskCrew)
+      && new Set(progressVisual.crewImages.map((image) => image.src)).size === expectedDeskCrew.length
+      && progressVisual.crewImages.every((image) => image.naturalWidth === 1024
         && image.naturalHeight === 1024
         && image.objectFit === 'contain'
         && /Star67/i.test(image.alt))
       && expectedBadgeCount === 37
-      && casebookVisual.seals === expectedBadgeCount
-      && casebookVisual.building === expectedBadgeCount
-      && casebookVisual.revealing <= 1
-      && casebookVisual.guided === expectedBadgeCount
-      && casebookVisual.described === expectedBadgeCount
-      && casebookVisual.progressLabels === expectedBadgeCount
-      && casebookVisual.nextEvidence === expectedBadgeCount
-      && casebookVisual.cards === expectedCompanyCardCount
-      && casebookVisual.kicker === 'Star67 Career Casebook'
-      && casebookVisual.sealGridDisplay === 'grid'
-      && casebookVisual.companyGridDisplay === 'grid'
-      && !casebookVisual.overflow,
-    JSON.stringify(casebookVisual),
+      && progressVisual.seals === expectedBadgeCount
+      && progressVisual.visibleSeals <= progressVisual.earned + 1
+      && progressVisual.revealing <= 1
+      && progressVisual.guided === expectedBadgeCount
+      && progressVisual.described === expectedBadgeCount
+      && progressVisual.progressLabels === expectedBadgeCount
+      && progressVisual.nextEvidence === expectedBadgeCount
+      && progressVisual.companyCards === 0
+      && progressVisual.kicker === 'Your FP&A practice'
+      && progressVisual.sealGridDisplay === 'grid'
+      && progressVisual.futureClosed
+      && /later skill badges/i.test(progressVisual.futureSummary)
+      && !progressVisual.overflow,
+    JSON.stringify(progressVisual),
   )
   step(
-    'local save state stays visible beside the casebook desk',
-    /Saved on this device/i.test(casebookVisual.runtime),
-    casebookVisual.runtime,
+    'local save state stays visible beside progress',
+    /Saved on this device/i.test(progressVisual.runtime),
+    progressVisual.runtime,
   )
 
-  // Focus receipt: focus the Career dossier tab itself with keyboard modality.
-  const tabFocusRing = await page.locator('.desk-tabs').getByRole('button', { name: 'Career dossier', exact: true }).evaluate((el) => {
+  // Focus receipt: focus the Progress tab itself with keyboard modality.
+  const tabFocusRing = await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).evaluate((el) => {
     try { el.focus({ focusVisible: true }) } catch { el.focus() }
     // If the engine still refuses :focus-visible, synthesize keyboard modality then refocus.
     if (!(typeof el.matches === 'function' && el.matches(':focus-visible'))) {
@@ -2838,50 +2814,40 @@ try {
     || String(tabFocusRing.outline || '').startsWith('solid')
     || tabFocusRing.sheetHasRing
   ))
-  step('Career dossier tab shows a visible focus ring', focusOk, JSON.stringify(tabFocusRing))
+  step('Progress tab shows a visible focus ring', focusOk, JSON.stringify(tabFocusRing))
 
-  // 320 CSS px: path stacks, seals/cards single-column, no horizontal overflow.
+  // 320 CSS px: progress cards stay single-column with no horizontal overflow.
   await page.setViewportSize({ width: 320, height: 800 })
   await page.waitForTimeout(80)
   const narrowCasebook = await page.evaluate(() => {
     const desk = document.querySelector('.desk')
-    const pathList = document.querySelector('.casebook-path__list')
     const sealGrid = document.querySelector('.evidence-seal-grid')
     const firstSeal = document.querySelector('.evidence-seal')
-    const firstCard = document.querySelector('.company-card')
     const crew = document.querySelector('.desk-crew')
-    const pathDisplay = pathList ? getComputedStyle(pathList).display : ''
     const docOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
     const deskOverflow = desk ? desk.scrollWidth > desk.clientWidth + 1 : true
     const sealFits = firstSeal
       ? firstSeal.getBoundingClientRect().right <= (desk?.getBoundingClientRect().right ?? window.innerWidth) + 1
       : false
-    const cardFits = firstCard
-      ? firstCard.getBoundingClientRect().right <= (desk?.getBoundingClientRect().right ?? window.innerWidth) + 1
-      : false
     return {
-      pathDisplay,
       sealColumns: sealGrid ? getComputedStyle(sealGrid).gridTemplateColumns.split(' ').length : 0,
       docOverflow,
       deskOverflow,
       sealFits,
-      cardFits,
       crewFits: !!crew && crew.getBoundingClientRect().right <= (desk?.getBoundingClientRect().right ?? window.innerWidth) + 1,
     }
   })
   step(
-    'casebook path and seals fit without horizontal overflow at 320 CSS pixels',
-    narrowCasebook.pathDisplay === 'flex'
-      && narrowCasebook.sealColumns === 1
+    'progress cards fit without horizontal overflow at 320 CSS pixels',
+    narrowCasebook.sealColumns === 1
       && !narrowCasebook.docOverflow
       && !narrowCasebook.deskOverflow
       && narrowCasebook.sealFits
-      && narrowCasebook.cardFits
       && narrowCasebook.crewFits,
     JSON.stringify(narrowCasebook),
   )
 
-  // 200% zoom-equivalent content viewport (half of 1440×900) still keeps the casebook in bounds.
+  // 200% zoom-equivalent content viewport (half of 1440×900) still keeps progress in bounds.
   await page.setViewportSize({ width: 720, height: 450 })
   await page.waitForTimeout(80)
   const zoomCasebook = await page.evaluate(() => {
@@ -2889,66 +2855,51 @@ try {
     const seals = document.querySelectorAll('.evidence-seal').length
     const overflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
       || (desk ? desk.scrollWidth > desk.clientWidth + 1 : true)
-    const path = document.querySelector('.casebook-path')
     const crew = document.querySelector('.desk-crew')
     return {
       seals,
       overflow,
-      pathVisible: !!path && path.getClientRects().length > 0,
       crewVisible: !!crew && crew.getClientRects().length > 0,
     }
   })
   step(
-    'casebook remains in-bounds at a 200% zoom-equivalent viewport',
-    zoomCasebook.seals === expectedBadgeCount && zoomCasebook.pathVisible && zoomCasebook.crewVisible && !zoomCasebook.overflow,
+    'progress remains in-bounds at a 200% zoom-equivalent viewport',
+    zoomCasebook.seals === expectedBadgeCount && zoomCasebook.crewVisible && !zoomCasebook.overflow,
     JSON.stringify(zoomCasebook),
   )
 
-  // Reduced motion: one-shot seal/path motion freezes at the delivered final state.
-  // Path connectors only exist from the second chapter onward — advance that node.
+  // Reduced motion: the one-shot badge motion freezes at the delivered final state.
   await page.emulateMedia({ reducedMotion: 'reduce' })
   const reducedMotion = await page.evaluate(() => {
     const seal = document.querySelector('.evidence-seal')
-    const chapters = Array.from(document.querySelectorAll('.casebook-path__chapter'))
-    const chapter = chapters.find((node) => node.querySelector('.casebook-path__connector-line')) ?? chapters[1] ?? chapters[0]
     seal?.classList.add('evidence-seal--reveal')
-    chapter?.setAttribute('data-advance', 'true')
     const mark = seal?.querySelector('.evidence-seal__mark')
-    const line = chapter?.querySelector('.casebook-path__connector-line')
     const markStyle = mark ? getComputedStyle(mark) : null
-    const lineStyle = line ? getComputedStyle(line) : null
     return {
       markAnimation: markStyle?.animationName ?? '',
       markOpacity: markStyle ? Number(markStyle.opacity) : -1,
-      lineAnimation: lineStyle?.animationName ?? '',
-      lineOpacity: lineStyle ? Number(lineStyle.opacity) : -1,
-      lineDashOffset: lineStyle?.strokeDashoffset ?? '',
-      hasLine: !!line,
     }
   })
   step(
-    'reduced motion freezes seal and path at their final delivered states',
-    reducedMotion.hasLine
-      && (reducedMotion.markAnimation === 'none' || reducedMotion.markAnimation === '')
-      && reducedMotion.markOpacity === 1
-      && (reducedMotion.lineAnimation === 'none' || reducedMotion.lineAnimation === '')
-      && reducedMotion.lineOpacity === 1,
+    'reduced motion freezes the badge at its final delivered state',
+    (reducedMotion.markAnimation === 'none' || reducedMotion.markAnimation === '')
+      && reducedMotion.markOpacity === 1,
     JSON.stringify(reducedMotion),
   )
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.setViewportSize({ width: 1280, height: 800 })
 
-  // Revisit: blank building seals never claim a one-shot reveal on reload of the tab.
-  await page.getByRole('button', { name: /Your pulls/ }).click()
-  await page.locator('.desk-tabs').getByRole('button', { name: 'Career dossier', exact: true }).click()
+  // Revisit: blank building badges never claim a one-shot reveal on reload of the tab.
+  await page.getByRole('button', { name: /Saved SQL/ }).click()
+  await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).click()
   const revisitReveal = await page.evaluate(() =>
     Array.from(document.querySelectorAll('.evidence-seal')).every((seal) => seal.getAttribute('data-reveal') === 'false'),
   )
-  step('casebook seals do not replay a reveal on revisit', revisitReveal)
+  step('skill badges do not replay a reveal on revisit', revisitReveal)
 
-  await page.getByRole('button', { name: /Your pulls/ }).click()
+  await page.getByRole('button', { name: /Saved SQL/ }).click()
   const pulls = await page.locator('.pull-item').count()
-  step('solved pulls saved', pulls >= 2, `${pulls} pulls`)
+  step('completed queries are saved', pulls >= 2, `${pulls} saved queries`)
 
   // 11b. ROUND-1 REGRESSIONS
   await page.keyboard.press('Escape')
@@ -3386,8 +3337,9 @@ try {
   await page.getByRole('button', { name: 'Back to my desk' }).click()
   await page.locator('.ask-card').waitFor({ timeout: 120000 })
   await page.getByRole('button', { name: 'Your desk' }).click()
-  const screenProgressText = await page.locator('.ready-intro').textContent()
-  await page.locator('.desk-tabs').getByRole('button', { name: 'Career dossier', exact: true }).click()
+  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
+  const screenProgressText = await page.locator('.scenario-library-head p').textContent()
+  await page.getByRole('button', { name: 'Progress', exact: true }).click()
   await page.waitForFunction(() => {
     const earnedIds = Array.from(document.querySelectorAll('.evidence-seal[data-earned="true"]'))
       .map((seal) => seal.getAttribute('data-badge-id')).filter(Boolean)
@@ -3407,18 +3359,19 @@ try {
     }
   })
   step(
-    'backfilled evidence catalog acknowledges every earned seal while animating at most one',
+    'backfilled skill badges acknowledge every earned badge while animating at most one',
     backfilledSeals.earnedIds.length > 1
       && backfilledSeals.revealing <= 1
       && backfilledSeals.allAcknowledged,
     JSON.stringify(backfilledSeals),
   )
-  await page.locator('.desk-tabs').getByRole('button', { name: /Your pulls/ }).click()
-  await page.locator('.desk-tabs').getByRole('button', { name: 'Career dossier', exact: true }).click()
+  await page.locator('.desk-tabs').getByRole('button', { name: /Saved SQL/ }).click()
+  await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).click()
   const backfillRevisitReveals = await page.locator('.evidence-seal[data-reveal="true"]').count()
-  step('backfilled evidence seals do not replay on dossier revisit', backfillRevisitReveals === 0, `${backfillRevisitReveals} replaying`)
-  await page.locator('.desk-tabs').getByRole('button', { name: 'The queue', exact: true }).click()
-  await page.locator('.queue-row', { hasText: `${secondCompany} audition` }).getByRole('button', { name: `Start ${secondCompany} audition` }).click()
+  step('backfilled skill badges do not replay on Progress revisit', backfillRevisitReveals === 0, `${backfillRevisitReveals} replaying`)
+  await page.locator('.desk-tabs').getByRole('button', { name: 'My work', exact: true }).click()
+  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
+  await page.locator('.scenario-row', { has: page.getByRole('heading', { name: secondCompany, exact: true }) }).getByRole('button', { name: `Start ${secondCompany} audition` }).click()
   await page.waitForFunction((expected) => {
     const used = Array.from(document.querySelectorAll('[data-used-in-ask="true"]'))
       .map((element) => element.getAttribute('data-relation-name')).filter(Boolean).sort()
@@ -3470,6 +3423,7 @@ try {
   await page.waitForTimeout(2200)
   const agedTimerText = await page.locator('.sim-timer').textContent()
   await page.getByRole('button', { name: 'Your desk' }).click()
+  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
   await page.getByRole('button', { name: `Restart ${secondCompany} audition` }).click()
   await page.waitForTimeout(100)
   const retakeEditor = (await readEditorText(page)).trim()
@@ -3565,6 +3519,7 @@ try {
   await page.getByRole('button', { name: 'Back to my desk' }).click()
   await page.locator('.ask-card').waitFor({ timeout: 120000 })
   await page.getByRole('button', { name: 'Your desk' }).click()
+  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
   await page.getByRole('button', { name: `Retake ${firstCompany} audition` }).click()
   const olderFirstTitle = await page.locator('.sim-intro-title').textContent()
   step(
@@ -3581,6 +3536,7 @@ try {
   await page.getByRole('button', { name: 'Back to my desk' }).click()
   await page.locator('.ask-card').waitFor({ timeout: 120000 })
   await page.getByRole('button', { name: 'Your desk' }).click()
+  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
   await page.getByRole('button', { name: `Retake ${firstCompany} audition` }).click()
   const partialRetakeTitle = await page.locator('.sim-intro-title').textContent()
   step(
@@ -3599,6 +3555,7 @@ try {
   await page.getByRole('button', { name: 'Back to my desk' }).click()
   await page.locator('.ask-card').waitFor({ timeout: 120000 })
   await page.getByRole('button', { name: 'Your desk' }).click()
+  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
   await page.getByRole('button', { name: `Retake ${secondCompany} audition` }).click()
   const olderSecondTitle = await page.locator('.sim-intro-title').textContent()
   step(

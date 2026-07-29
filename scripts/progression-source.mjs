@@ -57,7 +57,7 @@ const evidenceSeal = (id, title, competencyId, guideId, description) => {
 }
 
 export const BADGES = [
-  evidenceSeal('warehouse-navigator', 'Warehouse Navigator', 'warehouse-basics', 'riff', 'Find your footing, read table grain, and pull trustworthy first answers.'),
+  evidenceSeal('warehouse-navigator', 'Warehouse Navigator', 'warehouse-basics', 'riff', 'Learn what each table represents and build trustworthy first answers.'),
   evidenceSeal('join-guardian', 'Join Guardian', 'joins-and-grain', 'rex', 'Join business objects without multiplying, dropping, or misreading the book.'),
   evidenceSeal('plan-owner', 'Plan Owner', 'planning', 'zi', 'Reconcile actuals to plan and route the decision instead of stopping at variance.'),
   evidenceSeal('spend-margin-partner', 'Spend & Margin Partner', 'spend-margin', 'coco', 'Turn spend and margin detail into a partner-ready operating read.'),

@@ -22,7 +22,7 @@ import { PLAN_MIX_MISSIONS } from './plan-mix-missions.mjs'
 import { COMP_BAND_MISSIONS } from './comp-band-missions.mjs'
 
 export const PARTS = [
-  { id: 1, name: 'First pulls' },
+  { id: 1, name: 'First tasks' },
   { id: 2, name: 'Pivot tables, but bigger' },
   { id: 3, name: 'XLOOKUP land' },
   { id: 4, name: 'The variance desk' },

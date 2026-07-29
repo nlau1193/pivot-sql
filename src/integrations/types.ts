@@ -22,7 +22,7 @@ export function defaultIntegrationStatuses(): IntegrationStatus[] {
       id: 'github',
       label: 'GitHub',
       state: 'disconnected',
-      detail: 'Not connected. Connect GitHub to bring issues and pull requests into this workspace.',
+      detail: 'Not connected. Connect GitHub to bring work items and code reviews into this workspace.',
     },
     {
       id: 'slack',

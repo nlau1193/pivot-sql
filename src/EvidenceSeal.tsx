@@ -30,7 +30,7 @@ export function EvidenceSeal({
   onRevealEnd,
 }: EvidenceSealProps) {
   const reveal = earned && animate
-  const status = earned ? 'Evidence ready' : 'Building evidence'
+  const status = earned ? 'Skill earned' : 'In progress'
 
   return (
     <article
@@ -62,22 +62,22 @@ export function EvidenceSeal({
       <div className="evidence-seal__copy">
         <p className="evidence-seal__status">{status}</p>
         <h3 className="evidence-seal__title">{title}</h3>
-        {guideName && <p className="evidence-seal__guide">Guide · {guideName}</p>}
+        {guideName && <p className="evidence-seal__guide">With {guideName}</p>}
         {description && <p className="evidence-seal__description">{description}</p>}
         {progressLabel && <p className="evidence-seal__progress">{progressLabel}</p>}
         {evidenceLabels.length > 0 ? (
-          <ul className="evidence-seal__evidence" aria-label={`${title} evidence`}>
+          <ul className="evidence-seal__evidence" aria-label={`${title} completed tasks`}>
             {evidenceLabels.map((label, index) => (
               <li key={`${id}-${index}`}>{label}</li>
             ))}
           </ul>
         ) : (
           <p className="evidence-seal__empty">
-            {earned ? 'The supporting work is recorded in your casebook.' : 'Saved pulls will appear here as the evidence is delivered.'}
+            {earned ? 'The supporting work is saved with your progress.' : 'Completed tasks will appear here.'}
           </p>
         )}
         {!earned && nextEvidenceLabel && (
-          <p className="evidence-seal__next"><strong>Next evidence:</strong> {nextEvidenceLabel}</p>
+          <p className="evidence-seal__next"><strong>Next task:</strong> {nextEvidenceLabel}</p>
         )}
       </div>
     </article>

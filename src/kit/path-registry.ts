@@ -29,36 +29,36 @@ export function parklineDeskPaths(opts: { screensUnlocked: boolean; place?: stri
   return [
     {
       id: 'mission-ladder',
-      title: 'Mission ladder',
-      summary: `Guided ${place} asks from the finance team — start here if you want a clear next pull.`,
-      actionLabel: 'Open next ask',
+      title: 'Next guided task',
+      summary: `Continue with the next ${place} request. Best if you want one clear step.`,
+      actionLabel: 'Start next task',
     },
     {
       id: 'scenario-library',
-      title: 'Scenario library',
-      summary: `Choose a cohesive ${place} work arc. Scenarios vary in depth and reuse your saved evidence.`,
-      actionLabel: 'Browse scenarios',
+      title: 'Finance projects',
+      summary: `Choose a realistic ${place} project, from planning and retention to workforce and close.`,
+      actionLabel: 'Browse projects',
     },
     {
       id: 'free-explore',
-      title: 'Explore the warehouse',
-      summary: 'Open the data navigator and free SQL — poke at tables with no ask selected.',
-      actionLabel: 'Explore freely',
+      title: 'Explore company data',
+      summary: 'Browse the tables and try your own SQL without a task selected.',
+      actionLabel: 'Explore data',
     },
     {
       id: 'career-dossier',
-      title: 'Career dossier',
-      summary: 'Capability stages, evidence seals, and company tracks — see where your pulls lead.',
-      actionLabel: 'Open dossier',
+      title: 'Progress',
+      summary: 'See completed tasks, earned skills, and the next badge you are working toward.',
+      actionLabel: 'View progress',
     },
     {
       id: 'screen-practice',
-      title: 'Screen practice',
-      summary: 'Timed company audition overlays — one practice gym inside the broader desk, not the whole product.',
-      actionLabel: opts.screensUnlocked ? 'Start a screen' : 'Locked for now',
+      title: 'Interview practice',
+      summary: 'Optional timed SQL practice based on common FP&A hiring exercises.',
+      actionLabel: opts.screensUnlocked ? 'Start practice' : 'Locked for now',
       lockedReason: opts.screensUnlocked
         ? undefined
-        : 'Unlocks after the ARR bridge capstone (mission 17). Until then, use the ladder or explore.',
+        : 'Unlocks after the ARR bridge task. Until then, choose a guided task or explore.',
     },
   ]
 }

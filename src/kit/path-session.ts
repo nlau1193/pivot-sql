@@ -73,11 +73,11 @@ export function savePathSession(pathId: PathId, packId: string = ACTIVE_PACK_ID,
 export function pathTitle(pathId: PathId): string {
   switch (pathId) {
     case 'mission-ladder':
-      return 'Mission ladder'
+      return 'Next guided task'
     case 'free-explore':
-      return 'Explore the warehouse'
+      return 'Explore company data'
     case 'career-dossier':
-      return 'Career dossier'
+      return 'Progress'
     case 'screen-practice':
       return 'Screen practice'
     case 'scenario-library':
