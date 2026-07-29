@@ -1,0 +1,99 @@
+import { useMemo, useState } from 'react'
+import { ACTIVE_PACK_ID } from './kit/pack-manifest'
+import { deskPathsForActivePack } from './packs/active'
+import type { DeskPath, PathId } from './kit/path-registry'
+import { loadPathSession, pathTitle, savePathSession } from './kit/path-session'
+
+interface PathChooserProps {
+  screensUnlocked: boolean
+  onChoose: (id: PathId) => void
+}
+
+export function PathChooser({ screensUnlocked, onChoose }: PathChooserProps) {
+  const paths = deskPathsForActivePack({ screensUnlocked })
+  const [session, setSession] = useState(() => loadPathSession(ACTIVE_PACK_ID))
+  const lastPath = useMemo(() => {
+    if (!session) return null
+    return paths.find((path) => path.id === session.lastPathId) ?? null
+  }, [paths, session])
+
+  const choose = (id: PathId) => {
+    setSession(savePathSession(id, ACTIVE_PACK_ID))
+    onChoose(id)
+  }
+
+  return (
+    <section className="path-chooser" aria-labelledby="path-chooser-title">
+      <div className="path-chooser-head">
+        <h2 id="path-chooser-title">Choose a direction</h2>
+        <p>
+          Pivot is an open desk — pick a path, switch anytime. This is practical learning with
+          several directions, not a score chase or a single interview funnel.
+        </p>
+      </div>
+      {lastPath && !lastPath.lockedReason && (
+        <div className="path-continue" data-last-path={lastPath.id}>
+          <div className="path-continue-copy">
+            <div className="path-continue-label">Continue where you left off</div>
+            <p className="path-continue-summary">{pathTitle(lastPath.id)} — same direction, no progress lost for exploring.</p>
+          </div>
+          <button
+            type="button"
+            className="btn-primary btn-small"
+            aria-label={`Continue: ${lastPath.title}`}
+            onClick={() => choose(lastPath.id)}
+          >
+            Continue
+          </button>
+        </div>
+      )}
+      <ul className="path-chooser-list">
+        {paths.map((path) => (
+          <PathCard
+            key={path.id}
+            path={path}
+            current={session?.lastPathId === path.id}
+            onChoose={choose}
+          />
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+function PathCard({
+  path,
+  current,
+  onChoose,
+}: {
+  path: DeskPath
+  current: boolean
+  onChoose: (id: PathId) => void
+}) {
+  const locked = !!path.lockedReason
+  return (
+    <li
+      className={`path-card${locked ? ' path-card--locked' : ''}${current ? ' path-card--current' : ''}`}
+      data-path-id={path.id}
+      data-current={current ? 'true' : 'false'}
+    >
+      <div className="path-card-copy">
+        <div className="path-card-title">
+          {path.title}
+          {current && !locked ? <span className="path-card-current-badge"> Last direction</span> : null}
+        </div>
+        <p className="path-card-summary">{path.summary}</p>
+        {locked && <p className="path-card-lock">{path.lockedReason}</p>}
+      </div>
+      <button
+        type="button"
+        className={locked ? 'btn-ghost btn-small' : 'btn-primary btn-small'}
+        disabled={locked}
+        aria-label={`${path.actionLabel}: ${path.title}`}
+        onClick={() => onChoose(path.id)}
+      >
+        {path.actionLabel}
+      </button>
+    </li>
+  )
+}

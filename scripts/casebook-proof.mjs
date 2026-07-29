@@ -1,0 +1,119 @@
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+
+const [seal, reveal, path, crew, crewRegistry, story, app, css, workspace] = await Promise.all([
+  readFile(new URL('../src/EvidenceSeal.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/BadgeReveal.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/CasebookPath.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/characters/DeskCrew.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/characters/desk-crew.ts', import.meta.url), 'utf8'),
+  readFile(new URL('../src/star67-story.ts', import.meta.url), 'utf8'),
+  readFile(new URL('../src/App.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/styles.css', import.meta.url), 'utf8'),
+  readFile(new URL('../src/Workspace.tsx', import.meta.url), 'utf8'),
+])
+
+let passed = 0
+const check = (name, proof) => {
+  proof()
+  passed += 1
+  console.log(`  ✓ ${name}`)
+}
+
+check('named semantic component exports', () => {
+  assert.match(seal, /export function EvidenceSeal/)
+  assert.match(path, /export function CasebookPath/)
+  assert.match(crew, /export function DeskCrew/)
+})
+
+check('seal reveal is caller-gated and earned-only', () => {
+  assert.match(seal, /const reveal = earned && animate/)
+  assert.match(seal, /data-reveal=\{reveal \? 'true' : 'false'\}/)
+  assert.match(reveal, /animateReveal = false/)
+  assert.match(reveal, /&& animateReveal/)
+  assert.match(reveal, /CareerDossier selects at most one genuinely new reveal/)
+})
+
+check('path advance is tied to one explicit chapter id', () => {
+  assert.match(path, /chapter\.id === animateChapterId/)
+  assert.match(path, /data-advance=\{advance \? 'true' : 'false'\}/)
+})
+
+check('Star67 desk crew is exactly six named, contextual characters', () => {
+  for (const name of ['Riff', 'Rex', 'Coco', 'Zi', 'Fin', 'Frosty']) assert.match(crewRegistry, new RegExp(`name: '${name}'`))
+  assert.match(crewRegistry, /DESK_CREW_ORDER[^\n]*\['riff', 'rex', 'coco', 'zi', 'fin', 'frosty'\]/)
+  assert.match(crew, /aria-label="Meet the Star67 desk crew"/)
+  assert.match(crew, /deskCrewAlt\(character\)/)
+  assert.match(css, /\.desk-crew__portrait-frame img[^}]*object-fit:\s*contain/)
+})
+
+check('desk crew portraits are source-defined SVG data, not private binary art', () => {
+  assert.match(crewRegistry, /function publicPortrait/)
+  assert.match(crewRegistry, /data:image\/svg\+xml/)
+  assert.doesNotMatch(crewRegistry, /\/characters\/desk-crew\/base\//)
+})
+
+check('Riff character canon stays consistent in the first-run story', () => {
+  assert.match(story, /name: 'Riff'/)
+  assert.match(story, /pronouns: 'she\/her'/)
+  assert.match(app, /She opens the/)
+  assert.doesNotMatch(app, /Riff[\s\S]{0,160}\bHe\b/)
+})
+
+check('motion is one-shot and within the approved window', () => {
+  assert.match(css, /casebook-seal-delivered 640ms/)
+  assert.match(css, /casebook-path-advance 620ms/)
+  const casebookCss = css.slice(css.indexOf('career casebook'))
+  assert.doesNotMatch(casebookCss, /animation[^;]*infinite/)
+})
+
+check('reduced motion has explicit static final states', () => {
+  const reduced = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'))
+  assert.match(reduced, /evidence-seal--reveal[\s\S]*animation: none/)
+  assert.match(reduced, /casebook-path__chapter\[data-advance='true'\][\s\S]*animation: none/)
+  assert.match(reduced, /stroke-dashoffset: 0/)
+})
+
+check('small buttons and dossier tabs keep visible keyboard targets', () => {
+  assert.match(css, /\.btn-small \{[^}]*min-height: 44px/)
+  assert.match(css, /\.tab \{[^}]*min-height: 44px/)
+  assert.match(css, /\.tab:focus-visible/)
+})
+
+check('narrow screens keep Database objects in a viewport-safe drawer', () => {
+  const narrow = css.slice(css.indexOf('@media (max-width: 900px)'))
+  assert.match(workspace, /database-navigator__mobile-open/)
+  assert.match(workspace, /Open database objects/)
+  assert.match(narrow, /\.database-navigator\[data-drawer-open='true'\][\s\S]*?width: min\(380px, 100vw\)/)
+  assert.match(narrow, /\.database-navigator__backdrop[\s\S]*?position: fixed/)
+  assert.doesNotMatch(css, /Pivot needs a bigger desk/i)
+})
+
+check('career dossier layout is styled, not bare unstyled markup', () => {
+  assert.match(css, /\.career-dossier\s*\{/)
+  assert.match(css, /\.dossier-hero\s*\{/)
+  assert.match(css, /\.evidence-seal-grid\s*\{[^}]*grid/)
+  assert.match(css, /\.company-card-grid\s*\{[^}]*grid/)
+  assert.match(css, /\.company-card\s*\{/)
+  assert.match(css, /\.company-status\s*\{/)
+  assert.match(css, /data-readiness='audition-ready'/)
+  assert.match(css, /data-readiness='practice-complete'/)
+})
+
+check('local save state is plain copy while actionable sync states keep emphasis', () => {
+  assert.match(css, /\.topbar-runtime\s*\{[^}]*color:\s*var\(--ink-faint\)/)
+  assert.doesNotMatch(css, /\.topbar-runtime\s*\{[^}]*background:/)
+  assert.match(css, /\.topbar-sync\s*\{[^}]*background:\s*var\(--amber-soft\)/)
+  assert.match(css, /\.topbar-sync--conflict\s*\{[^}]*background:\s*var\(--clay-soft\)/)
+  assert.match(css, /\.topbar-runtime, \.topbar-sync[\s\S]*?text-overflow:\s*ellipsis/)
+})
+
+check('narrow casebook stacks path, seals, and company cards', () => {
+  const narrow = css.slice(css.indexOf('@media (max-width: 520px)'))
+  assert.match(narrow, /\.dossier-hero\s*\{[^}]*grid-template-columns:\s*1fr/)
+  assert.match(narrow, /\.evidence-seal-grid[\s\S]*?grid-template-columns:\s*1fr/)
+  assert.match(narrow, /\.company-card-grid[\s\S]*?grid-template-columns:\s*1fr/)
+  assert.match(narrow, /\.casebook-path__list\s*\{[^}]*flex-direction:\s*column/)
+})
+
+console.log(`Casebook visual contract: ${passed}/${passed}`)

@@ -1,0 +1,9 @@
+node_modules
+dist
+public/data/
+*.local
+nohup.out
+.vercel
+tsconfig.tsbuildinfo
+probe.png
+output/

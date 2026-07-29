@@ -1,0 +1,614 @@
+.relationship-canvas,
+.relationship-canvas * {
+  box-sizing: border-box;
+}
+
+.relationship-canvas {
+  display: flex;
+  min-width: 0;
+  min-height: 540px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line, #ded7ca);
+  border-radius: 12px;
+  background: var(--paper-raised, #fffdf8);
+  box-shadow: 0 3px 18px rgba(60, 48, 30, 0.08);
+  color: var(--ink, #211d16);
+  font-family: var(--sans, ui-sans-serif, system-ui, sans-serif);
+}
+
+.relationship-canvas__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 15px 17px 13px;
+  border-bottom: 1px solid var(--line, #ded7ca);
+}
+
+.relationship-canvas__heading {
+  min-width: 0;
+}
+
+.relationship-canvas__heading > span {
+  color: var(--green, #1b6e53);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.relationship-canvas__heading h2 {
+  margin: 2px 0 0;
+  font: 750 18px/1.25 var(--sans, ui-sans-serif, system-ui, sans-serif);
+}
+
+.relationship-canvas__heading p {
+  max-width: 710px;
+  margin: 4px 0 0;
+  color: var(--ink-faint, #776f63);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.relationship-canvas__summary {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: 5px;
+  color: var(--ink-faint, #776f63);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.relationship-canvas__summary strong {
+  color: var(--ink-soft, #5d574f);
+  font: 750 11px var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+.relationship-canvas__toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--line, #ded7ca);
+  background: var(--paper-sunken, #f2ede3);
+}
+
+.relationship-canvas__search {
+  position: relative;
+  z-index: 12;
+  min-width: min(420px, 58%);
+}
+
+.relationship-canvas__search label {
+  display: block;
+  margin: 0 0 4px;
+  color: var(--ink-soft, #504a41);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.025em;
+}
+
+.relationship-canvas__search > div {
+  display: flex;
+}
+
+.relationship-canvas__search input {
+  min-width: 0;
+  width: 100%;
+  height: 34px;
+  border: 1px solid var(--line, #ded7ca);
+  border-right: 0;
+  border-radius: 6px 0 0 6px;
+  outline: none;
+  background: var(--paper-raised, #fffdf8);
+  padding: 0 10px;
+  color: var(--ink, #211d16);
+  font: 12px var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+.relationship-canvas__search input:focus {
+  border-color: var(--green, #1b6e53);
+  box-shadow: inset 0 0 0 1px var(--green, #1b6e53);
+}
+
+.relationship-canvas__search button,
+.relationship-canvas__zoom button,
+.relationship-canvas__search-results button,
+.relationship-canvas__card-header button,
+.relationship-canvas__list button {
+  border: 1px solid var(--line, #ded7ca);
+  background: var(--paper-raised, #fffdf8);
+  color: var(--green, #1b6e53);
+  cursor: pointer;
+  font-family: var(--sans, ui-sans-serif, system-ui, sans-serif);
+  font-weight: 750;
+}
+
+.relationship-canvas__search button {
+  min-width: 64px;
+  border-radius: 0 6px 6px 0;
+  font-size: 11px;
+}
+
+.relationship-canvas button:hover:not(:disabled) {
+  border-color: var(--green, #1b6e53);
+  background: var(--green-soft, #e5f3ed);
+}
+
+.relationship-canvas button:active:not(:disabled) {
+  background: color-mix(in srgb, var(--green-soft, #e5f3ed) 72%, var(--green, #1b6e53));
+}
+
+.relationship-canvas button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.relationship-canvas button:focus-visible,
+.relationship-canvas input:focus-visible,
+.relationship-canvas__card:focus-visible,
+.relationship-canvas__list > article:focus-visible {
+  z-index: 8;
+  outline: 3px solid var(--green, #1b6e53);
+  outline-offset: 2px;
+}
+
+.relationship-canvas__zoom {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+}
+
+.relationship-canvas__zoom button {
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 6px;
+  padding: 0 9px;
+  font-size: 11px;
+}
+
+.relationship-canvas__zoom button[aria-label] {
+  padding: 0;
+  font-size: 17px;
+}
+
+.relationship-canvas__zoom output {
+  min-width: 45px;
+  color: var(--ink-soft, #504a41);
+  font: 750 11px/1 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  text-align: center;
+}
+
+.relationship-canvas__search-results {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 5px);
+  left: 0;
+  display: flex;
+  width: min(560px, calc(100vw - 48px));
+  max-height: min(180px, 38vh);
+  flex-wrap: wrap;
+  gap: 5px;
+  overflow: auto;
+  padding: 7px 11px;
+  border: 1px solid var(--line, #ded7ca);
+  border-radius: 8px;
+  background: var(--paper-raised, #fffdf8);
+  box-shadow: 0 10px 28px rgba(55, 44, 27, 0.18);
+}
+
+.relationship-canvas__search-results button {
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font: 700 10.5px var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+.relationship-canvas__search-results p {
+  margin: 4px 0;
+  color: var(--ink-faint, #776f63);
+  font-size: 11px;
+}
+
+.relationship-canvas__warning {
+  margin: 0;
+  border-bottom: 1px solid #e9cf92;
+  background: #fff4d9;
+  padding: 7px 12px;
+  color: #6e4b05;
+  font-size: 11px;
+}
+
+.relationship-canvas__viewport {
+  position: relative;
+  flex: 1;
+  min-height: 420px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background-color: var(--paper-sunken, #f2ede3);
+  background-image:
+    linear-gradient(rgba(88, 74, 50, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(88, 74, 50, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+  scrollbar-gutter: stable;
+}
+
+.relationship-canvas__scaled-world {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.relationship-canvas__world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.relationship-canvas__edges {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.relationship-canvas__edges path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--green, #1b6e53) 70%, #fff);
+  stroke-linecap: round;
+  stroke-width: 2.25;
+}
+
+.relationship-canvas__edges circle {
+  fill: var(--paper-raised, #fffdf8);
+  stroke: var(--green, #1b6e53);
+  stroke-width: 2;
+}
+
+.relationship-canvas__card {
+  position: absolute;
+  z-index: 2;
+  width: 296px;
+  height: var(--card-height);
+  overflow: hidden;
+  border: 1px solid var(--line, #ded7ca);
+  border-radius: 10px;
+  outline: none;
+  background: var(--paper-raised, #fffdf8);
+  box-shadow: 0 5px 18px rgba(55, 44, 27, 0.11);
+}
+
+.relationship-canvas__card--focused {
+  z-index: 3;
+  border-color: var(--green, #1b6e53);
+  box-shadow: 0 0 0 3px rgba(27, 110, 83, 0.14), 0 8px 22px rgba(55, 44, 27, 0.15);
+}
+
+.relationship-canvas__card-header {
+  display: flex;
+  height: 76px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line, #ded7ca);
+  background: linear-gradient(135deg, var(--green-soft, #e5f3ed), var(--paper-raised, #fffdf8));
+  padding: 12px 11px 9px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.relationship-canvas__card-header:active {
+  cursor: grabbing;
+}
+
+.relationship-canvas__card-header > div {
+  min-width: 0;
+}
+
+.relationship-canvas__card-header h3 {
+  overflow: hidden;
+  margin: 0;
+  color: var(--ink, #211d16);
+  font: 800 12.5px/1.25 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.relationship-canvas__card-header p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 5px 0 0;
+  color: var(--ink-faint, #776f63);
+  font-size: 10.5px;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.relationship-canvas__card-header button {
+  flex: 0 0 auto;
+  min-height: 28px;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 10.5px;
+}
+
+.relationship-canvas__fields {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.relationship-canvas__fields li {
+  position: relative;
+  display: flex;
+  height: 35px;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line, #ded7ca);
+  padding: 0 13px;
+  background: var(--paper-raised, #fffdf8);
+}
+
+.relationship-canvas__fields li:last-child {
+  border-bottom: 0;
+}
+
+.relationship-canvas__fields li:nth-child(even) {
+  background: color-mix(in srgb, var(--paper-sunken, #f2ede3) 44%, var(--paper-raised, #fffdf8));
+}
+
+.relationship-canvas__fields code {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink-soft, #504a41);
+  font: 11px var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.relationship-canvas__fields span {
+  margin-left: auto;
+  color: var(--ink-faint, #776f63);
+  font: 9px var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  text-transform: uppercase;
+}
+
+.relationship-canvas__fields i {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--green, #1b6e53);
+  box-shadow: 0 0 0 2px var(--paper-raised, #fffdf8);
+}
+
+.relationship-canvas__field--joined code {
+  color: var(--green, #1b6e53);
+  font-weight: 750;
+}
+
+.relationship-canvas__field--focused {
+  box-shadow: inset 4px 0 var(--green, #1b6e53);
+  background: var(--green-soft, #e5f3ed) !important;
+}
+
+.relationship-canvas__footer {
+  border-top: 1px solid var(--line, #ded7ca);
+  padding: 7px 12px;
+  color: var(--ink-faint, #776f63);
+  font-size: 10.5px;
+}
+
+.relationship-canvas__list {
+  display: none;
+}
+
+.relationship-canvas__status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.relationship-canvas__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .relationship-canvas {
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .relationship-canvas__header,
+  .relationship-canvas__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .relationship-canvas__summary {
+    align-self: flex-start;
+  }
+
+  .relationship-canvas__search {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .relationship-canvas__zoom {
+    display: none;
+  }
+
+  .relationship-canvas__viewport,
+  .relationship-canvas__footer,
+  .relationship-canvas > .relationship-canvas__sr-only {
+    display: none;
+  }
+
+  .relationship-canvas__list {
+    display: grid;
+    gap: 11px;
+    padding: 11px;
+    background: var(--paper-sunken, #f2ede3);
+  }
+
+  .relationship-canvas__list > article,
+  .relationship-canvas__path-list {
+    scroll-margin-top: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line, #ded7ca);
+    border-radius: 9px;
+    background: var(--paper-raised, #fffdf8);
+  }
+
+  .relationship-canvas__list-card--focused {
+    border-color: var(--green, #1b6e53) !important;
+    box-shadow: 0 0 0 3px rgba(27, 110, 83, 0.14);
+  }
+
+  .relationship-canvas__list article > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid var(--line, #ded7ca);
+    background: var(--green-soft, #e5f3ed);
+    padding: 11px;
+  }
+
+  .relationship-canvas__list h3 {
+    margin: 0;
+    font: 800 12px/1.3 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  }
+
+  .relationship-canvas__list article header p {
+    margin: 4px 0 0;
+    color: var(--ink-faint, #776f63);
+    font-size: 10.5px;
+  }
+
+  .relationship-canvas__list article > p,
+  .relationship-canvas__path-list > p {
+    margin: 0;
+    padding: 10px 11px;
+    border-bottom: 1px solid var(--line, #ded7ca);
+    color: var(--ink-soft, #504a41);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .relationship-canvas__list button {
+    flex: 0 0 auto;
+    min-height: 30px;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 10.5px;
+  }
+
+  .relationship-canvas__list dl {
+    margin: 0;
+  }
+
+  .relationship-canvas__list dl > div {
+    display: grid;
+    grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.4fr);
+    gap: 10px;
+    padding: 8px 11px;
+    border-bottom: 1px solid var(--line, #ded7ca);
+  }
+
+  .relationship-canvas__list dl > div:last-child {
+    border-bottom: 0;
+  }
+
+  .relationship-canvas__list-field--focused {
+    box-shadow: inset 4px 0 var(--green, #1b6e53);
+    background: var(--green-soft, #e5f3ed);
+  }
+
+  .relationship-canvas__list dt {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--green, #1b6e53);
+    font: 750 10.5px/1.35 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  }
+
+  .relationship-canvas__list dt small {
+    display: block;
+    margin-top: 2px;
+    color: var(--ink-faint, #776f63);
+    font-size: 8.5px;
+    font-weight: 600;
+  }
+
+  .relationship-canvas__list dd {
+    margin: 0;
+    color: var(--ink-soft, #504a41);
+    font-size: 10.5px;
+    line-height: 1.4;
+  }
+
+  .relationship-canvas__path-list h3 {
+    padding: 11px;
+    border-bottom: 1px solid var(--line, #ded7ca);
+    background: var(--green-soft, #e5f3ed);
+  }
+
+  .relationship-canvas__path-list ul {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .relationship-canvas__path-list li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 7px;
+    align-items: center;
+    padding: 8px 11px;
+    border-bottom: 1px solid var(--line, #ded7ca);
+  }
+
+  .relationship-canvas__path-list li:last-child {
+    border-bottom: 0;
+  }
+
+  .relationship-canvas__path-list code {
+    overflow-wrap: anywhere;
+    color: var(--ink-soft, #504a41);
+    font: 9.5px/1.35 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .relationship-canvas * {
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,62 @@
+import { DATA, type CompiledMission } from '../../missions'
+import type { ProgressV2 } from '../../progress-store'
+
+export interface ParklineScenario { id: string; title: string; brief: string; missionIds: readonly string[] }
+
+export const PARKLINE_SCENARIOS: readonly ParklineScenario[] = [
+  { id: 'first-week', title: 'Your first week at Star67', brief: 'Learn the warehouse, size the business, and hand the CFO a clean first read.', missionIds: ['m01', 'm02', 'm03', 'm04', 'm05'] },
+  { id: 'board-sprint', title: 'Board reporting sprint', brief: 'Turn operating data into a nine-part revenue, plan, and trend readout.', missionIds: ['m06', 'm07', 'm08', 'm09', 'm10', 'm11', 'm12', 'm13', 'm14'] },
+  { id: 'planning-close', title: 'Planning and close cycle', brief: 'Work a twelve-part arc from budget pressure through workforce, close, and retention.', missionIds: ['m09', 'm10', 'm11', 'm12', 'm13', 'm14', 'm15', 'm16', 'm17', 'm18', 'm19', 'm20'] },
+  { id: 'forecast-handoff', title: 'Take over the forecast', brief: 'Build and package the revenue, concentration, and people-cost baselines for a clean operating handoff.', missionIds: ['m21', 'm22', 'm23', 'm24'] },
+  { id: 'close-restatement', title: 'Close the restatement', brief: 'Reopen a locked close, prove the late journal, trace its owners, and quantify the board-metric restatement.', missionIds: ['m25', 'm26', 'm27', 'm28', 'm29'] },
+  { id: 'vendor-operating-review', title: 'Run the vendor operating review', brief: 'Size the vendor book, repair supplier identity, map concentration and loaded payment terms, explain changes, and route the decisions.', missionIds: ['m30', 'm31', 'm32', 'm33', 'm34', 'm35', 'm36'] },
+  { id: 'quarterly-operating-review', title: 'Run the quarterly operating review', brief: 'Build the P&L, explain investment and leverage, measure workforce and GTM efficiency, and package the CFO readout.', missionIds: ['m37', 'm38', 'm39', 'm40', 'm41', 'm42'] },
+  { id: 'customer-retention-council', title: 'Lead the customer retention council', brief: 'Measure gross retention, explain realized downside, route the account and CSM queues, and package the council readout.', missionIds: ['m43', 'm44', 'm45', 'm46', 'm47', 'm48', 'm49'] },
+  { id: 'workforce-planning-council', title: 'Run the workforce planning council', brief: 'Reconcile roster and payroll, map workforce flows and cost exposure, close the payroll control, and package the council readout.', missionIds: ['m50', 'm51', 'm52', 'm53', 'm54', 'm55', 'm56', 'm57', 'm58'] },
+  { id: 'regional-revenue-council', title: 'Lead the regional revenue council', brief: 'Map the current geographic book, explain movement and revenue mix, test concentration and cohort durability, audit assignment coverage, and package the council readout.', missionIds: ['m59', 'm60', 'm61', 'm62', 'm63', 'm64', 'm65', 'm66', 'm67'] },
+  { id: 'midyear-plan-checkpoint', title: 'Run the midyear plan checkpoint', brief: 'Validate the loaded plan, reconcile H1 performance, isolate the operating drivers and owners, and package the checkpoint handoff.', missionIds: ['m68', 'm69', 'm70', 'm71', 'm72', 'm73', 'm74', 'm75', 'm76', 'm77'] },
+  { id: 'daily-revenue-cadence', title: 'Read the daily revenue cadence', brief: 'Build a complete H1 calendar spine, trace weekday and calendar-day patterns, measure rolling and month-end cadence, and package the daily revenue readout.', missionIds: ['m78', 'm79', 'm80', 'm81', 'm82', 'm83', 'm84', 'm85'] },
+  { id: 'org-manager-review', title: 'Audit the manager map', brief: 'Set the active roster boundary, inspect reporting edges, expose coding gaps, attach June people cost, and package the org-data review.', missionIds: ['m86', 'm87', 'm88', 'm89', 'm90', 'm91', 'm92'] },
+  { id: 'seat-book-review', title: 'Review the licensed-seat book', brief: 'Set the licensed-seat baseline, build the year-over-year customer bridge, read ARR and recognized revenue per licensed seat, size within-plan concentration, clear the latest as-of assignment review queue, and package the CFO handoff.', missionIds: ['m93', 'm94', 'm95', 'm96', 'm97', 'm98', 'm99'] },
+  { id: 'arr-subledger-control', title: 'Control the ARR event ledger', brief: 'Prove event identity and arithmetic, test every customer chain and loaded month, reconcile ending customer states, route material movement review, and package an internal loaded-data control handoff.', missionIds: ['m100', 'm101', 'm102', 'm103', 'm104', 'm105', 'm106', 'm107', 'm108'] },
+  { id: 'customer-lifecycle-council', title: 'Lead the customer lifecycle council', brief: 'Set age-based eligibility, compare maturity and tenure, normalize lifecycle events by exposure, route the mature-book review, and package a bounded council handoff.', missionIds: ['m109', 'm110', 'm111', 'm112', 'm113', 'm114', 'm115', 'm116', 'm117'] },
+  { id: 'customer-ownership-control', title: 'Control the customer ownership history', brief: 'Profile the assignment log, validate owner and customer effective dates, reconstruct bounded coverage and gaps, route material exceptions, and package the control handoff.', missionIds: ['m118', 'm119', 'm120', 'm121', 'm122', 'm123', 'm124', 'm125', 'm126', 'm127'] },
+  { id: 'reforecast-outcome-review', title: 'Review the FY2025 Q2 Reforecast', brief: 'Validate the uploaded reforecast, explain what changed from the original plan, test both versions against actuals, and route the rows that need follow-up.', missionIds: ['m128', 'm129', 'm130', 'm131', 'm132', 'm133', 'm134', 'm135', 'm136'] },
+  { id: 'shared-services-allocation-review', title: 'Run the shared-services allocation review', brief: 'Define the H1 pool, compare paid-head and payroll drivers, conserve every cent, explain method sensitivity, and package the controlled handoff.', missionIds: ['m137', 'm138', 'm139', 'm140', 'm141', 'm142', 'm143', 'm144', 'm145'] },
+  { id: 'cost-to-serve-review', title: 'Build the cost-to-serve review', brief: 'Scope H1 revenue and costs, choose explicit allocation drivers, conserve every cent, test policy sensitivity, and route a bounded customer review.', missionIds: ['m146', 'm147', 'm148', 'm149', 'm150', 'm151', 'm152', 'm153', 'm154', 'm155'] },
+  { id: 'contractor-consulting-cost-review', title: 'Review contractor and consulting cost', brief: 'Reconcile payroll contractors and consulting vendors as separate source populations, compare actual to plan, test concentration, and package a bounded external-labor handoff.', missionIds: ['m156', 'm157', 'm158', 'm159', 'm160', 'm161', 'm162'] },
+  { id: 'travel-expense-operating-review', title: 'Run the travel and expense operating review', brief: 'Control the H1 T&E source, reconcile travel and meals to plan, explain cadence and ownership, preserve unsupported employee populations, and package a bounded operating handoff.', missionIds: ['m163', 'm164', 'm165', 'm166', 'm167', 'm168', 'm169', 'm170'] },
+  { id: 'revenue-close-usage-review', title: 'Close the subscription and usage revenue book', brief: 'Control the H1 revenue boundary, reconcile subscription revenue to the snapshot, test usage coverage and plan variance, read label mix and concentration, then route a bounded cross-functional handoff.', missionIds: ['m171', 'm172', 'm173', 'm174', 'm175', 'm176', 'm177', 'm178', 'm179'] },
+  { id: 'h1-pnl-plan-variance-review', title: 'Close the H1 P&L against plan', brief: 'Set the P&L account-type boundary, read the revenue, COGS, and Opex variance, bridge gross margin and operating result, isolate the divisional and monthly Opex drivers, route the material account queue, and package the Finance leadership handoff.', missionIds: ['m180', 'm181', 'm182', 'm183', 'm184', 'm185', 'm186', 'm187'] },
+  { id: 'arr-retention-review', title: 'Walk the net/gross ARR retention book', brief: 'Walk the H1 ARR bridge by movement type, compute gross and net dollar retention, isolate plan-level churn concentration and monthly cadence, separate new logos from reactivations, net expansion against contraction, route the top dollars-at-risk churn queue, and package the Customer Success and Finance handoff.', missionIds: ['m188', 'm189', 'm190', 'm191', 'm192', 'm193', 'm194', 'm195'] },
+  { id: 'monthly-pnl-trend-review', title: 'Read the monthly P&L trend and operating leverage', brief: 'Build the six-month P&L trend, read the gross-margin cadence, isolate the March Opex spike and its divisional attribution, measure year-over-year operating leverage, read the monthly revenue-versus-Opex growth spread, compare the March spike to the prior year, and package the Finance leadership trend handoff.', missionIds: ['m196', 'm197', 'm198', 'm199', 'm200', 'm201', 'm202', 'm203'] },
+  { id: 'payroll-bridge-review', title: 'Bridge recognized GL comp to loaded payroll', brief: 'Set the GL compensation-account boundary, bridge recognized comp to loaded payroll total comp, decompose loaded cost into its five components, compute loaded cost per head and per employee-month, read the divisional and monthly cadence, and tie the bridge in a Finance and People handoff.', missionIds: ['m204', 'm205', 'm206', 'm207', 'm208', 'm209', 'm210'] },
+  { id: 'revenue-arr-reconciliation', title: 'Reconcile recognized revenue to the ARR book', brief: 'Set the revenue-account boundary, compute the ARR-implied subscription run-rate, reconcile GL subscription to ARR month by month, isolate the metered usage residual, read the ARR book concentration, bridge plan to actual to ARR, and package the cross-book reconciliation handoff.', missionIds: ['m211', 'm212', 'm213', 'm214', 'm215', 'm216', 'm217'] },
+  { id: 'cohort-tenure-review', title: 'Read customer tenure and cohort LTV', brief: 'Define acquisition cohorts by first new-logo year, read the cohort survival curve to June 2026, measure the veteran 2021 cohort net ARR retention, decompose expansion versus churn, read the year-over-year acquisition trend, and package the cohort-tenure handoff.', missionIds: ['m218', 'm219', 'm220', 'm221', 'm222', 'm223'] },
+  { id: 'payment-terms-review', title: 'Measure vendor payment-terms working-capital exposure', brief: 'Set the payment-terms spend boundary, compute the spend-weighted average payment days, route the top vendors by spend, measure the working-capital exposure by terms bucket, profile the slowest-paying Net 45 cohort, compare terms mix by vendor count versus spend, and package the Procurement and Finance handoff.', missionIds: ['m224', 'm225', 'm226', 'm227', 'm228', 'm229', 'm230'] },
+  { id: 'plan-mix-review', title: 'Read the customer-segment plan-mix ARR', brief: 'Set the plan-segment ARR boundary, read the H1 net ARR movement by plan, measure the value-versus-volume gap by plan, read the logo churn rate by plan, read the monthly ARR trend by plan, and package the segment handoff.', missionIds: ['m231', 'm232', 'm233', 'm234', 'm235', 'm236'] },
+  { id: 'comp-band-review', title: 'Review the divisional comp-band mix', brief: 'Rank divisions by loaded cost per head, read the comp-mix by division, isolate the commission-earning cohort, measure bonus concentration by division, route the top departments by people cost, and package the comp-band handoff.', missionIds: ['m237', 'm238', 'm239', 'm240', 'm241', 'm242'] },
+]
+
+export function scenarioById(id: string | null | undefined): ParklineScenario | undefined {
+  return id ? PARKLINE_SCENARIOS.find((scenario) => scenario.id === id) : undefined
+}
+
+export interface ScenarioPart { part: number; mission: CompiledMission; status: 'locked' | 'open' | 'done' }
+
+export function scenarioParts(scenario: ParklineScenario, progress: ProgressV2): ScenarioPart[] {
+  let priorPartsDone = true
+  return scenario.missionIds.map((missionId, index) => {
+    const mission = DATA.missions.find((candidate) => candidate.id === missionId)
+    if (!mission) throw new Error(`Scenario ${scenario.id} is missing mission ${missionId}`)
+    const done = !!progress.pulls[missionId]
+    const status: ScenarioPart['status'] = done ? 'done' : priorPartsDone ? 'open' : 'locked'
+    priorPartsDone = priorPartsDone && done
+    return { part: index + 1, mission, status }
+  })
+}
+
+export function scenarioProgress(scenario: ParklineScenario, progress: ProgressV2) {
+  const parts = scenarioParts(scenario, progress)
+  return { completed: parts.filter((part) => part.status === 'done').length, total: parts.length, next: parts.find((part) => part.status === 'open')?.mission ?? null, parts }
+}

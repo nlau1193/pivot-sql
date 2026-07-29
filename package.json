@@ -1,0 +1,51 @@
+{
+  "name": "learn-sql",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "predev": "npm run data",
+    "dev": "vite",
+    "data": "node scripts/generate-data.mjs",
+    "missions": "node scripts/build-missions.mjs",
+    "vendor:extensions": "node scripts/vendor-duckdb-extensions.mjs",
+    "errors": "node scripts/error-corpus.mjs",
+    "format": "node scripts/format-contract.mjs",
+    "determinism": "node scripts/check-determinism.mjs",
+    "pack": "node scripts/pack-manifest-contract.mjs",
+    "progression": "node scripts/progression-contract.mjs",
+    "casebook": "node scripts/casebook-proof.mjs",
+    "navigator": "node scripts/navigator-contract.mjs",
+    "progress": "node --experimental-vm-modules scripts/progress-v2-contract.mjs",
+    "test": "npm run determinism && npm run errors && npm run format && npm run pack && npm run progression && npm run casebook && npm run navigator && npm run progress",
+    "smoke": "node scripts/smoke.mjs",
+    "play": "node scripts/play-all.mjs",
+    "prebuild": "npm run data",
+    "build": "npm test && tsc -b && vite build",
+    "build:deploy": "npm run build",
+    "preview": "vite preview --port 5199"
+  },
+  "dependencies": {
+    "@codemirror/lang-sql": "^6.8.0",
+    "@duckdb/duckdb-wasm": "^1.29.0",
+    "@uiw/react-codemirror": "^4.23.7",
+    "apache-arrow": "^17.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@duckdb/node-api": "^1.2.1-alpha.16",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "playwright": "^1.61.1",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.7"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

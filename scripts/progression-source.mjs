@@ -1,0 +1,120 @@
+// Career Casebook progression source. This is authored evidence policy, not
+// mutable user state: the compiler validates every referenced mission,
+// audition, and company before the app can build.
+
+export const COMPETENCIES = [
+  { id: 'warehouse-basics', label: 'Warehouse basics', missionIds: ['m01', 'm02', 'm03', 'm04', 'm05'] },
+  { id: 'joins-and-grain', label: 'Joins and grain control', missionIds: ['m06', 'm07', 'm08'] },
+  { id: 'planning', label: 'Plan and variance ownership', missionIds: ['m09', 'm10'] },
+  { id: 'spend-margin', label: 'Spend and margin partnership', missionIds: ['m11', 'm12'] },
+  { id: 'time-series', label: 'Time-series analysis', missionIds: ['m13', 'm14'] },
+  { id: 'workforce', label: 'Workforce planning', missionIds: ['m15'], auditionIds: ['sim02'] },
+  { id: 'close', label: 'Close investigation', missionIds: ['m16', 'm19'] },
+  { id: 'retention', label: 'SaaS retention modeling', missionIds: ['m17', 'm18', 'm20'], auditionIds: ['sim01'] },
+  { id: 'forecast-handoff', label: 'Forecast handoff', missionIds: ['m21', 'm22', 'm23', 'm24'] },
+  { id: 'close-restatement', label: 'Close remediation', missionIds: ['m25', 'm26', 'm27', 'm28', 'm29'] },
+  { id: 'vendor-operations', label: 'Vendor operating review', missionIds: ['m30', 'm31', 'm32', 'm33', 'm34', 'm35', 'm36'] },
+  { id: 'operating-review', label: 'Quarterly operating review', missionIds: ['m37', 'm38', 'm39', 'm40', 'm41', 'm42'] },
+  { id: 'retention-council', label: 'Customer retention council', missionIds: ['m43', 'm44', 'm45', 'm46', 'm47', 'm48', 'm49'] },
+  { id: 'workforce-council', label: 'Workforce planning council', missionIds: ['m50', 'm51', 'm52', 'm53', 'm54', 'm55', 'm56', 'm57', 'm58'] },
+  { id: 'regional-revenue-council', label: 'Regional revenue council', missionIds: ['m59', 'm60', 'm61', 'm62', 'm63', 'm64', 'm65', 'm66', 'm67'] },
+  { id: 'midyear-plan-checkpoint', label: 'Midyear plan checkpoint', missionIds: ['m68', 'm69', 'm70', 'm71', 'm72', 'm73', 'm74', 'm75', 'm76', 'm77'] },
+  { id: 'daily-revenue-cadence', label: 'Daily revenue cadence', missionIds: ['m78', 'm79', 'm80', 'm81', 'm82', 'm83', 'm84', 'm85'] },
+  { id: 'org-manager-review', label: 'Org manager review', missionIds: ['m86', 'm87', 'm88', 'm89', 'm90', 'm91', 'm92'] },
+  { id: 'seat-book-review', label: 'Licensed-seat book review', missionIds: ['m93', 'm94', 'm95', 'm96', 'm97', 'm98', 'm99'] },
+  { id: 'arr-subledger-control', label: 'ARR event-ledger control', missionIds: ['m100', 'm101', 'm102', 'm103', 'm104', 'm105', 'm106', 'm107', 'm108'] },
+  { id: 'customer-lifecycle-council', label: 'Customer lifecycle council', missionIds: ['m109', 'm110', 'm111', 'm112', 'm113', 'm114', 'm115', 'm116', 'm117'] },
+  { id: 'customer-ownership-control', label: 'Customer ownership-history control', missionIds: ['m118', 'm119', 'm120', 'm121', 'm122', 'm123', 'm124', 'm125', 'm126', 'm127'] },
+  { id: 'reforecast-outcome-review', label: 'Reforecast outcome review', missionIds: ['m128', 'm129', 'm130', 'm131', 'm132', 'm133', 'm134', 'm135', 'm136'] },
+  { id: 'shared-services-allocation-review', label: 'Shared-services allocation review', missionIds: ['m137', 'm138', 'm139', 'm140', 'm141', 'm142', 'm143', 'm144', 'm145'] },
+  { id: 'cost-to-serve-review', label: 'Cost-to-serve review', missionIds: ['m146', 'm147', 'm148', 'm149', 'm150', 'm151', 'm152', 'm153', 'm154', 'm155'] },
+  { id: 'contractor-consulting-cost-review', label: 'Contractor and consulting cost review', missionIds: ['m156', 'm157', 'm158', 'm159', 'm160', 'm161', 'm162'] },
+  { id: 'travel-expense-operating-review', label: 'Travel and expense operating review', missionIds: ['m163', 'm164', 'm165', 'm166', 'm167', 'm168', 'm169', 'm170'] },
+  { id: 'revenue-close-usage-review', label: 'Revenue close and usage review', missionIds: ['m171', 'm172', 'm173', 'm174', 'm175', 'm176', 'm177', 'm178', 'm179'] },
+  { id: 'h1-pnl-plan-variance-review', label: 'H1 P&L plan-variance review', missionIds: ['m180', 'm181', 'm182', 'm183', 'm184', 'm185', 'm186', 'm187'] },
+  { id: 'arr-retention-review', label: 'Net/gross ARR retention review', missionIds: ['m188', 'm189', 'm190', 'm191', 'm192', 'm193', 'm194', 'm195'] },
+  { id: 'monthly-pnl-trend-review', label: 'Monthly P&L trend and operating-leverage review', missionIds: ['m196', 'm197', 'm198', 'm199', 'm200', 'm201', 'm202', 'm203'] },
+  { id: 'payroll-bridge-review', label: 'GL-to-payroll loaded-headcount-cost bridge', missionIds: ['m204', 'm205', 'm206', 'm207', 'm208', 'm209', 'm210'] },
+  { id: 'revenue-arr-reconciliation', label: 'Revenue-to-ARR reconciliation', missionIds: ['m211', 'm212', 'm213', 'm214', 'm215', 'm216', 'm217'] },
+  { id: 'cohort-tenure-review', label: 'Customer-tenure and cohort-LTV review', missionIds: ['m218', 'm219', 'm220', 'm221', 'm222', 'm223'] },
+  { id: 'payment-terms-review', label: 'Vendor payment-terms working-capital exposure review', missionIds: ['m224', 'm225', 'm226', 'm227', 'm228', 'm229', 'm230'] },
+  { id: 'plan-mix-review', label: 'Customer-segment plan-mix ARR review', missionIds: ['m231', 'm232', 'm233', 'm234', 'm235', 'm236'] },
+  { id: 'comp-band-review', label: 'GL-to-payroll divisional-mix comp-band review', missionIds: ['m237', 'm238', 'm239', 'm240', 'm241', 'm242'] },
+]
+
+const evidenceSeal = (id, title, competencyId, guideId, description) => {
+  const competency = COMPETENCIES.find((candidate) => candidate.id === competencyId)
+  if (!competency) throw new Error(`Evidence seal ${id} references missing competency ${competencyId}`)
+  return {
+    id,
+    title,
+    competencyId,
+    guideId,
+    description,
+    missionIds: [...competency.missionIds],
+    auditionIds: [...(competency.auditionIds ?? [])],
+  }
+}
+
+export const BADGES = [
+  evidenceSeal('warehouse-navigator', 'Warehouse Navigator', 'warehouse-basics', 'riff', 'Find your footing, read table grain, and pull trustworthy first answers.'),
+  evidenceSeal('join-guardian', 'Join Guardian', 'joins-and-grain', 'rex', 'Join business objects without multiplying, dropping, or misreading the book.'),
+  evidenceSeal('plan-owner', 'Plan Owner', 'planning', 'zi', 'Reconcile actuals to plan and route the decision instead of stopping at variance.'),
+  evidenceSeal('spend-margin-partner', 'Spend & Margin Partner', 'spend-margin', 'coco', 'Turn spend and margin detail into a partner-ready operating read.'),
+  evidenceSeal('time-series-operator', 'Time-Series Operator', 'time-series', 'fin', 'Build time-aware trends with explicit periods, boundaries, and comparisons.'),
+  evidenceSeal('workforce-planner', 'Workforce Planner', 'workforce', 'coco', 'Connect roster and people-cost evidence, then carry it through a full practice screen.'),
+  evidenceSeal('close-detective', 'Close Detective', 'close', 'rex', 'Trace close anomalies to their rows, timing, ownership, and quantified impact.'),
+  evidenceSeal('saas-retention-modeler', 'SaaS Retention Modeler', 'retention', 'fin', 'Model ARR movement and retention without hiding grain or cohort assumptions.'),
+  evidenceSeal('forecast-steward', 'Forecast Steward', 'forecast-handoff', 'zi', 'Package revenue, concentration, and people-cost baselines into an operating handoff.'),
+  evidenceSeal('restatement-controller', 'Restatement Controller', 'close-restatement', 'rex', 'Reopen a locked close, prove the correction, and control the restated narrative.'),
+  evidenceSeal('vendor-book-steward', 'Vendor Book Steward', 'vendor-operations', 'coco', 'Repair vendor identity, size concentration, and route supplier decisions.'),
+  evidenceSeal('operating-review-lead', 'Operating Review Lead', 'operating-review', 'riff', 'Build a controlled operating review from P&L structure through executive handoff.'),
+  evidenceSeal('retention-council-lead', 'Retention Council Lead', 'retention-council', 'fin', 'Explain realized retention downside and route the customer action queue.'),
+  evidenceSeal('workforce-council-lead', 'Workforce Council Lead', 'workforce-council', 'coco', 'Reconcile workforce flows, payroll exposure, and the council decision packet.'),
+  evidenceSeal('regional-revenue-lead', 'Regional Revenue Lead', 'regional-revenue-council', 'riff', 'Read regional mix, movement, concentration, and assignment coverage as one system.'),
+  evidenceSeal('midyear-plan-owner', 'Midyear Plan Owner', 'midyear-plan-checkpoint', 'zi', 'Validate the loaded plan, isolate drivers, and close the midyear ownership loop.'),
+  evidenceSeal('revenue-cadence-analyst', 'Revenue Cadence Analyst', 'daily-revenue-cadence', 'fin', 'Build a complete calendar spine and separate real cadence from calendar noise.'),
+  evidenceSeal('org-map-auditor', 'Org Map Auditor', 'org-manager-review', 'riff', 'Test reporting edges, manager coding, span, and people-cost exposure.'),
+  evidenceSeal('seat-economics-analyst', 'Seat Economics Analyst', 'seat-book-review', 'fin', 'Bridge licensed seats to ARR, revenue, concentration, and review ownership.'),
+  evidenceSeal('arr-ledger-controller', 'ARR Ledger Controller', 'arr-subledger-control', 'rex', 'Prove event identity, customer chains, loaded months, and ending ARR control.'),
+  evidenceSeal('lifecycle-analyst', 'Lifecycle Analyst', 'customer-lifecycle-council', 'frosty', 'Normalize lifecycle evidence by eligibility, maturity, tenure, and exposure.'),
+  evidenceSeal('ownership-history-steward', 'Ownership History Steward', 'customer-ownership-control', 'rex', 'Reconstruct bounded customer ownership, expose gaps, and route material exceptions.'),
+  evidenceSeal('reforecast-outcome-reviewer', 'Reforecast Outcome Reviewer', 'reforecast-outcome-review', 'zi', 'Validate planning artifacts, test population-sensitive outcomes, and route a denominator-complete review.'),
+  evidenceSeal('shared-services-allocation-steward', 'Allocation Method Steward', 'shared-services-allocation-review', 'coco', 'Define shared-service pools, compare defensible drivers, conserve the pool, and explain the decision impact.'),
+  evidenceSeal('cost-to-serve-modeler', 'Cost-to-Serve Modeler', 'cost-to-serve-review', 'fin', 'Build a controlled customer-month cost model, conserve shared pools, and separate modeled economics from observed behavior.'),
+  evidenceSeal('external-labor-cost-steward', 'External Labor Cost Steward', 'contractor-consulting-cost-review', 'coco', 'Reconcile payroll contractors and consulting vendors without blending source populations, then route the cost decision with explicit boundaries.'),
+  evidenceSeal('travel-expense-steward', 'Travel & Expense Steward', 'travel-expense-operating-review', 'coco', 'Control T&E source integrity, reconcile loaded actuals to plan, preserve unsupported exposure populations, and route a bounded FP&A, People, and Finance handoff.'),
+  evidenceSeal('usage-revenue-steward', 'Usage Revenue Steward', 'revenue-close-usage-review', 'fin', 'Control the revenue boundary, reconcile subscription and usage populations, preserve loaded-plan limits, and route a bounded Finance, Revenue, and Customer Success handoff.'),
+  evidenceSeal('pnl-close-lead', 'P&L Close Lead', 'h1-pnl-plan-variance-review', 'fin', 'Set the P&L account boundary, bridge actual to plan through gross margin and operating result, isolate the divisional and monthly Opex drivers, route the material account queue, and package a recognized-P&L leadership handoff.'),
+  evidenceSeal('arr-retention-lead', 'ARR Retention Lead', 'arr-retention-review', 'fin', 'Walk the ARR bridge by movement type, compute gross and net dollar retention from the starting book, isolate plan-level churn concentration and the top dollars-at-risk queue, and package a Customer Success and Finance retention handoff.'),
+  evidenceSeal('trend-leverage-lead', 'Trend & Leverage Lead', 'monthly-pnl-trend-review', 'fin', 'Build the monthly P&L trend, read the gross-margin cadence, isolate the recurring March Opex spike and its divisional attribution, measure year-over-year operating leverage, and package a recognized-P&L trend and leverage handoff.'),
+  evidenceSeal('payroll-bridge-lead', 'Payroll Bridge Lead', 'payroll-bridge-review', 'fin', 'Set the GL compensation-account boundary, bridge recognized comp to loaded payroll total, decompose loaded cost into its components, compute loaded cost per head and per employee-month, read the divisional and monthly cadence, and tie the bridge in a Finance and People handoff.'),
+  evidenceSeal('revenue-arr-lead', 'Revenue-ARR Reconciliation Lead', 'revenue-arr-reconciliation', 'fin', 'Set the revenue-account boundary, compute the ARR-implied subscription run-rate, reconcile GL subscription to ARR month by month, isolate the metered usage residual, read ARR book concentration, bridge plan to actual to ARR, and package the cross-book reconciliation handoff.'),
+  evidenceSeal('cohort-tenure-lead', 'Cohort & Tenure Lead', 'cohort-tenure-review', 'fin', 'Define acquisition cohorts by first new-logo year, read the cohort survival curve, measure veteran-cohort net ARR retention against opening, decompose the expansion-versus-churn drivers, read the year-over-year acquisition trend, and package the cohort-tenure handoff.'),
+  evidenceSeal('payment-terms-lead', 'Payment-Terms Lead', 'payment-terms-review', 'fin', 'Set the payment-terms spend boundary, compute the spend-weighted average payment days, route the top vendors by spend, measure the working-capital exposure by terms bucket, profile the slowest-paying cohort, compare terms mix by vendor count versus spend, and package the working-capital handoff.'),
+  evidenceSeal('plan-mix-lead', 'Plan-Mix Segment Lead', 'plan-mix-review', 'fin', 'Set the plan-segment ARR boundary, read the H1 net ARR movement by plan, measure the value-versus-volume gap, read the logo churn rate by plan, read the monthly ARR trend by plan, and package the segment handoff.'),
+  evidenceSeal('comp-band-lead', 'Comp-Band Lead', 'comp-band-review', 'fin', 'Rank divisions by loaded cost per head, read the comp-mix by division, isolate the commission-earning cohort, measure bonus concentration by division, route the top departments by people cost, and package the comp-band handoff.'),
+]
+
+// Stages are the highest threshold met. Thresholds are deliberately legible:
+// they describe capability, not an employment title or fake promotion.
+export const STAGES = [
+  { id: 'new-desk', title: 'New desk', requiredBadgeIds: [], requiredAuditionIds: [] },
+  { id: 'self-serve-operator', title: 'Self-serve operator', requiredBadgeIds: ['warehouse-navigator'], requiredAuditionIds: [] },
+  { id: 'finance-business-partner', title: 'Finance business partner', requiredBadgeIds: ['warehouse-navigator', 'join-guardian', 'plan-owner', 'spend-margin-partner'], requiredAuditionIds: [] },
+  { id: 'forecast-close-owner', title: 'Forecast & close owner', requiredBadgeIds: ['warehouse-navigator', 'join-guardian', 'plan-owner', 'spend-margin-partner', 'time-series-operator', 'workforce-planner', 'close-detective'], requiredAuditionIds: [] },
+  { id: 'screen-ready', title: 'Screen ready', requiredBadgeIds: ['warehouse-navigator', 'join-guardian', 'plan-owner', 'spend-margin-partner', 'time-series-operator', 'workforce-planner', 'close-detective', 'saas-retention-modeler'], requiredAuditionIds: [] },
+  { id: 'target-ready', title: 'Target ready', requiredBadgeIds: ['warehouse-navigator', 'join-guardian', 'plan-owner', 'spend-margin-partner', 'time-series-operator', 'workforce-planner', 'close-detective', 'saas-retention-modeler'], requiredAuditionIds: ['sim01', 'sim02', 'sim03'] },
+]
+
+export const COMPANY_CARDS = [
+  { company: '1Password', evidenceMissionIds: ['m08', 'm11', 'm16', 'm19'], auditionId: 'sim03' },
+  { company: 'Affirm', evidenceMissionIds: ['m04', 'm12'], auditionId: 'sim05' },
+  { company: 'Figma', evidenceMissionIds: ['m01', 'm17', 'm21', 'm24'], auditionId: 'sim04' },
+  { company: 'Harvey', evidenceMissionIds: ['m02', 'm05'], auditionId: null },
+  { company: 'Hightouch', evidenceMissionIds: ['m07', 'm08', 'm14', 'm18', 'm20', 'm21', 'm22'], auditionId: 'sim01' },
+  { company: 'Instacart', evidenceMissionIds: ['m03', 'm06'], auditionId: null },
+  { company: 'Cockroach Labs', evidenceMissionIds: ['m09'], auditionId: null },
+  { company: 'Datadog', evidenceMissionIds: ['m15', 'm23', 'm24'], auditionId: 'sim02' },
+  { company: 'Navan', evidenceMissionIds: ['m13', 'm17', 'm18'], auditionId: null },
+]

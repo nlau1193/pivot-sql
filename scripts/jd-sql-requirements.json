@@ -1,0 +1,65 @@
+[
+  {
+    "company": "1Password",
+    "title": "Senior Revenue Strategy Analyst",
+    "source_url": "https://jobs.1password.com/",
+    "captured_on": "2026-07-29",
+    "sql_lines": ["You should be just as comfortable debugging SQL as you are discussing pipeline risk with sales leadership"]
+  },
+  {
+    "company": "Affirm",
+    "title": "Strategic Finance Analyst II (Revenue)",
+    "source_url": "https://www.affirm.com/careers",
+    "captured_on": "2026-07-29",
+    "sql_lines": ["comfort with SQL, Sigma, Cursor and/or other data visualization tools"]
+  },
+  {
+    "company": "Figma",
+    "title": "Strategic Finance",
+    "source_url": "https://www.figma.com/careers/",
+    "captured_on": "2026-07-29",
+    "sql_lines": ["SQL/AI tooling experience and deep experience working with large data-sets"]
+  },
+  {
+    "company": "Harvey",
+    "title": "GTM Strategic Finance Lead",
+    "source_url": "https://www.harvey.ai/careers",
+    "captured_on": "2026-07-29",
+    "sql_lines": ["Comfortable in SQL or BI tools — you can pull your own data"]
+  },
+  {
+    "company": "Hightouch",
+    "title": "Strategic Finance Manager",
+    "source_url": "https://hightouch.com/careers",
+    "captured_on": "2026-07-29",
+    "sql_lines": ["comfort writing SQL and navigating a modern warehouse and BI stack"]
+  },
+  {
+    "company": "Instacart",
+    "title": "Senior Financial Analyst, Retailer",
+    "source_url": "https://instacart.careers/",
+    "captured_on": "2026-07-29",
+    "sql_lines": ["Proficiency in SQL for self-serve analysis"]
+  },
+  {
+    "company": "Cockroach Labs",
+    "title": "Revenue Operations Manager",
+    "source_url": "https://www.cockroachlabs.com/careers/",
+    "captured_on": "2026-07-29",
+    "sql_lines": ["Experience with SQL or other querying languages"]
+  },
+  {
+    "company": "Datadog",
+    "title": "FP&A Analyst - Data Insights",
+    "source_url": "https://careers.datadoghq.com/",
+    "captured_on": "2026-07-29",
+    "sql_lines": ["Interest in data analytics and experience using SQL, Python, R, or other data science tools"]
+  },
+  {
+    "company": "Navan",
+    "title": "Senior Revenue Operations Analyst, Data Quality",
+    "source_url": "https://navan.com/careers",
+    "captured_on": "2026-07-29",
+    "sql_lines": ["2-3+ years of experience developing complex SQL, including multi-table joins and analytical functions"]
+  }
+]
