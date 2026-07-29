@@ -1,53 +1,117 @@
 # Pivot
 
-Learn SQL by doing a realistic finance job.
+Hi, I’m Nicole. I built Pivot because learning SQL felt much harder than using
+SQL to answer an actual finance question.
 
-Pivot opens a fictional company's finance database in your browser and gives
-you a first query that already runs. From there, 200+ guided tasks build joins,
-time-series work, planning analysis, and interview confidence without turning
-the experience into a syntax textbook.
+Pivot gives you a fictional FP&A job, a realistic finance database, and a first
+query that already works. You learn by helping a company answer questions about
+revenue, budgets, headcount, customers, and operating performance—not by
+memorizing syntax in isolation.
 
-![Pivot's Star67 first day](public/pivot-social.png)
+![Your first day at Star67](public/pivot-social.png)
 
-The database and your progress stay in your browser. No account is required.
+Everything runs in your browser. There is no account, no personal data to
+upload, and no AI API to configure.
 
-## Welcome to Star67
+## Try your first task
 
-It is 2030, and companies have more AI agents doing work than people supervising
-it. *67 once hid who was calling. Star67 does the opposite for machine work:
-every AI action gets an identity, cost trace, data lineage, policy verdict, and
-business outcome. It is the system of record for autonomous work.
-
-Its platform subscription pays for governance; metered activity creates the
-usage business. That combination also creates a wonderfully difficult finance
-company. Product usage, ARR, and recognized revenue disagree. Customer
-ownership changes faster than the CRM. Hiring, contractors, and shared
-infrastructure all landed in a plan written for a smaller company.
-
-Before you touch the live 2030 plan, CFO Riff opens the warehouse frozen on
-June 30, 2026: the incident archive from the year those problems first became
-connected. Each task replays an archived operating request. You are not
-collecting arbitrary points; you are rebuilding the financial controls the
-company still uses.
-
-## Try it
-
-Choose **Open my desk** and run the query waiting for you. The first useful
-result arrives before you need to write SQL from scratch.
-
-## Run it locally
-
-You need Node.js 20 or newer.
+Download or clone this repository, open its folder in Terminal, and run:
 
 ```bash
 npm ci
 npm run dev
 ```
 
-The development command generates the fictional warehouse before starting the
-app. Open the local URL Vite prints.
+You need Node.js 20 or newer. Open the local address shown in Terminal, choose
+**Open my desk**, and press **Run** on the query waiting for you.
 
-For the full release floor:
+That is the whole setup. Pivot generates its fictional finance database
+automatically.
+
+## What you’ll practice
+
+Pivot currently includes:
+
+- 242 guided FP&A tasks
+- A deterministic fictional database with 2,930,845 rows
+- Projects covering revenue, planning, variance analysis, workforce costs,
+  retention, forecasting, and close
+- Plain-English error help
+- Saved SQL you can reuse
+- 37 skill badges backed by checked work
+- Five optional interview-practice sets
+
+You do not need to finish hundreds of lessons before accomplishing something
+useful. The first query is ready to run, and each task builds naturally from the
+work before it.
+
+There are no streaks, arbitrary points, or hidden readiness scores. Your
+progress is simply the work you have completed, the SQL you have saved, and the
+next skill you are building.
+
+## Welcome to Star67
+
+Pivot takes place at Star67, a fictional data company in 2030.
+
+Companies now have AI agents doing real work across their businesses, but they
+still need to know who authorized that work, what it cost, which data it used,
+and whether it produced a useful result. Star67 is the system of record for
+that activity.
+
+The name is a small reversal of `*67`: instead of hiding who is calling, Star67
+makes machine work accountable.
+
+You join the FP&A team during a difficult moment. Usage is growing quickly, ARR
+and recognized revenue do not agree, customer ownership keeps changing, and
+hiring has outpaced the plan. Before Finance updates the live 2030 forecast, you
+replay the company’s archived 2026 database and rebuild the controls the team
+needs.
+
+Every company, person, transaction, task, and result in Pivot is fictional. The
+practice is designed to feel realistic; it does not reproduce any real
+company’s private data or interview process.
+
+## Meet the Animina crew
+
+The crew is the heart of Pivot. These six hand-drawn guides began in the
+Animina character universe and now run the Star67 finance desk:
+
+- **Riff**, the giraffe CFO, helps with structure and relationships.
+- **Rex**, the rhino Controller, watches joins, duplicates, controls, and
+  missing values.
+- **Coco**, the dog People Partner, helps connect analysis to a clear business
+  explanation.
+- **Zi**, the penguin CEO, keeps the work focused on decisions and outcomes.
+- **Fin**, the shark Data Lead, cares about SQL correctness, data grain, and
+  reliable queries.
+- **Frosty**, the koala Recovery Coach, offers calm help when a query gets
+  stuck.
+
+They are not a second points system or decoration added after the fact. Each
+one represents a different kind of judgment that real finance work requires.
+
+Their exact visual identity is protected by a deterministic manifest and
+checksum contract. New poses start from an immutable character anchor, so a
+new illustration can be surprising without quietly turning Coco into a bird or
+Frosty into a teddy bear.
+
+The artwork is copyright First Bite Labs LLC and is included by permission. It
+is not covered by Pivot’s MIT License; see
+[`public/characters/desk-crew/ASSET_LICENSE.md`](public/characters/desk-crew/ASSET_LICENSE.md).
+
+## Private by design
+
+Pivot uses DuckDB inside a browser web worker. Your SQL, query results, saved
+work, progress, and built-in coaching interactions stay in your browser. The
+public version uses deterministic guidance written into the app, so coaching
+does not send a request to an external AI service.
+
+If you clear your browser storage, your local progress may be removed. Pivot
+includes a progress-code export so you can keep or move your work yourself.
+
+## Build and test it
+
+For the full local release check:
 
 ```bash
 npm test
@@ -55,35 +119,62 @@ npm run build
 npm run preview
 ```
 
-`npm test` checks deterministic data, error explanations, formatting, task
-packs, skill progress, navigation, and progress import.
-`npm run build` regenerates the warehouse, runs that suite, type-checks, and
-creates the production app.
+`npm test` checks deterministic data generation, error explanations,
+formatting, task packs, navigation, badge progression, progress import, and the
+six immutable crew identities.
 
-## Privacy
+For browser-level testing against the preview app:
 
-DuckDB runs locally in a web worker. Queries and results remain in the browser.
-The open-source release uses deterministic built-in coaching. No coaching
-request leaves the browser.
+```bash
+npm run smoke
+npm run crew:proof
+```
+
+To compose a deterministic image-edit prompt for a new crew pose:
+
+```bash
+npm run crew:prompt -- frosty "Helping a learner recover from a broken join"
+```
+
+The prompt always names the base reference and identity locks. Generated
+variants stay outside `public/` until a human visual review passes.
+
+Add `--write` to save a prompt receipt with the base hash, prompt hash, variant
+slug, and intended output. Before reviewing a generated PNG, verify that it is
+traceable and has the required transparent format:
+
+```bash
+npm run crew:verify -- output/crew-studio/example.png output/crew-studio/example.prompt.json
+```
 
 ## Project map
 
-- `src/` — React workspace, SQL engine, tasks, grading, and progress
-- `scripts/generate-data.mjs` — deterministic fictional warehouse generator
-- `scripts/*contract.mjs` — release contracts
-- `public/data/` — generated local warehouse files, ignored by Git
-- `public/duckdb-extensions/` — vendored DuckDB extension files
-
-Task content is fictional. The public desk crew uses source-defined SVG
-avatars; no private or third-party portrait assets are required.
+- `src/` — the React app, SQL workspace, task grading, progress, and Star67 crew
+- `scripts/generate-data.mjs` — deterministic fictional finance-data generator
+- `scripts/*contract.mjs` — behavioral and release contracts
+- `public/data/` — generated local warehouse files
+- `public/characters/desk-crew/` — licensed art, provenance, and identity
+  manifest
+- `public/duckdb-extensions/` — local DuckDB extension files
 
 ## Contributing
 
-Keep the first win fast, preserve local-first privacy, and prefer a small
-visible improvement over a new subsystem. Changes to task or grading
-behavior need a deterministic contract. UI changes need desktop and 320px
-browser proof.
+I want Pivot to remain welcoming to someone who knows spreadsheets but may
+never have opened a code editor before.
+
+A good contribution should make the first useful result faster, the finance
+work more realistic, or the explanation clearer. Please keep the experience
+local-first and avoid adding a new system when a smaller visible improvement
+will do.
+
+Changes to task content, grading, or character identity need a deterministic
+contract. User-interface changes should be checked in a real browser at
+desktop and narrow mobile widths.
 
 ## License
 
-MIT. See `LICENSE`.
+Pivot’s source code is MIT licensed. See `LICENSE`.
+
+The Animina character and world artwork has a separate, more restrictive
+license. See
+[`public/characters/desk-crew/ASSET_LICENSE.md`](public/characters/desk-crew/ASSET_LICENSE.md).

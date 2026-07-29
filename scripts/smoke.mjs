@@ -561,7 +561,7 @@ try {
   const scenarioEdgeTitle = await scenarioEdgePage.locator('.ask-title').textContent()
   step(
     'scenario preserves prior evidence but continues at the earliest missing part',
-    scenarioEdge.parts === '5' && /1 delivered/i.test(scenarioEdge.copy) && scenarioEdgeTitle?.includes(MISSIONS[0].title),
+    scenarioEdge.parts === '5' && /1 of 5 tasks complete/i.test(scenarioEdge.copy) && scenarioEdgeTitle?.includes(MISSIONS[0].title),
     JSON.stringify({ ...scenarioEdge, title: scenarioEdgeTitle }),
   )
   await scenarioEdgeContext.close()
@@ -744,9 +744,9 @@ try {
   })
   step(
     'overlapping receipts retain independent scenario progress',
-    /9 delivered/i.test(overlappingCards.board.copy)
+    /9 of 9 tasks complete/i.test(overlappingCards.board.copy)
       && overlappingCards.board.action === 'Revisit'
-      && /6 delivered/i.test(overlappingCards.planning.copy)
+      && /6 of 12 tasks complete/i.test(overlappingCards.planning.copy)
       && overlappingCards.planning.action === 'Continue',
     JSON.stringify(overlappingCards),
   )
@@ -824,8 +824,8 @@ try {
   }))
   step(
     'final scenario part returns to its active completed workday card',
-    new RegExp(`${SEAT_BOOK_SCENARIO.parts}\\s+parts\\s*[·•]\\s*${SEAT_BOOK_SCENARIO.parts}\\s+delivered`, 'i').test(completedScenarioState.copy)
-      && /active workday/i.test(completedScenarioState.copy)
+    new RegExp(`${SEAT_BOOK_SCENARIO.parts}\\s+of\\s+${SEAT_BOOK_SCENARIO.parts}\\s+tasks complete`, 'i').test(completedScenarioState.copy)
+      && /current project/i.test(completedScenarioState.copy)
       && completedScenarioState.action === 'Revisit',
     JSON.stringify(completedScenarioState),
   )
@@ -2002,7 +2002,7 @@ try {
   }
   const localPreview = ['localhost', '127.0.0.1', '::1'].includes(new URL(BASE).hostname)
   const reviewTransportOK = localPreview
-    ? reviewCoachRequests.length === 0 && /Frosty · offline guidance/i.test(reviewProofAfter.source)
+    ? reviewCoachRequests.length === 0 && /Frosty · built-in guidance/i.test(reviewProofAfter.source)
     : reviewCoachRequests.length === 1
       && reviewCoachRequests[0].method() === 'POST'
       && new URL(reviewCoachRequests[0].url()).origin === BASE_ORIGIN
@@ -2212,7 +2212,7 @@ try {
       && coachState.stillError
       && verdictAfterCoach === errText
       && coachState.focused === 'Explain this error'
-      && /Frosty · (?:AI coaching|offline guidance)/i.test(coachState.source),
+      && /Frosty · (?:AI coaching|built-in guidance)/i.test(coachState.source),
     JSON.stringify({
       requests: coachRequests.length,
       transport: remoteCoach ? 'first-party POST' : 'offline',
@@ -2359,7 +2359,7 @@ try {
     'desk shows variable-length scenario library',
     scenarioLibrary.catalogMatches
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === 'org-manager-review')
-      && scenarioLibrary.scenarios.some((scenario) => scenario.id === 'seat-book-review' && scenario.parts === SEAT_BOOK_SCENARIO?.parts && new RegExp(`${SEAT_BOOK_SCENARIO?.parts} parts`, 'i').test(scenario.copy))
+      && scenarioLibrary.scenarios.some((scenario) => scenario.id === 'seat-book-review' && scenario.parts === SEAT_BOOK_SCENARIO?.parts && new RegExp(`0 of ${SEAT_BOOK_SCENARIO?.parts} tasks complete`, 'i').test(scenario.copy))
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === 'arr-subledger-control' && scenario.parts === ARR_SUBLEDGER_SCENARIO?.parts)
       && ARR_SUBLEDGER_SCENARIO?.missionIds.join(',') === ARR_SUBLEDGER_MISSION_IDS.join(',')
       && scenarioLibrary.scenarios.every((scenario) => /tasks complete/i.test(scenario.copy)),
@@ -2370,7 +2370,7 @@ try {
     CUSTOMER_LIFECYCLE_SCENARIO?.missionIds.join(',') === CUSTOMER_LIFECYCLE_MISSION_IDS.join(',')
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === CUSTOMER_LIFECYCLE_SCENARIO.id
         && scenario.parts === CUSTOMER_LIFECYCLE_SCENARIO.parts
-        && new RegExp(`${CUSTOMER_LIFECYCLE_SCENARIO.parts} parts`, 'i').test(scenario.copy)),
+        && new RegExp(`0 of ${CUSTOMER_LIFECYCLE_SCENARIO.parts} tasks complete`, 'i').test(scenario.copy)),
     JSON.stringify({ authored: CUSTOMER_LIFECYCLE_SCENARIO, rendered: scenarioLibrary.scenarios.find((scenario) => scenario.id === 'customer-lifecycle-council') }),
   )
   step(
@@ -2378,7 +2378,7 @@ try {
     CUSTOMER_OWNERSHIP_SCENARIO?.missionIds.join(',') === CUSTOMER_OWNERSHIP_MISSION_IDS.join(',')
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === CUSTOMER_OWNERSHIP_SCENARIO.id
         && scenario.parts === CUSTOMER_OWNERSHIP_SCENARIO.parts
-        && new RegExp(`${CUSTOMER_OWNERSHIP_SCENARIO.parts} parts`, 'i').test(scenario.copy)),
+        && new RegExp(`0 of ${CUSTOMER_OWNERSHIP_SCENARIO.parts} tasks complete`, 'i').test(scenario.copy)),
     JSON.stringify({ authored: CUSTOMER_OWNERSHIP_SCENARIO, rendered: scenarioLibrary.scenarios.find((scenario) => scenario.id === 'customer-ownership-control') }),
   )
   step(
@@ -2387,7 +2387,7 @@ try {
       && REFORECAST_OUTCOME_SCENARIO.parts === 9
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === REFORECAST_OUTCOME_SCENARIO.id
         && scenario.parts === 9
-        && /9 parts/i.test(scenario.copy)),
+        && /0 of 9 tasks complete/i.test(scenario.copy)),
     JSON.stringify({ authored: REFORECAST_OUTCOME_SCENARIO, rendered: scenarioLibrary.scenarios.find((scenario) => scenario.id === 'reforecast-outcome-review') }),
   )
   step(
@@ -2396,7 +2396,7 @@ try {
       && SHARED_SERVICES_ALLOCATION_SCENARIO.parts === SHARED_SERVICES_ALLOCATION_MISSION_IDS.length
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === SHARED_SERVICES_ALLOCATION_SCENARIO.id
         && scenario.parts === SHARED_SERVICES_ALLOCATION_SCENARIO.parts
-        && new RegExp(`${SHARED_SERVICES_ALLOCATION_SCENARIO.parts} parts`, 'i').test(scenario.copy)),
+        && new RegExp(`0 of ${SHARED_SERVICES_ALLOCATION_SCENARIO.parts} tasks complete`, 'i').test(scenario.copy)),
     JSON.stringify({ authored: SHARED_SERVICES_ALLOCATION_SCENARIO, rendered: scenarioLibrary.scenarios.find((scenario) => scenario.id === 'shared-services-allocation-review') }),
   )
   step(
@@ -2405,7 +2405,7 @@ try {
       && COST_TO_SERVE_SCENARIO.parts === COST_TO_SERVE_MISSION_IDS.length
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === COST_TO_SERVE_SCENARIO.id
         && scenario.parts === COST_TO_SERVE_SCENARIO.parts
-        && new RegExp(`${COST_TO_SERVE_SCENARIO.parts} parts`, 'i').test(scenario.copy)),
+        && new RegExp(`0 of ${COST_TO_SERVE_SCENARIO.parts} tasks complete`, 'i').test(scenario.copy)),
     JSON.stringify({ authored: COST_TO_SERVE_SCENARIO, rendered: scenarioLibrary.scenarios.find((scenario) => scenario.id === 'cost-to-serve-review') }),
   )
   step(
@@ -2414,7 +2414,7 @@ try {
       && CONTRACTOR_CONSULTING_COST_SCENARIO.parts === CONTRACTOR_CONSULTING_COST_MISSION_IDS.length
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === CONTRACTOR_CONSULTING_COST_SCENARIO.id
         && scenario.parts === CONTRACTOR_CONSULTING_COST_SCENARIO.parts
-        && new RegExp(`${CONTRACTOR_CONSULTING_COST_SCENARIO.parts} parts`, 'i').test(scenario.copy)),
+        && new RegExp(`0 of ${CONTRACTOR_CONSULTING_COST_SCENARIO.parts} tasks complete`, 'i').test(scenario.copy)),
     JSON.stringify({ authored: CONTRACTOR_CONSULTING_COST_SCENARIO, rendered: scenarioLibrary.scenarios.find((scenario) => scenario.id === 'contractor-consulting-cost-review') }),
   )
   step(
@@ -2423,7 +2423,7 @@ try {
       && TRAVEL_EXPENSE_SCENARIO.parts === TRAVEL_EXPENSE_MISSION_IDS.length
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === TRAVEL_EXPENSE_SCENARIO.id
         && scenario.parts === TRAVEL_EXPENSE_SCENARIO.parts
-        && new RegExp(`${TRAVEL_EXPENSE_SCENARIO.parts} parts`, 'i').test(scenario.copy)),
+        && new RegExp(`0 of ${TRAVEL_EXPENSE_SCENARIO.parts} tasks complete`, 'i').test(scenario.copy)),
     JSON.stringify({ authored: TRAVEL_EXPENSE_SCENARIO, rendered: scenarioLibrary.scenarios.find((scenario) => scenario.id === 'travel-expense-operating-review') }),
   )
   step(
@@ -2432,7 +2432,7 @@ try {
       && REVENUE_CLOSE_USAGE_SCENARIO.parts === REVENUE_CLOSE_USAGE_MISSION_IDS.length
       && scenarioLibrary.scenarios.some((scenario) => scenario.id === REVENUE_CLOSE_USAGE_SCENARIO.id
         && scenario.parts === REVENUE_CLOSE_USAGE_SCENARIO.parts
-        && new RegExp(`${REVENUE_CLOSE_USAGE_SCENARIO.parts} parts`, 'i').test(scenario.copy)),
+        && new RegExp(`0 of ${REVENUE_CLOSE_USAGE_SCENARIO.parts} tasks complete`, 'i').test(scenario.copy)),
     JSON.stringify({ authored: REVENUE_CLOSE_USAGE_SCENARIO, rendered: scenarioLibrary.scenarios.find((scenario) => scenario.id === 'revenue-close-usage-review') }),
   )
   step(
@@ -2723,6 +2723,7 @@ try {
         objectFit: getComputedStyle(image).objectFit,
       })),
       seals: seals.length,
+      focusSeals: document.querySelectorAll('.evidence-seal-grid--focus .evidence-seal').length,
       visibleSeals: seals.filter((seal) => seal.getClientRects().length > 0).length,
       earned: seals.filter((seal) => seal.getAttribute('data-earned') === 'true').length,
       building: seals.filter((seal) => seal.getAttribute('data-earned') === 'false').length,
@@ -2744,7 +2745,7 @@ try {
   step(
     'progress mounts the Star67 crew, one next badge, earned badges, and a closed later-skills list',
     progressVisual.heroOk
-      && /Star67 desk crew/i.test(progressVisual.crewLabel)
+      && /Animina crew at Star67/i.test(progressVisual.crewLabel)
       && progressVisual.crewMembers === expectedDeskCrew.length
       && JSON.stringify(progressVisual.crewNames) === JSON.stringify(expectedDeskCrew)
       && new Set(progressVisual.crewImages.map((image) => image.src)).size === expectedDeskCrew.length
@@ -2754,7 +2755,7 @@ try {
         && /Star67/i.test(image.alt))
       && expectedBadgeCount === 37
       && progressVisual.seals === expectedBadgeCount
-      && progressVisual.visibleSeals <= progressVisual.earned + 1
+      && progressVisual.focusSeals === 1
       && progressVisual.revealing <= 1
       && progressVisual.guided === expectedBadgeCount
       && progressVisual.described === expectedBadgeCount
@@ -3317,15 +3318,56 @@ try {
   const secondCompany = compiledSims.find((sim) => sim.id === secondSim.id)?.company ?? ''
   const firstCompany = compiledSims.find((sim) => sim.id === firstSim.id)?.company ?? ''
   await page.evaluate(({ missionIds, firstSimIds, secondSimIds }) => {
-    const key = 'pivot.progress.v1'
     const now = new Date().toISOString()
-    const p = JSON.parse(localStorage.getItem(key) ?? '{"pulls":{},"simDone":{}}')
-    p.pulls ??= {}
-    p.simDone ??= {}
-    for (const id of missionIds) p.pulls[id] = { missionId: id, completedAt: now, sql: 'smoke complete', title: id }
-    for (const id of firstSimIds) p.simDone[id] = { missionId: id, completedAt: '2026-01-01T00:00:00.000Z', sql: 'smoke complete', title: id }
-    for (const id of secondSimIds) delete p.simDone[id]
-    localStorage.setItem(key, JSON.stringify(p))
+    // Practice routing is a ProgressV2 contract. Start from a clean authority
+    // instead of mixing a legacy fixture into an unrelated browser scenario:
+    // duplicate imported receipts can legitimately quarantine evidence.
+    localStorage.removeItem('pivot.progress.v1')
+    localStorage.setItem('pivot.progress.v1', JSON.stringify({
+      pulls: {},
+      simDone: Object.fromEntries(firstSimIds.map((id) => [id, {
+        missionId: id,
+        completedAt: '2026-01-01T00:00:00.000Z',
+        sql: 'smoke complete',
+        title: id,
+      }])),
+    }))
+    const v2Key = 'pivot.progress.v2'
+    const p2 = {
+      version: 2,
+      pulls: {},
+      simDone: {},
+      solveReceipts: {},
+      quarantinedReceiptIds: [],
+      auditionAttempts: {},
+      quarantinedAttemptIds: [],
+      drafts: {},
+      draftTombstones: {},
+      seenBadgeIds: [],
+      importedEnvelopeIds: [],
+      lastMissionId: null,
+      lastSeenAt: null,
+    }
+    for (const id of missionIds) {
+      const receiptId = `smoke:practice-unlock:${id}`
+      const receipt = {
+        receiptId,
+        missionId: id,
+        completedAt: now,
+        sql: 'SELECT 1',
+        title: id,
+        contentRevision: 'smoke',
+        mode: 'campaign',
+        hintLevel: 0,
+        attemptId: null,
+      }
+      p2.pulls[id] = receipt
+      p2.solveReceipts[receiptId] = receipt
+    }
+    p2.lastMissionId = missionIds.at(-1) ?? null
+    p2.lastSeenAt = now
+    localStorage.setItem(v2Key, JSON.stringify(p2))
+
     localStorage.setItem(`pivot.draft.${firstSimIds[0]}`, 'SELECT 111 AS keep_other_set_draft')
     for (const id of secondSimIds) localStorage.setItem(`pivot.draft.${id}`, 'SELECT 999 AS leaked_prior_answer')
   }, {
@@ -3370,7 +3412,7 @@ try {
   const backfillRevisitReveals = await page.locator('.evidence-seal[data-reveal="true"]').count()
   step('backfilled skill badges do not replay on Progress revisit', backfillRevisitReveals === 0, `${backfillRevisitReveals} replaying`)
   await page.locator('.desk-tabs').getByRole('button', { name: 'My work', exact: true }).click()
-  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
+  // Returning to My work preserves the already-open practice library.
   await page.locator('.scenario-row', { has: page.getByRole('heading', { name: secondCompany, exact: true }) }).getByRole('button', { name: `Start ${secondCompany} audition` }).click()
   await page.waitForFunction((expected) => {
     const used = Array.from(document.querySelectorAll('[data-used-in-ask="true"]'))
@@ -3408,7 +3450,7 @@ try {
   const startedAttemptId = draftIsolation.currentAttemptId
   step(
     'completed first simulation routes to a blank second set',
-    newSetTitle === secondSim.title && newSetEditor === '' && /1 of \d+ distinct auditions complete/i.test(screenProgressText ?? ''),
+    newSetTitle === secondSim.title && newSetEditor === '' && /1 of \d+ complete/i.test(screenProgressText ?? ''),
     `${screenProgressText?.trim()} | ${newSetTitle} | ${newSetEditor.slice(0, 40)}`,
   )
   step(

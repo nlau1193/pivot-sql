@@ -7,12 +7,8 @@ export interface DeskCrewCharacter {
   species: string
   role: string
   assistRole: string
+  origin: 'Animina'
   portraitSrc: string
-}
-
-function publicPortrait(emoji: string, background: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160"><rect width="160" height="160" rx="38" fill="${background}"/><text x="80" y="106" text-anchor="middle" font-size="88">${emoji}</text></svg>`
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
 export const DESK_CREW: Record<DeskCrewId, DeskCrewCharacter> = {
@@ -22,7 +18,8 @@ export const DESK_CREW: Record<DeskCrewId, DeskCrewCharacter> = {
     species: 'giraffe',
     role: 'CFO',
     assistRole: 'Structure, schemas, and relationships',
-    portraitSrc: publicPortrait('🦒', '#f3dfaa'),
+    origin: 'Animina',
+    portraitSrc: '/characters/desk-crew/base/riff-giraffe.png',
   },
   rex: {
     id: 'rex',
@@ -30,7 +27,8 @@ export const DESK_CREW: Record<DeskCrewId, DeskCrewCharacter> = {
     species: 'rhino',
     role: 'Controller',
     assistRole: 'Controls, joins, duplicates, and NULLs',
-    portraitSrc: publicPortrait('🦏', '#d8d9d4'),
+    origin: 'Animina',
+    portraitSrc: '/characters/desk-crew/base/rex-rhino.png',
   },
   coco: {
     id: 'coco',
@@ -38,7 +36,8 @@ export const DESK_CREW: Record<DeskCrewId, DeskCrewCharacter> = {
     species: 'dog',
     role: 'People Partner',
     assistRole: 'Partner narration and verbal rehearsal',
-    portraitSrc: publicPortrait('🐶', '#e9c8a6'),
+    origin: 'Animina',
+    portraitSrc: '/characters/desk-crew/base/coco-dog.png',
   },
   zi: {
     id: 'zi',
@@ -46,7 +45,8 @@ export const DESK_CREW: Record<DeskCrewId, DeskCrewCharacter> = {
     species: 'penguin',
     role: 'CEO',
     assistRole: 'Execution state, outcomes, and next moves',
-    portraitSrc: publicPortrait('🐧', '#c8dce4'),
+    origin: 'Animina',
+    portraitSrc: '/characters/desk-crew/base/zi-penguin.png',
   },
   fin: {
     id: 'fin',
@@ -54,7 +54,8 @@ export const DESK_CREW: Record<DeskCrewId, DeskCrewCharacter> = {
     species: 'shark',
     role: 'Data Lead',
     assistRole: 'SQL correctness, grain, and query invariants',
-    portraitSrc: publicPortrait('🦈', '#bcd6d6'),
+    origin: 'Animina',
+    portraitSrc: '/characters/desk-crew/base/fin-shark.png',
   },
   frosty: {
     id: 'frosty',
@@ -62,7 +63,8 @@ export const DESK_CREW: Record<DeskCrewId, DeskCrewCharacter> = {
     species: 'koala',
     role: 'Recovery Coach',
     assistRole: 'Calm hints and error recovery',
-    portraitSrc: publicPortrait('🐨', '#d8d2c8'),
+    origin: 'Animina',
+    portraitSrc: '/characters/desk-crew/base/frosty-koala.png',
   },
 }
 

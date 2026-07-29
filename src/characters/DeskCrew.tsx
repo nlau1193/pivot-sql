@@ -1,8 +1,17 @@
 import { DESK_CREW, DESK_CREW_ORDER, deskCrewAlt, type DeskCrewId } from './desk-crew'
 
-export function DeskCrew({ ids = DESK_CREW_ORDER }: { ids?: readonly DeskCrewId[] }) {
+export function DeskCrew({
+  ids = DESK_CREW_ORDER,
+  presentation = 'cards',
+}: {
+  ids?: readonly DeskCrewId[]
+  presentation?: 'cards' | 'welcome'
+}) {
   return (
-    <div className="desk-crew" aria-label="Meet the Star67 desk crew">
+    <div
+      className={`desk-crew desk-crew--${presentation}`}
+      aria-label="Meet the Animina crew at Star67"
+    >
       {ids.map((id) => {
         const character = DESK_CREW[id]
         return (

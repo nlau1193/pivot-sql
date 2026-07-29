@@ -43,15 +43,15 @@ check('path advance is tied to one explicit chapter id', () => {
 check('Star67 desk crew is exactly six named, contextual characters', () => {
   for (const name of ['Riff', 'Rex', 'Coco', 'Zi', 'Fin', 'Frosty']) assert.match(crewRegistry, new RegExp(`name: '${name}'`))
   assert.match(crewRegistry, /DESK_CREW_ORDER[^\n]*\['riff', 'rex', 'coco', 'zi', 'fin', 'frosty'\]/)
-  assert.match(crew, /aria-label="Meet the Star67 desk crew"/)
+  assert.match(crew, /aria-label="Meet the Animina crew at Star67"/)
   assert.match(crew, /deskCrewAlt\(character\)/)
   assert.match(css, /\.desk-crew__portrait-frame img[^}]*object-fit:\s*contain/)
 })
 
-check('desk crew portraits are source-defined SVG data, not private binary art', () => {
-  assert.match(crewRegistry, /function publicPortrait/)
-  assert.match(crewRegistry, /data:image\/svg\+xml/)
-  assert.doesNotMatch(crewRegistry, /\/characters\/desk-crew\/base\//)
+check('desk crew portraits use the licensed Animina identity anchors', () => {
+  assert.match(crewRegistry, /origin: 'Animina'/)
+  assert.match(crewRegistry, /\/characters\/desk-crew\/base\//)
+  assert.doesNotMatch(crewRegistry, /publicPortrait|data:image|emoji/i)
 })
 
 check('Riff character canon stays consistent in the first-run story', () => {

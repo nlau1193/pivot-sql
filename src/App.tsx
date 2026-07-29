@@ -24,6 +24,7 @@ import { ACTIVE_PACK_ID } from './kit/pack-manifest'
 import { loadPathSession, savePathSession } from './kit/path-session'
 import { scenarioById, scenarioProgress } from './packs/parkline-fpa/scenarios'
 import { STAR67_STORY } from './star67-story'
+import { DeskCrew } from './characters/DeskCrew'
 
 type Phase = 'intro' | 'loading' | 'ready' | 'error'
 type LoadBytes = { loaded: number; total: number } | null
@@ -240,7 +241,7 @@ export default function App() {
 function Intro({ returning, onBegin }: { returning: boolean; onBegin: () => void }) {
   return (
     <main className="fullpage-card">
-      <div className="card intro-card">
+      <div className="card intro-card intro-card--crew">
         <div className="wordmark">Pivot</div>
         <p className="tagline">from spreadsheets to company data</p>
         {returning ? (
@@ -264,6 +265,14 @@ function Intro({ returning, onBegin }: { returning: boolean; onBegin: () => void
               agreeing, and Finance needs one trusted answer. You will rebuild those controls
               with SQL before touching the live 2030 plan.
             </p>
+            <section className="intro-crew" aria-labelledby="intro-crew-title">
+              <div className="intro-crew__copy">
+                <p className="story-year">From Animina to Star67</p>
+                <h2 id="intro-crew-title">Meet the crew at your desk.</h2>
+                <p>Six guides, six kinds of judgment, one finance team. They help you reason—not collect points.</p>
+              </div>
+              <DeskCrew presentation="welcome" />
+            </section>
           </>
         )}
         <button className="btn-primary btn-large" onClick={onBegin}>
