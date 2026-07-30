@@ -7,6 +7,7 @@ const manifest = JSON.parse(await readFile(new URL('crew-manifest.json', ROOT), 
 const registry = await readFile(new URL('../src/characters/desk-crew.ts', import.meta.url), 'utf8')
 const component = await readFile(new URL('../src/characters/DeskCrew.tsx', import.meta.url), 'utf8')
 const app = await readFile(new URL('../src/App.tsx', import.meta.url), 'utf8')
+const studio = await readFile(new URL('crew-studio.mjs', import.meta.url), 'utf8')
 const assetLicense = await readFile(new URL('ASSET_LICENSE.md', ROOT), 'utf8')
 const rootLicense = await readFile(new URL('../LICENSE', import.meta.url), 'utf8')
 
@@ -54,6 +55,15 @@ assert.match(registry, /DESK_CREW_ORDER[^\n]*\['riff', 'rex', 'coco', 'zi', 'fin
 assert.match(component, /Meet the Animina crew at Star67/)
 assert.match(app, /From Animina to Star67/)
 assert.match(app, /DeskCrew presentation="welcome"/)
+assert.match(studio, /SINGLE-ILLUSTRATOR COHESION LOCK/)
+assert.match(studio, /same near-black line weight/)
+assert.match(studio, /readable at 200px/)
+assert.match(studio, /more than six large internal compartments/)
+assert.match(studio, /second illustrator/)
+assert.match(studio, /MATERIAL FINGERPRINT LOCK/)
+assert.match(studio, /stroke granularity/)
+assert.match(studio, /visible surface tooth/)
+assert.match(studio, /globally polish/)
 assert.match(assetLicense, /not.*licensed under Pivot's MIT License/is)
 assert.match(rootLicense, /does not cover the Animina artwork/)
 

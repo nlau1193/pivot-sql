@@ -14,7 +14,7 @@
     "determinism": "node scripts/check-determinism.mjs",
     "pack": "node scripts/pack-manifest-contract.mjs",
     "progression": "node scripts/progression-contract.mjs",
-    "crew": "node scripts/crew-contract.mjs",
+    "crew": "node scripts/crew-contract.mjs && node scripts/crew-prompt-contract.mjs && node scripts/crew-variant-contract.mjs --self-test",
     "crew:prompt": "node scripts/crew-studio.mjs",
     "crew:proof": "node scripts/crew-visual-proof.mjs",
     "crew:verify": "node scripts/crew-variant-contract.mjs",

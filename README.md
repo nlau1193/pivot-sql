@@ -136,12 +136,18 @@ To compose a deterministic image-edit prompt for a new crew pose:
 npm run crew:prompt -- frosty "Helping a learner recover from a broken join"
 ```
 
-The prompt always names the base reference and identity locks. Generated
-variants stay outside `public/` until a human visual review passes.
+The prompt always names the base reference and identity locks. It also carries
+my single-illustrator rule: a worksheet, chart, laptop, or mug must use the same
+line weight, pencil tooth, broken fill, palette, and detail level as the animal
+beside it. A beautiful character with a thin vector-style prop is still a
+failed illustration. Generated variants stay outside `public/` until a human
+visual review passes.
 
 Add `--write` to save a prompt receipt with the base hash, prompt hash, variant
-slug, and intended output. Before reviewing a generated PNG, verify that it is
-traceable and has the required transparent format:
+slug, material-cohesion policy, and intended output. Before reviewing a
+generated PNG, verify that it is traceable, uses real binary transparency with
+no hidden halo colors, and differs from the base in actual decoded pixels—not
+just in file metadata:
 
 ```bash
 npm run crew:verify -- output/crew-studio/example.png output/crew-studio/example.prompt.json
