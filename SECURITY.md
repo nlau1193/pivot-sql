@@ -1,7 +1,7 @@
 # Star67 security audit
 
-Audit date: 2026-08-01  
-Audited revision: `ccf62c339cf0d7072c53a524b41dc961d463aa46`  
+Audit date: 2026-08-01
+Audited application sources: Star67 branding at `ccf62c339cf0d7072c53a524b41dc961d463aa46` plus the merged coaching/UI change at `007fcf51e12438ca69e39080acd2aa77fc3b6484`
 Production surface: <https://learn-sql-peach.vercel.app/>
 
 ## Disposition
