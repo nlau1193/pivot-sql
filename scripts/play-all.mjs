@@ -82,7 +82,13 @@ try {
   for (let simIndex = 0; simIndex < SCREEN_SIMS.length; simIndex++) {
     const sim = SCREEN_SIMS[simIndex]
     const company = compiledSims.find((compiled) => compiled.id === sim.id)?.company ?? ''
+    // Each audition ends back in the workspace, so reopen the desk and enter
+    // the interview-practice library before selecting the next company.
     await page.getByRole('button', { name: 'Your desk' }).click()
+    const practiceCta = page.getByRole('button', { name: 'Start practice' })
+    await practiceCta.waitFor({ state: 'visible' })
+    await practiceCta.click()
+    await page.getByRole('heading', { name: 'Choose an interview practice set' }).waitFor()
     await page.getByRole('button', { name: `Start ${company} audition` }).click()
     await page.locator('.sim-intro-title', { hasText: sim.title }).waitFor()
     if (sim.id === 'sim04') {
