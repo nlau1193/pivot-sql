@@ -64,7 +64,7 @@ assert.match(studio, /MATERIAL FINGERPRINT LOCK/)
 assert.match(studio, /stroke granularity/)
 assert.match(studio, /visible surface tooth/)
 assert.match(studio, /globally polish/)
-assert.match(assetLicense, /not.*licensed under Pivot's MIT License/is)
+assert.match(assetLicense, /not.*licensed under Star67's MIT License/is)
 assert.match(rootLicense, /does not cover the Animina artwork/)
 
 console.log('Animina crew contract: 6/6 canonical anchors + world + UI wiring verified')

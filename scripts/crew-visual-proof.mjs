@@ -16,7 +16,7 @@ async function reachable() {
   return fetch(base).then((response) => response.ok).catch(() => false)
 }
 if (!await reachable()) {
-  if (suppliedBase) throw new Error(`No Pivot server at ${base}`)
+  if (suppliedBase) throw new Error(`No Star67 server at ${base}`)
   server = spawn('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', '5199'], {
     cwd: new URL('..', import.meta.url),
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -24,7 +24,7 @@ if (!await reachable()) {
   for (let attempt = 0; attempt < 120 && !await reachable(); attempt += 1) {
     await new Promise((resolve) => setTimeout(resolve, 500))
   }
-  if (!await reachable()) throw new Error('Could not start the local Pivot server')
+  if (!await reachable()) throw new Error('Could not start the local Star67 server')
 }
 
 const browser = await chromium.launch()

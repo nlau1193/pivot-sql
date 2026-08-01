@@ -1,6 +1,6 @@
 # Third-party notices
 
-Pivot downloads and redistributes the DuckDB Parquet extension for WebAssembly
+Star67 downloads and redistributes the DuckDB Parquet extension for WebAssembly
 version 1.4.3. The exact upstream URLs and SHA-256 checksums are recorded in
 `scripts/vendor-duckdb-extensions.mjs`.
 
@@ -27,7 +27,7 @@ under the MIT License:
 
 Upstream: https://github.com/duckdb/duckdb/tree/v1.4.3
 
-Pivot also bundles Apache Arrow JavaScript through the `apache-arrow` npm
+Star67 also bundles Apache Arrow JavaScript through the `apache-arrow` npm
 package. Apache Arrow is licensed under Apache License 2.0. The license and
 upstream notice distributed with the installed package are preserved at:
 

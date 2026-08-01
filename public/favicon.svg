@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Star67</title>
+  <rect width="64" height="64" rx="16" fill="#0f5b45"/>
+  <path d="M32 11 36.7 26.3 52 31l-15.3 4.7L32 51l-4.7-15.3L12 31l15.3-4.7L32 11Z" fill="#f7efdc"/>
+  <circle cx="32" cy="31" r="4" fill="#0f5b45"/>
+</svg>

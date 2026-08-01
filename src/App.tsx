@@ -242,7 +242,7 @@ function Intro({ returning, onBegin }: { returning: boolean; onBegin: () => void
   return (
     <main className="fullpage-card">
       <div className="card intro-card intro-card--crew">
-        <div className="wordmark">Pivot</div>
+        <div className="wordmark">Star67</div>
         <p className="tagline">from spreadsheets to company data</p>
         {returning ? (
           <>
@@ -297,7 +297,7 @@ function Loading({ msg, frac, bytes }: { msg: string; frac: number; bytes: LoadB
   return (
     <main className="fullpage-card" aria-busy="true">
       <div className="card intro-card">
-        <div className="wordmark">Pivot</div>
+        <div className="wordmark">Star67</div>
         <h1 id="warehouse-loading-title">Setting up your desk…</h1>
         <div
           className="progress-track"

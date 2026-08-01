@@ -406,7 +406,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
         } catch {
           verdict = {
             kind: 'unavailable',
-            message: `Your query ran and the result is below, but Pivot couldn't check it this time. Run it once more; if this repeats, reload the page — your draft is saved.`,
+            message: `Your query ran and the result is below, but Star67 couldn't check it this time. Run it once more; if this repeats, reload the page — your draft is saved.`,
           }
         }
         if (!canCommit()) return
@@ -423,7 +423,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
           } else {
             verdict = {
               kind: 'unavailable',
-              message: 'Your query is correct, but Pivot could not save it to this practice attempt. Return to Your desk and start the practice again; your draft is still here.',
+              message: 'Your query is correct, but Star67 could not save it to this practice attempt. Return to Your desk and start the practice again; your draft is still here.',
             }
           }
         }
@@ -754,7 +754,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
     >
       <header className="topbar">
         <div className="topbar-left">
-          <span className="wordmark small">Pivot</span>
+          <span className="wordmark small">Star67</span>
           <span className="topbar-sub">{DATA.company} finance workspace</span>
         </div>
         <div className="topbar-right">
@@ -881,7 +881,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
               <div className="deliverable">
                 <span className="deliverable-label">Deliver</span> {active.deliverable}
               </div>
-              <p className="grading-contract">Use any aliases you like. Pivot checks the values, column count, rows, and requested order—not the answer key's column names.</p>
+              <p className="grading-contract">Use any aliases you like. Star67 checks the values, column count, rows, and requested order—not the answer key's column names.</p>
               {!isSim && !solvedThis && (
                 <div className="hints">
                   {hintLevel === 0 && <button className="btn-hint" onClick={() => setHintLevel(1)}>Stuck? Get a nudge</button>}
@@ -1490,7 +1490,7 @@ function ResultsPanel({ run, solvedThis, mission, simQuestion, onNext, nextLabel
       )}
       {verdict?.kind === 'unavailable' && !solvedThis && (
         <div className="verdict verdict-error">
-          <div className="verdict-head">The answer checker hiccupped — this is Pivot, not your SQL.</div>
+          <div className="verdict-head">The answer checker hiccupped — this is Star67, not your SQL.</div>
           <p>{verdict.message}</p>
         </div>
       )}

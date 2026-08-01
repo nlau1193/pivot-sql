@@ -1,4 +1,4 @@
-// Star67 warehouse generator — deterministic synthetic FP&A warehouse for Pivot.
+// Star67 warehouse generator — deterministic synthetic FP&A warehouse for Star67.
 // Public dataset contract: 12 tables, ~2.5M rows, 42 months (Jan 2023 → Jun 2026),
 // USD only, ≤40MB parquet target (60MB hard abort).
 // Internally consistent by construction:

@@ -21,20 +21,20 @@ export function translateError(rawIn: string, userSQL: string): FriendlyError {
     return {
       headline: `This warehouse is read-only — same as the one you'll have at work.`,
       detail: `FP&A always gets read-only data access: you can look at everything and change nothing, by design, so nobody can break the books. SELECT is the whole job — and everything the tasks teach fits inside it.`,
-      raw: 'Write statements (CREATE, DROP, INSERT, UPDATE, SET…) are disabled in Pivot.',
+      raw: 'Write statements (CREATE, DROP, INSERT, UPDATE, SET…) are disabled in Star67.',
     }
   }
   if (/__multistatement__/.test(r)) {
     return {
       headline: `One query at a time, please.`,
       detail: `There's a second statement after a semicolon in your editor. Warehouses run one query per Run — delete the extra statement (or the stray semicolon in the middle) and go again.`,
-      raw: 'Multiple SQL statements per run are disabled in Pivot.',
+      raw: 'Multiple SQL statements per run are disabled in Star67.',
     }
   }
   if (/__smartquotes__/.test(r)) {
     return {
       headline: `Those are curly quotes from Notes or Docs — SQL needs straight quotes.`,
-      detail: `Retype the quote marks in Pivot: use 'straight single quotes' around text values and "straight double quotes" only around column names. Your words can stay exactly as they are.`,
+      detail: `Retype the quote marks in Star67: use 'straight single quotes' around text values and "straight double quotes" only around column names. Your words can stay exactly as they are.`,
       raw: 'Curly quote marks (‘ ’ “ ”) cannot act as SQL quote delimiters.',
     }
   }
@@ -130,7 +130,7 @@ export function translateError(rawIn: string, userSQL: string): FriendlyError {
   if (/Parser Error|syntax error at or near/i.test(r) && looksLikeProsePaste(userSQL)) {
     return {
       headline: `That looks like the explanation, not a SQL query.`,
-      detail: `Pivot used to put explanation text where a runnable example belonged. Use Copy SQL or Use verified SQL so only the checked query enters the editor. If you pasted this unchanged from Pivot, this is our example bug — not your comma.`,
+      detail: `Star67 used to put explanation text where a runnable example belonged. Use Copy SQL or Use verified SQL so only the checked query enters the editor. If you pasted this unchanged from Star67, this is our example bug — not your comma.`,
       raw,
     }
   }
@@ -141,7 +141,7 @@ export function translateError(rawIn: string, userSQL: string): FriendlyError {
     const line = findTokenLine(userSQL, token)
     return {
       headline: `The parser stopped at ${code(token)}${line ? ` (line ${line})` : ''}.`,
-      detail: `The actual typo may be immediately before that token. Check the commas, clause order (SELECT → FROM → WHERE → GROUP BY → ORDER BY), and any stray characters. If you pasted this unchanged from Pivot, that points to a Pivot example bug — not something you should guess around.`,
+      detail: `The actual typo may be immediately before that token. Check the commas, clause order (SELECT → FROM → WHERE → GROUP BY → ORDER BY), and any stray characters. If you pasted this unchanged from Star67, that points to a Star67 example bug — not something you should guess around.`,
       raw,
     }
   }

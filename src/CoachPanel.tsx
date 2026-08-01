@@ -297,7 +297,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
 
       <details className="coach-panel__privacy">
         <summary>How coaching uses your work</summary>
-        <p>Frosty runs only when you choose an action. Guidance is authored into Pivot and stays in this browser. Frosty cannot run SQL, insert an answer, or mark work complete.</p>
+        <p>Frosty runs only when you choose an action. Guidance is authored into Star67 and stays in this browser. Frosty cannot run SQL, insert an answer, or mark work complete.</p>
       </details>
 
       <div className="coach-panel__live" aria-live="polite" aria-atomic="true">
