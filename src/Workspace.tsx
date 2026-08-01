@@ -357,24 +357,6 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
     draftTimerRef.current = setTimeout(flushDraft, 400)
   }, [draftAttemptId, draftQuestionId, flushDraft])
 
-  const useVerifiedSolution = useCallback((sql: string) => {
-    // Replacing the editor is a new attempt boundary. Invalidate any display or
-    // grading closure so an older result cannot repaint or award evidence.
-    abortRef.current?.abort()
-    abortRef.current = null
-    runSeqRef.current += 1
-    runningRef.current = false
-    runPhaseRef.current = 'idle'
-    persistDraft(sql)
-    setRun({ kind: 'idle' })
-    requestAnimationFrame(() => {
-      const view = cmRef.current?.view
-      if (!view) return
-      view.focus()
-      view.dispatch({ selection: { anchor: view.state.doc.length } })
-    })
-  }, [persistDraft])
-
   useEffect(() => () => flushDraft(), [activeKey, flushDraft])
 
   useEffect(() => {
@@ -882,22 +864,6 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
                 <span className="deliverable-label">Deliver</span> {active.deliverable}
               </div>
               <p className="grading-contract">Use any aliases you like. Star67 checks the values, column count, rows, and requested order—not the answer key's column names.</p>
-              {!isSim && !solvedThis && (
-                <div className="hints">
-                  {hintLevel === 0 && <button className="btn-hint" onClick={() => setHintLevel(1)}>Stuck? Get a nudge</button>}
-                  {hintLevel >= 1 && <HintBlock label="The idea" text={(active as CompiledMission).hints[0]} />}
-                  {hintLevel === 1 && <button className="btn-hint" onClick={() => setHintLevel(2)}>Show me the shape</button>}
-                  {hintLevel >= 2 && <HintBlock label="The shape — sketch, not runnable yet" text={(active as CompiledMission).hints[1]} mono />}
-                  {hintLevel === 2 && <button className="btn-hint" onClick={() => setHintLevel(3)}>Show me one way to do it</button>}
-                  {hintLevel >= 3 && (
-                    <SolutionHint
-                      solution={(active as CompiledMission).solution}
-                      note={(active as CompiledMission).solutionNote}
-                      onUse={useVerifiedSolution}
-                    />
-                  )}
-                </div>
-              )}
             </div>
           ) : (
             <div className="ask-card explore-card">
@@ -947,6 +913,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
               moment={coachMoment}
               attempt={coachAttempt}
               attemptIsCurrent={runEvidence?.isCurrent ?? false}
+              onGuidanceUsed={() => setHintLevel(1)}
             />
           )}
 
@@ -1357,88 +1324,6 @@ function clampWarehouseSheetHeight(height: number, maximum: number): number {
     Math.max(WAREHOUSE_SHEET_MIN_HEIGHT, Math.round(maximum)),
     Math.max(WAREHOUSE_SHEET_MIN_HEIGHT, Math.round(height)),
   )
-}
-
-function HintBlock({ label, text, mono }: { label: string; text: string; mono?: boolean }) {
-  if (!mono) {
-    return (
-      <div className="hint-block">
-        <div className="hint-label">{label}</div>
-        <p>{text}</p>
-      </div>
-    )
-  }
-  // Sketch hints can mix SQL-shaped scaffolding and prose. Only complete query
-  // openings are code; clause-name prose stays readable as an explanation.
-  const blocks = text.split('\n\n')
-  return (
-    <div className="hint-block">
-      <div className="hint-label">{label}</div>
-      {blocks.map((b, i) =>
-        /^\s*(SELECT|WITH)\b/i.test(b)
-          ? <pre key={i} className="hint-code">{b}</pre>
-          : <p key={i}>{b}</p>
-      )}
-    </div>
-  )
-}
-
-function SolutionHint({ solution, note, onUse }: {
-  solution: string
-  note: string | null
-  onUse: (sql: string) => void
-}) {
-  const [status, setStatus] = useState('')
-
-  const copySolution = async () => {
-    try {
-      await writeClipboard(solution)
-      setStatus('Verified SQL copied to the clipboard.')
-    } catch {
-      setStatus('Clipboard access is unavailable. Use verified SQL to place it in the editor.')
-    }
-  }
-
-  const useSolution = () => {
-    onUse(solution)
-    setStatus('Verified SQL placed in the editor. Focus moved to the end of the query.')
-  }
-
-  return (
-    <div className="hint-block hint-solution">
-      <div className="hint-label">One verified way — run it yourself; it still counts</div>
-      <pre className="hint-code">{solution}</pre>
-      {note && <p className="hint-solution__note">{note}</p>}
-      <div className="hint-solution__actions">
-        <button type="button" className="btn-ghost btn-small" onClick={copySolution}>Copy SQL</button>
-        <button type="button" className="btn-primary btn-small" onClick={useSolution}>Use verified SQL</button>
-      </div>
-      <p className="hint-solution__status" role="status" aria-live="polite" aria-atomic="true">{status}</p>
-    </div>
-  )
-}
-
-async function writeClipboard(text: string): Promise<void> {
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text)
-      return
-    } catch {
-      // Embedded and non-secure contexts can expose the API but reject writes.
-      // Keep the fallback inside the same user gesture.
-    }
-  }
-
-  const textarea = document.createElement('textarea')
-  textarea.value = text
-  textarea.setAttribute('readonly', '')
-  textarea.style.position = 'fixed'
-  textarea.style.opacity = '0'
-  document.body.appendChild(textarea)
-  textarea.select()
-  const copied = document.execCommand('copy')
-  textarea.remove()
-  if (!copied) throw new Error('Clipboard unavailable')
 }
 
 function ResultsPanel({ run, solvedThis, mission, simQuestion, onNext, nextLabel }: {

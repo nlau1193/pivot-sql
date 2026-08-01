@@ -324,8 +324,8 @@ try {
   step('overlapping missions keep grading isolated', raceState.m02 && raceState.correct && raceState.currentTitle.includes(MISSIONS[1].title), JSON.stringify(raceState))
   await raceContext.close()
 
-  // A verified solution is a real recovery path, not decorative copy. Drive
-  // the action through DuckDB and the deterministic grader in a clean browser.
+  // The coaching surface has one visible action. It is advisory; the
+  // deterministic editor/grader remains the only path that can change work.
   const solutionContext = await browser.newContext()
   await keepFirstParty(solutionContext)
   const solutionPage = await solutionContext.newPage()
@@ -337,16 +337,29 @@ try {
   await solutionPage.locator('.verdict-correct').waitFor({ timeout: 30000 })
   await solutionPage.getByRole('button', { name: /Next ask/ }).click()
   await solutionPage.locator('.ask-title', { hasText: MISSIONS[1].title }).waitFor({ timeout: 30000 })
-  await solutionPage.getByRole('button', { name: 'Stuck? Get a nudge', exact: true }).click()
-  await solutionPage.getByRole('button', { name: 'Show me the shape', exact: true }).click()
-  await solutionPage.getByRole('button', { name: 'Show me one way to do it', exact: true }).click()
-  await solutionPage.getByRole('button', { name: 'Use verified SQL', exact: true }).click()
   const verifiedM02 = compiledContent.missions.find((mission) => mission.id === 'm02')?.solution ?? ''
+  const solutionCoachButton = solutionPage.getByRole('button', { name: 'Give me the next step', exact: true })
+  await solutionCoachButton.click()
+  await solutionPage.locator('.coach-response').waitFor({ timeout: 15000 })
+  const solutionCoachProof = await solutionPage.evaluate(() => ({
+    source: document.querySelector('.coach-response__eyebrow')?.textContent?.trim() ?? '',
+    route: document.querySelector('.coach-panel__route')?.textContent?.trim() ?? '',
+    controls: Array.from(document.querySelectorAll('.coach-panel__actions button')).map((button) => button.textContent?.trim() ?? ''),
+  }))
+  step(
+    'the learner sees one private built-in next step before running a query',
+    /built-in.*private/i.test(solutionCoachProof.source)
+      && /current result|draft has not produced/i.test(solutionCoachProof.route)
+      && solutionCoachProof.controls.length === 1
+      && solutionCoachProof.controls[0] === 'Give me the next step',
+    JSON.stringify(solutionCoachProof),
+  )
+  await setEditor(solutionPage, verifiedM02)
   const solutionBeforeRun = await readEditorText(solutionPage)
   await runQuery(solutionPage)
   await solutionPage.locator('.verdict-correct').waitFor({ timeout: 30000 })
   step(
-    'Use verified SQL runs through DuckDB and grades green',
+    'The authored query runs through DuckDB and grades green',
     verifiedM02.length > 0 && solutionBeforeRun === verifiedM02,
     JSON.stringify({ exact: solutionBeforeRun === verifiedM02, length: solutionBeforeRun.length }),
   )
@@ -1831,10 +1844,8 @@ try {
   }))
   step('blank SQL can leave the editor without a disabled-focus trap', blankEditorExit.outside && blankEditorExit.focused === 'Your desk', JSON.stringify(blankEditorExit))
   await setEditor(page, editorText)
-  step(
-    'Review my attempt stays unavailable before a completed result',
-    await page.getByRole('button', { name: 'Review my attempt', exact: true }).count() === 0,
-  )
+  const adaptiveHelpButton = page.getByRole('button', { name: 'Give me the next step', exact: true })
+  step('one adaptive coaching action is visible before a completed result', await adaptiveHelpButton.isVisible())
   const t0 = Date.now()
   await runQuery(page)
   await page.locator('.verdict-correct').waitFor({ timeout: 30000 })
@@ -1852,14 +1863,12 @@ try {
   const wrongText = await page.locator('.verdict-wrong').textContent().catch(() => null)
   step('wrong answer gets a diagnostic', !!wrongText && wrongText.length > 40, (wrongText ?? '').slice(0, 90))
 
-  // A displayed result unlocks an advisory attempt review. Its evidence is
-  // bound to the SQL that produced that result: editing the draft must make
-  // the control stale until the learner runs again. The browser sends at most
-  // one explicit first-party request; the local preview stays fully offline.
-  const reviewButton = page.getByRole('button', { name: 'Review my attempt', exact: true })
-  const reviewQuestion = page.getByLabel(/^What should Frosty focus on\?/i)
+  // One stable action adapts to the evidence already on screen. Its evidence
+  // is bound to the SQL that produced the result and the local response never
+  // leaves the browser.
+  const reviewButton = page.getByRole('button', { name: 'Give me the next step', exact: true })
   step(
-    'a completed result makes Review my attempt available',
+    'a completed result keeps the single coaching action available',
     await reviewButton.isVisible() && await reviewButton.isEnabled(),
   )
 
@@ -1867,14 +1876,12 @@ try {
   await setEditor(page, staleReviewSQL)
   await page.waitForFunction(() => document.querySelector('.workspace')?.getAttribute('data-run-evidence-state') === 'stale')
   const staleReviewState = await page.evaluate(() => ({
-    disabled: (document.querySelector('.coach-panel__review-action'))?.hasAttribute('disabled') ?? false,
-    status: document.querySelector('.coach-panel__review-status')?.textContent?.trim() ?? '',
+    route: document.querySelector('.coach-panel__route')?.textContent?.trim() ?? '',
     responseVisible: !!document.querySelector('.coach-response'),
   }))
   step(
-    'editing SQL makes attempt review stale until that draft runs',
-    staleReviewState.disabled
-      && staleReviewState.status === 'Run this draft to refresh the review.'
+    'editing SQL makes the current coaching response stale',
+    /draft has not produced a current result/i.test(staleReviewState.route)
       && !staleReviewState.responseVisible,
     JSON.stringify(staleReviewState),
   )
@@ -1887,37 +1894,27 @@ try {
   await page.setViewportSize({ width: 320, height: 800 })
   const narrowReviewShape = await page.evaluate(() => {
     const panel = document.querySelector('.coach-panel')
-    const controls = document.querySelector('.coach-panel__review-controls')
-    const input = controls?.querySelector('input')
-    const button = controls?.querySelector('button')
+    const button = document.querySelector('.coach-panel__action')
     const panelBox = panel?.getBoundingClientRect()
-    const inputBox = input?.getBoundingClientRect()
     const buttonBox = button?.getBoundingClientRect()
     const inside = (box) => !!panelBox && !!box
       && box.left >= panelBox.left - 1
       && box.right <= panelBox.right + 1
     return {
-      columns: controls ? getComputedStyle(controls).gridTemplateColumns.split(' ').filter(Boolean).length : 0,
       documentFits: document.documentElement.scrollWidth <= window.innerWidth,
-      inputFits: inside(inputBox),
       buttonFits: inside(buttonBox),
     }
   })
   step(
-    'attempt review stacks without horizontal overflow at 320 CSS pixels',
-    narrowReviewShape.columns === 1
-      && narrowReviewShape.documentFits
-      && narrowReviewShape.inputFits
+    'the single coaching action stays legible without horizontal overflow at 320 CSS pixels',
+    narrowReviewShape.documentFits
       && narrowReviewShape.buttonFits,
     JSON.stringify(narrowReviewShape),
   )
   await page.setViewportSize({ width: 1280, height: 720 })
 
-  const focusQuestion = 'Is my date boundary and row grain safe?'
-  await reviewQuestion.fill(focusQuestion)
-  // The editor autosaves drafts on a short debounce. Drain that timer so the
-  // baseline snapshot below measures only what the Review click does, not a
-  // pending write armed by the stale-SQL edit/run sequence above.
+  // A completed result routes the one action to an advisory review. The local
+  // build must not call a cloud endpoint or mutate graded evidence.
   await page.waitForFunction(() => {
     const read = () => Object.keys(localStorage)
       .filter((key) => key.startsWith('pivot.progress.'))
@@ -1988,47 +1985,33 @@ try {
       runEvidence: document.querySelector('.workspace')?.getAttribute('data-run-evidence-state') ?? '',
       source: document.querySelector('.coach-response__eyebrow')?.textContent?.trim() ?? '',
       assessment: document.querySelector('.coach-response__assessment')?.textContent?.replace(/\s+/g, ' ').trim() ?? '',
-      focused: focused?.matches('.coach-panel__review-action')
-        ? focused.textContent?.trim() ?? ''
-        : `${focused?.tagName ?? 'none'}.${focused?.className ?? ''}`,
+      focused: `${focused?.tagName ?? 'none'}.${focused?.className ?? ''}`,
+      route: document.querySelector('.coach-panel__route')?.textContent?.trim() ?? '',
     }
   })
   const reviewSQLAfter = await readEditorText(page)
   page.off('request', recordReviewCoachRequest)
 
-  let reviewRequestBody = null
-  if (reviewCoachRequests.length === 1) {
-    try { reviewRequestBody = reviewCoachRequests[0].postDataJSON() } catch { /* malformed transport is reported below */ }
-  }
   const localPreview = ['localhost', '127.0.0.1', '::1'].includes(new URL(BASE).hostname)
-  const reviewTransportOK = localPreview
-    ? reviewCoachRequests.length === 0 && /Frosty · built-in guidance/i.test(reviewProofAfter.source)
-    : reviewCoachRequests.length === 1
-      && reviewCoachRequests[0].method() === 'POST'
-      && new URL(reviewCoachRequests[0].url()).origin === BASE_ORIGIN
-      && /Frosty · AI coaching/i.test(reviewProofAfter.source)
-      && reviewRequestBody?.mode === 'review_attempt'
-      && reviewRequestBody?.input?.question === focusQuestion
   step(
-    'Review my attempt returns an explicitly advisory assessment through the expected transport',
+    'the adaptive action returns an explicitly advisory private assessment',
     refreshedReviewReady
-      && reviewTransportOK
+      && localPreview
+      && reviewCoachRequests.length === 0
+      && /built-in.*private/i.test(reviewProofAfter.source)
       && /Frosty’s read/i.test(reviewProofAfter.assessment)
       && /On track|Needs revision|Uncertain/.test(reviewProofAfter.assessment)
       && /Advisory/i.test(reviewProofAfter.assessment)
-      && reviewProofAfter.focused === 'Review my attempt'
-      && await reviewQuestion.inputValue() === focusQuestion,
+      && /current result.*deterministic verdict/i.test(reviewProofAfter.route),
     JSON.stringify({
       localPreview,
       requests: reviewCoachRequests.length,
-      requestMode: reviewRequestBody?.mode ?? null,
-      requestQuestion: reviewRequestBody?.input?.question ?? null,
       source: reviewProofAfter.source,
       assessment: reviewProofAfter.assessment,
-      focused: reviewProofAfter.focused,
+      route: reviewProofAfter.route,
     }),
   )
-  // The review invariant is about GRADED EVIDENCE: a Review-my-attempt click
+  // The review invariant is about GRADED EVIDENCE: the coaching click
   // must not create, remove, or alter pulls/solves/attempts/badges/quarantines.
   // Drafts and lastSeenAt are legitimate user-state that may drift on a
   // debounced autosave; they are not evidence and are out of scope here.
@@ -2051,7 +2034,7 @@ try {
     }
   }
   step(
-    'attempt review leaves SQL, result, exact verdict, and graded evidence unchanged',
+    'coaching leaves SQL, result, exact verdict, and graded evidence unchanged',
     reviewImmutabilityOk,
     JSON.stringify({
       sqlUnchanged: reviewSQLAfter === reviewSQLBefore,
@@ -2063,72 +2046,37 @@ try {
     }),
   )
 
-  // 6a. Hints ladder (must check BEFORE solving — hints hide after the green check)
-  await page.getByRole('button', { name: /Get a nudge/ }).click()
-  const hint = await page.locator('.hint-block').first().textContent().catch(() => null)
-  step('hint ladder opens', !!hint && hint.length > 30, (hint ?? '').slice(0, 60))
-
-  await page.getByRole('button', { name: 'Show me the shape', exact: true }).click()
-  const shapeLabel = (await page.locator('.hint-label').filter({ hasText: /^The shape/ }).textContent().catch(() => null))?.trim() ?? ''
-  step(
-    'shape hint is explicitly a sketch, not runnable SQL',
-    /sketch/i.test(shapeLabel) && /not runnable/i.test(shapeLabel),
-    shapeLabel,
-  )
-
-  await page.getByRole('button', { name: 'Show me one way to do it', exact: true }).click()
-  const m02CompiledSolution = compiledContent.missions.find((mission) => mission.id === 'm02')?.solution ?? ''
-  const solutionClipboardStubbed = await page.evaluate(() => {
-    window.__pivotSmokeSolutionClipboard = ''
-    const clipboard = {
-      writeText: async (value) => { window.__pivotSmokeSolutionClipboard = String(value) },
-    }
-    try {
-      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: clipboard })
-      return true
-    } catch {
-      try {
-        Object.defineProperty(Object.getPrototypeOf(navigator), 'clipboard', { configurable: true, value: clipboard })
-        return true
-      } catch {
-        return false
-      }
-    }
-  })
-  await page.getByRole('button', { name: 'Copy SQL', exact: true }).click()
-  await page.locator('.hint-solution__status').filter({ hasText: /copied to the clipboard/i }).waitFor()
-  const solutionCopyProof = await page.evaluate(() => ({
-    copied: window.__pivotSmokeSolutionClipboard ?? '',
-    status: document.querySelector('.hint-solution__status')?.textContent?.trim() ?? '',
+  // Drafts route the same action back to a nudge and never pretend that stale
+  // results are current. There are no second/hidden hint buttons to discover.
+  const draftCoachRequests = []
+  const recordDraftCoachRequest = (request) => {
+    if (new URL(request.url()).pathname === '/api/coach') draftCoachRequests.push(request)
+  }
+  page.on('request', recordDraftCoachRequest)
+  await setEditor(page, `${await readEditorText(page)}\n-- start a fresh draft`)
+  await page.waitForFunction(() => document.querySelector('.workspace')?.getAttribute('data-run-evidence-state') === 'stale')
+  await reviewButton.click()
+  await page.locator('.coach-response').waitFor({ timeout: 15000 })
+  const draftCoachProof = await page.evaluate(() => ({
+    source: document.querySelector('.coach-response__eyebrow')?.textContent?.trim() ?? '',
+    route: document.querySelector('.coach-panel__route')?.textContent?.trim() ?? '',
+    assessment: document.querySelector('.coach-response__assessment')?.textContent?.trim() ?? '',
+    controls: Array.from(document.querySelectorAll('.coach-panel button')).map((button) => button.textContent?.trim()),
+    hiddenOldControls: Array.from(document.querySelectorAll('.coach-panel button'))
+      .filter((button) => /Schema|Relationships|Rehearse|Review my attempt|Show me|Stuck\?/i.test(button.textContent ?? ''))
+      .map((button) => button.textContent?.trim()),
   }))
+  page.off('request', recordDraftCoachRequest)
   step(
-    'solution card copies only the compiled verified SQL',
-    solutionClipboardStubbed
-      && m02CompiledSolution.length > 0
-      && solutionCopyProof.copied === m02CompiledSolution
-      && /copied to the clipboard/i.test(solutionCopyProof.status),
-    JSON.stringify({ ...solutionCopyProof, expectedLength: m02CompiledSolution.length }),
-  )
-
-  await page.getByRole('button', { name: 'Use verified SQL', exact: true }).click()
-  await page.waitForFunction((expected) => {
-    const editor = document.querySelector('.editor .cm-content')
-    if (!editor) return false
-    const visibleSQL = Array.from(editor.querySelectorAll('.cm-line'))
-      .map((line) => {
-        const copy = line.cloneNode(true)
-        copy.querySelectorAll('.cm-placeholder').forEach((placeholder) => placeholder.remove())
-        return copy.textContent ?? ''
-      })
-      .join('\n')
-    return visibleSQL === expected && document.activeElement === editor
-  }, m02CompiledSolution)
-  const usedSolution = await readEditorText(page)
-  const solutionEditorFocused = await page.locator('.editor .cm-content').evaluate((editor) => document.activeElement === editor)
-  step(
-    'Use verified SQL puts the exact compiled solution in the focused editor',
-    usedSolution === m02CompiledSolution && solutionEditorFocused,
-    JSON.stringify({ exact: usedSolution === m02CompiledSolution, focused: solutionEditorFocused, length: usedSolution.length }),
+    'one adaptive action is the only coaching control on a stale draft',
+    draftCoachRequests.length === 0
+      && /built-in.*private/i.test(draftCoachProof.source)
+      && /draft has not produced a current result/i.test(draftCoachProof.route)
+      && !draftCoachProof.assessment
+      && draftCoachProof.controls.length === 1
+      && draftCoachProof.controls[0] === 'Give me the next step'
+      && draftCoachProof.hiddenOldControls.length === 0,
+    JSON.stringify({ ...draftCoachProof, requests: draftCoachRequests.length }),
   )
 
   // 6. Right answer for mission 2
@@ -2189,7 +2137,7 @@ try {
     `requests=${coachRequests.length} responses=${coachResponseBeforeClick}`,
   )
   const sqlBeforeCoach = await readEditorText(page)
-  const explainErrorButton = page.getByRole('button', { name: 'Explain this error', exact: true })
+  const explainErrorButton = page.getByRole('button', { name: 'Give me the next step', exact: true })
   await explainErrorButton.click()
   await page.locator('.coach-response').waitFor({ timeout: 15000 })
   const coachState = await page.evaluate(() => ({
@@ -2211,8 +2159,8 @@ try {
       && sqlAfterCoach === sqlBeforeCoach
       && coachState.stillError
       && verdictAfterCoach === errText
-      && coachState.focused === 'Explain this error'
-      && /Frosty · (?:AI coaching|built-in guidance)/i.test(coachState.source),
+      && coachState.focused === 'Give me the next step'
+      && /Frosty · (?:AI coaching|built-in, private guidance)/i.test(coachState.source),
     JSON.stringify({
       requests: coachRequests.length,
       transport: remoteCoach ? 'first-party POST' : 'offline',

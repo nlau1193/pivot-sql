@@ -32,7 +32,7 @@ const engineFixtures = [
     sql: `The correct handoff shows 672 active employees, 12 without manager ids, 302 missing active manager links, 11 actual managers, 7 IC-coded managers, Lena Johnson as both widest span owner and highest managed-pod cost owner, and $653,574.05 of managed June pod cost.`,
     raw: /syntax error at or near/i,
     headline: /explanation, not a SQL query/i,
-    detail: /Copy SQL.*Use verified SQL/i,
+    detail: /editor.*runnable query.*Frosty/i,
     reject: /missing comma/i,
   },
   {
@@ -42,7 +42,7 @@ const engineFixtures = [
 This returns the total after the warehouse has filtered the rows you wanted.`,
     raw: /syntax error at or near/i,
     headline: /explanation, not a SQL query/i,
-    detail: /Copy SQL.*Use verified SQL/i,
+    detail: /editor.*runnable query.*Frosty/i,
     reject: /missing comma/i,
   },
   {
@@ -50,7 +50,7 @@ This returns the total after the warehouse has filtered the rows you wanted.`,
     sql: `The SELECT should include amount, and the WHERE should keep only March rows before you total them.`,
     raw: /syntax error at or near/i,
     headline: /explanation, not a SQL query/i,
-    detail: /Copy SQL.*Use verified SQL/i,
+    detail: /editor.*runnable query.*Frosty/i,
     reject: /missing comma/i,
   },
   {
