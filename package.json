@@ -21,7 +21,7 @@
     "casebook": "node scripts/casebook-proof.mjs",
     "navigator": "node scripts/navigator-contract.mjs",
     "progress": "node --experimental-vm-modules scripts/progress-v2-contract.mjs",
-    "coaching": "node scripts/coaching-routing-contract.ts",
+    "coaching": "node scripts/coaching-routing-contract.mjs",
     "test": "npm run determinism && npm run errors && npm run format && npm run pack && npm run progression && npm run crew && npm run casebook && npm run navigator && npm run progress && npm run coaching",
     "smoke": "node scripts/smoke.mjs",
     "play": "node scripts/play-all.mjs",
