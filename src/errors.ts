@@ -130,7 +130,7 @@ export function translateError(rawIn: string, userSQL: string): FriendlyError {
   if (/Parser Error|syntax error at or near/i.test(r) && looksLikeProsePaste(userSQL)) {
     return {
       headline: `That looks like the explanation, not a SQL query.`,
-      detail: `Star67 used to put explanation text where a runnable example belonged. Use Copy SQL or Use verified SQL so only the checked query enters the editor. If you pasted this unchanged from Star67, this is our example bug — not your comma.`,
+      detail: `Star67 used to put explanation text where a runnable example belonged. Start with the editor's runnable query, or ask Frosty for one next step. If you pasted this unchanged from Star67, this is our example bug — not your comma.`,
       raw,
     }
   }

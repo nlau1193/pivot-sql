@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { DESK_CREW, deskCrewAlt } from './characters/desk-crew'
 import { requestCoach } from './coaching-client'
 import {
@@ -10,6 +10,7 @@ import {
   type CoachVerdictV1,
   type ReviewAttemptInputV1,
 } from './kit/coaching-contract'
+import { chooseCoachRoute, type CoachRouteMoment } from './kit/coaching-routing'
 import {
   createStar67CoachContext,
   type Star67CoachMission,
@@ -26,35 +27,13 @@ interface CoachPanelProps {
   moment: CoachMoment
   attempt?: ReviewAttemptInputV1['attempt'] | null
   attemptIsCurrent?: boolean
+  onGuidanceUsed: () => void
 }
-
-interface CoachAction {
-  mode: CoachMode
-  label: string
-}
-
-const QUICK_ACTIONS: readonly CoachAction[] = [
-  { mode: 'nudge', label: 'Nudge' },
-  { mode: 'schema', label: 'Schema' },
-  { mode: 'relationship', label: 'Relationships' },
-  { mode: 'rehearse', label: 'Rehearse' },
-]
 
 const ATTEMPT_ASSESSMENT_LABELS: Readonly<Record<AttemptReviewAssessment, string>> = {
   on_track: 'On track',
   needs_revision: 'Needs revision',
   uncertain: 'Uncertain',
-}
-
-const REVIEW_QUESTION_LIMIT = 240
-
-function suggestedAction(moment: CoachMoment): CoachAction {
-  if (moment.kind === 'engine-error') return { mode: 'explain_error', label: 'Explain this error' }
-  if (moment.kind === 'verdict' && moment.verdict.status !== 'correct') {
-    return { mode: 'explain_verdict', label: 'Help me debug the result' }
-  }
-  if (moment.kind === 'verdict') return { mode: 'rehearse', label: 'Rehearse' }
-  return { mode: 'nudge', label: 'Nudge' }
 }
 
 function coachRequest(
@@ -64,7 +43,6 @@ function coachRequest(
   query: string,
   moment: CoachMoment,
   attempt: ReviewAttemptInputV1['attempt'] | null,
-  reviewQuestion: string,
 ): CoachRequestV1 {
   const context = createStar67CoachContext(mission)
   const base = { version: COACHING_CONTRACT_VERSION, requestId, context }
@@ -115,14 +93,12 @@ function coachRequest(
       return { ...base, mode, input: {} }
     case 'review_attempt': {
       if (!attempt) throw new Error('A current attempt is required for review')
-      const question = reviewQuestion.trim()
       return {
         ...base,
         mode,
         input: {
           query,
           attempt,
-          ...(question ? { question } : {}),
         },
       }
     }
@@ -133,24 +109,29 @@ function requestId(sequence: number): string {
   return `frosty:${Date.now().toString(36)}:${sequence.toString(36)}`
 }
 
-export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCurrent = false }: CoachPanelProps) {
+export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCurrent = false, onGuidanceUsed }: CoachPanelProps) {
   const [response, setResponse] = useState<CoachResponseV1 | null>(null)
   const [failure, setFailure] = useState('')
   const [pendingMode, setPendingMode] = useState<CoachMode | null>(null)
-  const [reviewQuestion, setReviewQuestion] = useState('')
   const sequenceRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
-  const reviewButtonRef = useRef<HTMLButtonElement | null>(null)
-  const restoreReviewFocusRef = useRef(false)
-  const reviewQuestionId = useId()
-  const reviewStatusId = useId()
-  const suggested = suggestedAction(moment)
-  const quickActions = suggested.mode === 'explain_error' || suggested.mode === 'explain_verdict'
-    ? [suggested, ...QUICK_ACTIONS]
-    : QUICK_ACTIONS
+  const actionRef = useRef<HTMLButtonElement>(null)
+  const restoreActionFocusRef = useRef(false)
   const frosty = DESK_CREW.frosty
-  const canReviewAttempt = attempt !== null && attemptIsCurrent
-  const visibleResponse = response?.mode === 'review_attempt' && !canReviewAttempt ? null : response
+  const currentAttempt = attempt !== null && attemptIsCurrent
+  // A result belongs to the query that produced it. Once the learner edits
+  // the draft, the old verdict/error is still visible for context but cannot
+  // drive guidance for a different query. Route back to a nudge until the
+  // learner runs the draft again.
+  const routeMoment: CoachRouteMoment = !attemptIsCurrent && moment.kind !== 'idle'
+    ? { kind: 'idle' }
+    : moment.kind === 'engine-error'
+      ? { kind: 'engine-error' }
+      : moment.kind === 'verdict'
+        ? { kind: 'verdict', status: moment.verdict.status }
+        : { kind: 'idle' }
+  const route = chooseCoachRoute(routeMoment, currentAttempt)
+  const visibleResponse = response?.mode === 'review_attempt' && !currentAttempt ? null : response
   const assessment = visibleResponse?.mode === 'review_attempt' && 'assessment' in visibleResponse
     ? visibleResponse.assessment as AttemptReviewAssessment
     : null
@@ -163,11 +144,14 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
   })
 
   useEffect(() => () => abortRef.current?.abort(), [])
-  useEffect(() => {
-    if (pendingMode !== null || !restoreReviewFocusRef.current) return
-    restoreReviewFocusRef.current = false
-    if (canReviewAttempt) reviewButtonRef.current?.focus()
-  }, [canReviewAttempt, pendingMode])
+  useLayoutEffect(() => {
+    if (pendingMode !== null || !restoreActionFocusRef.current) return
+    restoreActionFocusRef.current = false
+    // The action is temporarily disabled while local guidance is computed;
+    // browsers blur disabled controls. Restore the learner's keyboard place
+    // when the response arrives instead of dropping focus onto the document.
+    actionRef.current?.focus({ preventScroll: true })
+  }, [pendingMode])
   useEffect(() => {
     abortRef.current?.abort()
     abortRef.current = null
@@ -175,7 +159,6 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
     setPendingMode(null)
     setResponse(null)
     setFailure('')
-    setReviewQuestion('')
   }, [contextSignature])
 
   const askFrosty = async (mode: CoachMode) => {
@@ -193,7 +176,6 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
         query,
         moment,
         attempt,
-        reviewQuestion,
       )
       const next = await requestCoach(request, { signal: controller.signal })
       if (!controller.signal.aborted && sequenceRef.current === sequence) setResponse(next)
@@ -204,7 +186,6 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
       }
     } finally {
       if (sequenceRef.current === sequence) {
-        if (mode === 'review_attempt') restoreReviewFocusRef.current = true
         setPendingMode(null)
         abortRef.current = null
       }
@@ -222,78 +203,33 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
             <h2 id="frosty-coach-title">Ask Frosty</h2>
             {visibleResponse && (
               <span className="coach-panel__source">
-                Built-in guidance
+                Built-in · private
               </span>
             )}
           </div>
-          <p>Coaching, not grading. Frosty can help you reason; the warehouse checker remains the judge.</p>
+          <p>One next step, based on your ask and current work. The warehouse checker remains the judge.</p>
         </div>
       </div>
 
-      {attempt && (
-        <div className="coach-panel__review">
-          <label htmlFor={reviewQuestionId}>
-            What should Frosty focus on? <span>Optional</span>
-          </label>
-          <div className="coach-panel__review-controls">
-            <input
-              id={reviewQuestionId}
-              type="text"
-              value={reviewQuestion}
-              maxLength={REVIEW_QUESTION_LIMIT}
-              placeholder="For example: Is my join grain safe?"
-              autoComplete="off"
-              disabled={pendingMode !== null}
-              aria-describedby={reviewStatusId}
-              onChange={(event) => {
-                setReviewQuestion(event.currentTarget.value)
-                if (response?.mode === 'review_attempt') setResponse(null)
-              }}
-            />
-            <button
-              ref={reviewButtonRef}
-              type="button"
-              className="btn-primary btn-small coach-panel__review-action"
-              aria-pressed={visibleResponse?.mode === 'review_attempt'}
-              aria-describedby={reviewStatusId}
-              disabled={!canReviewAttempt || pendingMode !== null}
-              onClick={(event) => {
-                event.currentTarget.focus()
-                if (canReviewAttempt && pendingMode === null) void askFrosty('review_attempt')
-              }}
-            >
-              {pendingMode === 'review_attempt' ? 'Reviewing…' : 'Review my attempt'}
-            </button>
-          </div>
-          <p id={reviewStatusId} className="coach-panel__review-status">
-            {canReviewAttempt
-              ? 'Frosty reads this result alongside your SQL. The warehouse checker still decides correctness.'
-              : 'Run this draft to refresh the review.'}
-          </p>
-        </div>
-      )}
-
-      <div className="coach-panel__actions" aria-label="Choose coaching help">
-        {quickActions.map((action) => {
-          const isSuggested = !attempt && action.mode === suggested.mode
-          return (
-            <button
-              key={action.mode}
-              type="button"
-              className={`${isSuggested ? 'btn-primary' : 'btn-ghost'} btn-small coach-panel__action`}
-              aria-pressed={visibleResponse?.mode === action.mode}
-              aria-disabled={pendingMode === action.mode}
-              disabled={pendingMode !== null && pendingMode !== action.mode}
-              onClick={(event) => {
-                event.currentTarget.focus()
-                if (pendingMode === null) void askFrosty(action.mode)
-              }}
-            >
-              {pendingMode === action.mode ? 'Thinking…' : action.label}
-            </button>
-          )
-        })}
+      <div className="coach-panel__actions" aria-label="Get the next coaching step">
+        <button
+          ref={actionRef}
+          type="button"
+          className="btn-primary btn-small coach-panel__action"
+          aria-pressed={visibleResponse !== null}
+          disabled={pendingMode !== null}
+          onClick={() => {
+            if (pendingMode !== null) return
+            restoreActionFocusRef.current = true
+            onGuidanceUsed()
+            void askFrosty(route.mode)
+          }}
+        >
+          {pendingMode !== null ? 'Thinking…' : 'Give me the next step'}
+        </button>
       </div>
+
+      <p className="coach-panel__route">Frosty is looking at {route.reason}. Guidance stays in this browser.</p>
 
       <details className="coach-panel__privacy">
         <summary>How coaching uses your work</summary>
@@ -305,7 +241,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
         {visibleResponse && (
           <article className="coach-response">
             <div className="coach-response__eyebrow">
-              Frosty · built-in guidance
+              Frosty · built-in, private guidance
             </div>
             {assessment && (
               <div className="coach-response__assessment">
