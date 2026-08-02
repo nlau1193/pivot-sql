@@ -264,3 +264,21 @@ interview relationship.
 - `git diff --check`: clean.
 - Taste lint remains clean for the public docs and README. Impeccable is not
   installed in this environment, so no detector result is claimed.
+
+## First-run clarity fix — 2026-08-02
+
+The welcome screen now leads with one plain promise — “Learn SQL one clear
+question at a time” — and one action, “Open my desk.” The longer Star67 and
+guide story is still available behind “About Star67 and the guides,” so the
+fiction remains discoverable without competing with the first task. The README
+welcome screenshot was regenerated from that same collapsed state; it no longer
+advertises the retired FP&A-manager copy.
+
+- Local mobile proof: the CTA sat at **419–469px** in a 700px viewport, with no
+  horizontal overflow; the optional story disclosure remained closed.
+- Production-style local smoke: **176/176 steps green**; crew visual proof
+  remained green for wide, 320px, 200% zoom, and Progress views.
+- `npm test`, `npm run build`, Taste lint, and `git diff --check`: green.
+- The `impeccable` package is not installed; the `npx` detector fallback found
+  one pre-existing amber semantic state stripe in `src/styles.css`, which was
+  retained intentionally rather than changed for churn.
