@@ -29,6 +29,7 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
   const completedCount = Object.keys(completed).length
   const unlockId = screenUnlockMissionId()
   const capstoneDone = unlockId ? !!completed[unlockId] : false
+  const guidedTasksComplete = !nextMission(progress)
   const activeSim = currentId ? simByQuestionId(currentId) : undefined
   const lastPull = useMemo(() => {
     const all = Object.values(completed).sort((a, b) => b.completedAt.localeCompare(a.completedAt))
@@ -39,6 +40,7 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
     if (id === 'mission-ladder') {
       const next = nextMission(progress)
       if (next) onNavigate(next.id)
+      else onNavigate(null)
       return
     }
     if (id === 'scenario-library') {
@@ -118,14 +120,14 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
           </div>
         )}
 
-        <div className="desk-tabs">
-          <button className={tab === 'queue' ? 'tab active' : 'tab'} onClick={() => setTab('queue')}>My work</button>
-          <button className={tab === 'dossier' ? 'tab active' : 'tab'} onClick={() => setTab('dossier')}>Progress</button>
-          <button className={tab === 'pulls' ? 'tab active' : 'tab'} onClick={() => setTab('pulls')}>Saved queries ({completedCount})</button>
+        <div className="desk-tabs" role="tablist" aria-label="Desk views">
+          <button id="desk-tab-work" role="tab" aria-selected={tab === 'queue'} aria-controls="desk-panel-work" tabIndex={tab === 'queue' ? 0 : -1} className={tab === 'queue' ? 'tab active' : 'tab'} onClick={() => setTab('queue')}>My work</button>
+          <button id="desk-tab-progress" role="tab" aria-selected={tab === 'dossier'} aria-controls="desk-panel-progress" tabIndex={tab === 'dossier' ? 0 : -1} className={tab === 'dossier' ? 'tab active' : 'tab'} onClick={() => setTab('dossier')}>Progress</button>
+          <button id="desk-tab-saved" role="tab" aria-selected={tab === 'pulls'} aria-controls="desk-panel-saved" tabIndex={tab === 'pulls' ? 0 : -1} className={tab === 'pulls' ? 'tab active' : 'tab'} onClick={() => setTab('pulls')}>Saved queries ({completedCount})</button>
         </div>
 
         {tab === 'queue' && (
-          <div className="queue">
+          <div id="desk-panel-work" role="tabpanel" aria-labelledby="desk-tab-work" className="queue">
             {queueView === 'scenarios' ? (
               <ScenarioLibrary
                 progress={progress}
@@ -142,7 +144,7 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
               />
             ) : (
               <>
-                <PathChooser screensUnlocked={capstoneDone} onChoose={choosePath} />
+                <PathChooser screensUnlocked={capstoneDone} guidedTasksComplete={guidedTasksComplete} onChoose={choosePath} />
                 <div className="desk-footnote">
                   <ProgressPorter progress={progress} />
                 </div>
@@ -152,11 +154,13 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
         )}
 
         {tab === 'dossier' && (
-          <CareerDossier progress={progress} onAcknowledgeBadge={onAcknowledgeBadge} />
+          <div id="desk-panel-progress" role="tabpanel" aria-labelledby="desk-tab-progress">
+            <CareerDossier progress={progress} onAcknowledgeBadge={onAcknowledgeBadge} />
+          </div>
         )}
 
         {tab === 'pulls' && (
-          <div className="pulls">
+          <div id="desk-panel-saved" role="tabpanel" aria-labelledby="desk-tab-saved" className="pulls">
             {completedCount === 0 && <p className="ready-intro">Every task you complete saves its final query here. Reuse one as a starting point at work.</p>}
             {Object.values(completed).sort((a, b) => b.completedAt.localeCompare(a.completedAt)).map((p) => (
               <div key={p.missionId} className="pull-item">
@@ -308,6 +312,7 @@ function ScenarioLibrary({
 
 function ProgressPorter({ progress }: { progress: ProgressV2 }) {
   const [msg, setMsg] = useState('')
+  const [fallbackCode, setFallbackCode] = useState('')
   const writeProgressClipboard = async (value: string) => {
     if (navigator.clipboard?.writeText) {
       try {
@@ -329,11 +334,14 @@ function ProgressPorter({ progress }: { progress: ProgressV2 }) {
     if (!copied) throw new Error('Clipboard unavailable')
   }
   const copyProgress = async () => {
+    const value = exportProgress(progress)
     try {
-      await writeProgressClipboard(exportProgress(progress))
+      await writeProgressClipboard(value)
+      setFallbackCode('')
       setMsg('Progress code copied.')
     } catch {
-      setMsg('Copy failed. Select the code from your browser tools and try again.')
+      setFallbackCode(value)
+      setMsg('Copy failed. Select the code below and copy it manually.')
     }
   }
   return (
@@ -356,6 +364,18 @@ function ProgressPorter({ progress }: { progress: ProgressV2 }) {
         }}>Paste a progress code</button>
         <span className="porter-msg">{msg}</span>
       </div>
+      {fallbackCode && (
+        <label className="porter-fallback">
+          <span>Progress code to copy manually</span>
+          <textarea
+            aria-label="Progress code to copy manually"
+            readOnly
+            rows={4}
+            value={fallbackCode}
+            onFocus={(event) => event.currentTarget.select()}
+          />
+        </label>
+      )}
     </details>
   )
 }

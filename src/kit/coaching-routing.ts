@@ -18,16 +18,16 @@ export interface CoachRoute {
  */
 export function chooseCoachRoute(moment: CoachRouteMoment, hasCurrentAttempt: boolean): CoachRoute {
   if (moment.kind === 'engine-error') {
-    return { mode: 'explain_error', reason: 'the last run returned an engine error' }
+    return { mode: 'explain_error', reason: 'your last run' }
   }
   if (hasCurrentAttempt) {
-    return { mode: 'review_attempt', reason: 'the current result and deterministic verdict are available' }
+    return { mode: 'review_attempt', reason: 'your current result' }
   }
   if (moment.kind === 'verdict' && moment.status === 'correct') {
-    return { mode: 'rehearse', reason: 'the deterministic checker accepted the current result' }
+    return { mode: 'rehearse', reason: 'the accepted result' }
   }
   if (moment.kind === 'verdict') {
-    return { mode: 'explain_verdict', reason: 'the deterministic checker returned a result to debug' }
+    return { mode: 'explain_verdict', reason: 'the latest result' }
   }
-  return { mode: 'nudge', reason: 'the draft has not produced a current result yet' }
+  return { mode: 'nudge', reason: 'your current draft' }
 }

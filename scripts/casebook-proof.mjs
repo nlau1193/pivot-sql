@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
-const [seal, reveal, path, crew, crewRegistry, story, app, css, workspace, progressView] = await Promise.all([
+const [seal, reveal, path, crew, crewRegistry, story, app, css, workspace, progressView, coach, desk, index, pathChooser, routing] = await Promise.all([
   readFile(new URL('../src/EvidenceSeal.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/BadgeReveal.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/CasebookPath.tsx', import.meta.url), 'utf8'),
@@ -12,6 +12,11 @@ const [seal, reveal, path, crew, crewRegistry, story, app, css, workspace, progr
   readFile(new URL('../src/styles.css', import.meta.url), 'utf8'),
   readFile(new URL('../src/Workspace.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/CareerDossier.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/CoachPanel.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/Desk.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../index.html', import.meta.url), 'utf8'),
+  readFile(new URL('../src/PathChooser.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/kit/coaching-routing.ts', import.meta.url), 'utf8'),
 ])
 
 let passed = 0
@@ -114,6 +119,26 @@ check('narrow progress view stacks badges and preserves the optional details con
   assert.match(narrow, /\.dossier-hero\s*\{[^}]*grid-template-columns:\s*1fr/)
   assert.match(narrow, /\.evidence-seal-grid[\s\S]*?grid-template-columns:\s*1fr/)
   assert.match(css, /\.future-skills > summary\s*\{[^}]*min-height:\s*44px/)
+})
+
+check('learner-facing setup and guidance state the simple local contract', () => {
+  assert.match(app, /Preparing your local practice desk/)
+  assert.match(app, /one-time local download includes the practice warehouse/i)
+  assert.match(coach, /Built-in first · optional AI/)
+  assert.match(coach, /Built-in · private/)
+  assert.match(desk, /role="tablist" aria-label="Desk views"/)
+  assert.match(desk, /aria-selected=\{tab === 'queue'\}/)
+  assert.match(index, /guided questions and a realistic local warehouse/)
+})
+
+check('completion and copy failures always leave a clear next action', () => {
+  assert.match(pathChooser, /Guided tasks complete/)
+  assert.match(pathChooser, /Reopen a saved query or explore the data/)
+  assert.match(desk, /else onNavigate\(null\)/)
+  assert.match(desk, /Progress code to copy manually/)
+  assert.match(desk, /Copy failed\. Select the code below/)
+  assert.match(routing, /reason: 'your last run'/)
+  assert.match(routing, /reason: 'your current draft'/)
 })
 
 console.log(`Casebook visual contract: ${passed}/${passed}`)

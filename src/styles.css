@@ -505,6 +505,8 @@ pre { font-family: var(--mono); }
 .porter p { font-size: 13px; color: var(--ink-soft); margin: 8px 0; }
 .porter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .porter-msg { font-size: 12.5px; color: var(--green); }
+.porter-fallback { display: grid; gap: 5px; margin-top: 10px; color: var(--ink-soft); font-size: 12.5px; }
+.porter-fallback textarea { width: 100%; min-height: 88px; resize: vertical; border: 1px solid var(--line); border-radius: 7px; background: var(--paper-raised); color: var(--ink); padding: 8px; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 .ready-intro { font-size: 13.5px; color: var(--ink-soft); margin-bottom: 14px; }
 

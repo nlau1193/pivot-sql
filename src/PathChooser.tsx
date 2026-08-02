@@ -6,16 +6,27 @@ import { loadPathSession, pathTitle, savePathSession } from './kit/path-session'
 
 interface PathChooserProps {
   screensUnlocked: boolean
+  guidedTasksComplete: boolean
   onChoose: (id: PathId) => void
 }
 
-export function PathChooser({ screensUnlocked, onChoose }: PathChooserProps) {
-  const paths = deskPathsForActivePack({ screensUnlocked }).filter((path) => path.id !== 'career-dossier')
+export function PathChooser({ screensUnlocked, guidedTasksComplete, onChoose }: PathChooserProps) {
+  const paths = deskPathsForActivePack({ screensUnlocked })
+    .filter((path) => path.id !== 'career-dossier')
+    .map((path) => guidedTasksComplete && path.id === 'mission-ladder'
+      ? {
+          ...path,
+          title: 'Guided tasks complete',
+          summary: 'You finished the guided tasks. Reopen a saved query or explore the data.',
+          actionLabel: 'Explore data',
+        }
+      : path)
   const [session, setSession] = useState(() => loadPathSession(ACTIVE_PACK_ID))
   const lastPath = useMemo(() => {
     if (!session) return null
+    if (guidedTasksComplete && session.lastPathId === 'mission-ladder') return null
     return paths.find((path) => path.id === session.lastPathId) ?? null
-  }, [paths, session])
+  }, [guidedTasksComplete, paths, session])
 
   const choose = (id: PathId) => {
     setSession(savePathSession(id, ACTIVE_PACK_ID))

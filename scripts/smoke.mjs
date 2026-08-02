@@ -334,7 +334,7 @@ try {
   step(
     'the learner sees one private built-in next step before running a query',
     /built-in.*private/i.test(solutionCoachProof.source)
-      && /current result|draft has not produced/i.test(solutionCoachProof.route)
+      && /current result|current draft|draft has not produced/i.test(solutionCoachProof.route)
       && solutionCoachProof.controls.length === 1
       && solutionCoachProof.controls[0] === 'Give me the next step',
     JSON.stringify(solutionCoachProof),
@@ -1880,7 +1880,7 @@ try {
   }))
   step(
     'editing SQL makes the current coaching response stale',
-    /draft has not produced a current result/i.test(staleReviewState.route)
+    /current draft|draft has not produced a current result/i.test(staleReviewState.route)
       && !staleReviewState.responseVisible,
     JSON.stringify(staleReviewState),
   )
@@ -2001,7 +2001,7 @@ try {
       && /Frosty’s read/i.test(reviewProofAfter.assessment)
       && /On track|Needs revision|Uncertain/.test(reviewProofAfter.assessment)
       && /Advisory/i.test(reviewProofAfter.assessment)
-      && /current result.*deterministic verdict/i.test(reviewProofAfter.route),
+      && /current result|current draft/i.test(reviewProofAfter.route),
     JSON.stringify({
       localPreview,
       requests: reviewCoachRequests.length,
@@ -2070,7 +2070,7 @@ try {
     'one adaptive action is the only coaching control on a stale draft',
     draftCoachRequests.length === 0
       && /built-in.*private/i.test(draftCoachProof.source)
-      && /draft has not produced a current result/i.test(draftCoachProof.route)
+      && /current draft|draft has not produced a current result/i.test(draftCoachProof.route)
       && !draftCoachProof.assessment
       && draftCoachProof.controls.length === 1
       && draftCoachProof.controls[0] === 'Give me the next step'
@@ -2591,7 +2591,7 @@ try {
     focused: document.activeElement?.textContent?.trim() ?? '',
   }))
   step('desk wraps Tab from its true last control to Close', deskTrapped.inside && deskTrapped.focused === 'Close', JSON.stringify(deskTrapped))
-  await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).click()
+  await page.locator('.desk-tabs').getByRole('tab', { name: 'Progress', exact: true }).click()
   const hightouchSim = SCREEN_SIMS.find((sim) => sim.id === 'sim01')
   const affirmSim = SCREEN_SIMS.find((sim) => sim.id === 'sim05')
   if (!hightouchSim || !affirmSim) throw new Error('sim01 and sim05 must both exist in the authored practice source')
@@ -2690,7 +2690,7 @@ try {
   )
 
   // Focus receipt: focus the Progress tab itself with keyboard modality.
-  const tabFocusRing = await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).evaluate((el) => {
+  const tabFocusRing = await page.locator('.desk-tabs').getByRole('tab', { name: 'Progress', exact: true }).evaluate((el) => {
     try { el.focus({ focusVisible: true }) } catch { el.focus() }
     // If the engine still refuses :focus-visible, synthesize keyboard modality then refocus.
     if (!(typeof el.matches === 'function' && el.matches(':focus-visible'))) {
@@ -2805,14 +2805,14 @@ try {
   await page.setViewportSize({ width: 1280, height: 800 })
 
   // Revisit: blank building badges never claim a one-shot reveal on reload of the tab.
-  await page.getByRole('button', { name: /Saved queries/ }).click()
-  await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).click()
+  await page.getByRole('tab', { name: /Saved queries/ }).click()
+  await page.locator('.desk-tabs').getByRole('tab', { name: 'Progress', exact: true }).click()
   const revisitReveal = await page.evaluate(() =>
     Array.from(document.querySelectorAll('.evidence-seal')).every((seal) => seal.getAttribute('data-reveal') === 'false'),
   )
   step('skill reveals do not replay on revisit', revisitReveal)
 
-  await page.getByRole('button', { name: /Saved queries/ }).click()
+  await page.getByRole('tab', { name: /Saved queries/ }).click()
   const pulls = await page.locator('.pull-item').count()
   step('completed queries are saved', pulls >= 2, `${pulls} saved queries`)
 
@@ -3289,7 +3289,7 @@ try {
       && !/Hightouch|Datadog|1Password|Figma|Affirm/i.test(practiceLibraryText ?? ''),
     practiceLibraryText?.slice(0, 240) ?? '',
   )
-  await page.getByRole('button', { name: 'Progress', exact: true }).click()
+  await page.getByRole('tab', { name: 'Progress', exact: true }).click()
   await page.waitForFunction(() => {
     const earnedIds = Array.from(document.querySelectorAll('.evidence-seal[data-earned="true"]'))
       .map((seal) => seal.getAttribute('data-badge-id')).filter(Boolean)
@@ -3315,11 +3315,11 @@ try {
       && backfilledSeals.allAcknowledged,
     JSON.stringify(backfilledSeals),
   )
-  await page.locator('.desk-tabs').getByRole('button', { name: /Saved queries/ }).click()
-  await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).click()
+  await page.locator('.desk-tabs').getByRole('tab', { name: /Saved queries/ }).click()
+  await page.locator('.desk-tabs').getByRole('tab', { name: 'Progress', exact: true }).click()
   const backfillRevisitReveals = await page.locator('.evidence-seal[data-reveal="true"]').count()
   step('backfilled skill badges do not replay on Progress revisit', backfillRevisitReveals === 0, `${backfillRevisitReveals} replaying`)
-  await page.locator('.desk-tabs').getByRole('button', { name: 'My work', exact: true }).click()
+  await page.locator('.desk-tabs').getByRole('tab', { name: 'My work', exact: true }).click()
   // Returning to My work preserves the already-open practice library.
   await page.locator('.scenario-row', { has: page.getByRole('heading', { name: /Practice set 2: Workforce planning/, exact: true }) }).getByRole('button', { name: 'Start practice set 2' }).click()
   await page.waitForFunction((expected) => {

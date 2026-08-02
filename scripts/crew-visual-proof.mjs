@@ -72,7 +72,7 @@ await page.setViewportSize({ width: 1280, height: 900 })
 await page.getByRole('button', { name: 'Open my desk' }).click()
 await page.locator('.ask-card').waitFor({ timeout: 120_000 })
 await page.getByRole('button', { name: 'Your desk' }).click()
-await page.getByRole('button', { name: 'Progress' }).click()
+await page.getByRole('tab', { name: 'Progress' }).click()
 await page.locator('.desk-crew').waitFor()
 await page.screenshot({ path: artifactPath('progress-crew-1280.png'), fullPage: true })
 const progress = await page.locator('.career-dossier .desk-crew').evaluate((crew) => ({

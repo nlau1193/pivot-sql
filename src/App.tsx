@@ -308,7 +308,7 @@ function Loading({ msg, frac, bytes }: { msg: string; frac: number; bytes: LoadB
     <main className="fullpage-card" aria-busy="true">
       <div className="card intro-card">
         <div className="wordmark">Star67</div>
-        <h1 id="warehouse-loading-title">Setting up your desk…</h1>
+        <h1 id="warehouse-loading-title">Preparing your local practice desk…</h1>
         <div
           className="progress-track"
           role="progressbar"
@@ -325,8 +325,8 @@ function Loading({ msg, frac, bytes }: { msg: string; frac: number; bytes: LoadB
           <span className="loading-measure" aria-hidden="true">{byteText ?? `${Math.round(percent)}%`}</span>
         </div>
         <p className="fineprint loading-note">
-          You're downloading an entire company's finance warehouse — millions of rows — into this
-          tab. The database, queries, and coaching stay on your machine.
+          This one-time local download includes the practice warehouse. The database, queries, and
+          coaching stay on your machine.
         </p>
       </div>
     </main>

@@ -203,11 +203,11 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
         <div className="coach-panel__identity">
           <div className="coach-panel__title-row">
             <h2 id="frosty-coach-title">Ask Frosty</h2>
-            {visibleResponse && (
-              <span className="coach-panel__source">
-                {visibleResponse.source === 'remote' ? `Optional AI · ${providerLabel}` : 'Built-in · private'}
-              </span>
-            )}
+            <span className="coach-panel__source">
+              {visibleResponse?.source === 'remote'
+                ? `Optional AI · ${providerLabel}`
+                : optionalTransport ? 'Built-in first · optional AI' : 'Built-in · private'}
+            </span>
           </div>
           <p>One next step, based on your ask and current work. The warehouse checker remains the judge.</p>
         </div>
