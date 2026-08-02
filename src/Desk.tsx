@@ -3,7 +3,6 @@ import { DATA, nextMission, simByQuestionId, simIsComplete } from './missions'
 import { exportProgress, importProgress, type ProgressV2 } from './progress-store'
 import { CareerDossier } from './CareerDossier'
 import { PathChooser } from './PathChooser'
-import { WorkplaceTools } from './WorkplaceTools'
 import type { PathId } from './kit/path-registry'
 import { PARKLINE_SCENARIOS, scenarioProgress } from './packs/parkline-fpa/scenarios'
 import { screenUnlockMissionId } from './packs/active'
@@ -144,7 +143,6 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
               <>
                 <PathChooser screensUnlocked={capstoneDone} onChoose={choosePath} />
                 <div className="desk-footnote">
-                  <WorkplaceTools />
                   <ProgressPorter progress={progress} />
                 </div>
               </>

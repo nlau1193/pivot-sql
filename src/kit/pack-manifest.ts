@@ -1,13 +1,12 @@
 /**
  * Content-pack manifest contract — role-agnostic immersion kernel boundary.
- * Packs declare identity, paths, integrations, and content pointers without
+ * Packs declare identity, paths, and content pointers without
  * baking private user or machine state into the kit.
  *
  * This manifest is the public pack contract.
  */
 
 import type { PathId } from './path-registry'
-import type { IntegrationId } from '../integrations/types'
 
 export type PackRole = 'fpa' | 'engineer' | 'designer'
 
@@ -20,8 +19,6 @@ export interface PackManifest {
   version: 1
   /** Open-world desk directions this pack exposes */
   pathIds: PathId[]
-  /** Integrations the pack may request; the local workspace stays disconnected */
-  integrationIds: IntegrationId[]
   /** Capstone mission id that unlocks screen practice, if any */
   screenUnlockMissionId: string | null
   /** Expected content floors (fail-closed at build) */

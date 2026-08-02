@@ -1,7 +1,7 @@
 /**
  * Fail-closed pack-manifest contract.
  * Validates the active Parkline FP&A pack against compiled mission content and
- * kernel path/integration registries — without claiming live GitHub/Slack.
+ * kernel path registries — without claiming live GitHub/Slack integrations.
  */
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -13,7 +13,6 @@ const pathRegistry = await readFile(new URL('../src/kit/path-registry.ts', impor
 const packManifestTypes = await readFile(new URL('../src/kit/pack-manifest.ts', import.meta.url), 'utf8')
 const parklineManifestSrc = await readFile(new URL('../src/packs/parkline-fpa/manifest.ts', import.meta.url), 'utf8')
 const activeSrc = await readFile(new URL('../src/packs/active.ts', import.meta.url), 'utf8')
-const integrationTypes = await readFile(new URL('../src/integrations/types.ts', import.meta.url), 'utf8')
 
 let passed = 0
 const check = (name, proof) => {
@@ -123,12 +122,6 @@ check('path session carries optional scenario identity with legacy fallback', ()
   assert.match(pathSession, /scenarioId === undefined \? priorScenarioId : scenarioId/)
 })
 
-check('integration adapters default to disconnected honesty', () => {
-  assert.match(integrationTypes, /state: 'disconnected'/)
-  assert.match(integrationTypes, /Not connected/)
-  assert.doesNotMatch(integrationTypes, /state: 'live'/)
-})
-
 check('compiled Star67 content meets pack floors', () => {
   assert.equal(compiled.company, 'Star67')
   assert.ok(compiled.missions.length >= 179, `missions=${compiled.missions.length}`)
@@ -154,7 +147,7 @@ check('badge and stage ids are non-empty derived contracts', () => {
 })
 
 check('no personal secrets baked into pack/kit sources', () => {
-  const blob = [pathRegistry, packManifestTypes, parklineManifestSrc, activeSrc, integrationTypes].join('\n')
+  const blob = [pathRegistry, packManifestTypes, parklineManifestSrc, activeSrc].join('\n')
   assert.doesNotMatch(blob, /\/Users\/|connections\.csv|[A-Z][A-Z0-9_]+_API_KEY|(?:^|\/)\.env(?:$|\/)/i)
 })
 

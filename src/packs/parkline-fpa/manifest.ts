@@ -7,7 +7,6 @@ export const parklineFpaManifest: PackManifest = {
   role: 'fpa',
   version: 1,
   pathIds: ['mission-ladder', 'scenario-library', 'free-explore', 'career-dossier', 'screen-practice'],
-  integrationIds: ['github', 'slack'],
   screenUnlockMissionId: 'm17',
   expectations: {
     minMissions: 179,

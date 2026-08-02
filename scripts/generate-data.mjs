@@ -1082,7 +1082,11 @@ async function main() {
   }
   if (manifest.tables.fct_gl_transactions.rows < 2000000) errs.push(`GL only ${manifest.tables.fct_gl_transactions.rows} rows (<2M — the Excel-ceiling line stops being honest)`)
   if (totalBytes > 60 * 1024 * 1024) errs.push(`parquet total ${(totalBytes / 1e6).toFixed(0)}MB exceeds 60MB hard abort`)
-  if (errs.length) { console.error('GENERATION GATE FAILED:\n - ' + errs.join('\n - ')); process.exit(1) }
+  if (errs.length) {
+    // Throw so runWithGenerationLock() can release the lock in its finally.
+    // process.exit() would bypass that cleanup and strand a fresh clone for 15m.
+    throw new Error('GENERATION GATE FAILED:\n - ' + errs.join('\n - '))
+  }
   console.log('ALL GENERATION GATES GREEN')
 }
 

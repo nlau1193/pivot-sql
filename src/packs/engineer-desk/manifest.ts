@@ -11,7 +11,6 @@ export const engineerDeskManifest: PackManifest = {
   role: 'engineer',
   version: 1,
   pathIds: ['mission-ladder', 'free-explore', 'career-dossier'],
-  integrationIds: ['github', 'slack'],
   screenUnlockMissionId: null,
   expectations: {
     minMissions: 0,

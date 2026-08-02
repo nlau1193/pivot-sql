@@ -11,7 +11,6 @@ export const designerDeskManifest: PackManifest = {
   role: 'designer',
   version: 1,
   pathIds: ['mission-ladder', 'free-explore', 'career-dossier'],
-  integrationIds: ['slack'],
   screenUnlockMissionId: null,
   expectations: {
     minMissions: 0,

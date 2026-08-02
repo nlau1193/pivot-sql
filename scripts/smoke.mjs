@@ -2222,51 +2222,19 @@ try {
       && pathChooser.openWorld,
     JSON.stringify(pathChooser),
   )
-  const workplaceTools = await page.evaluate(() => {
-    const root = document.querySelector('.workplace-tools')
-    const tools = Array.from(document.querySelectorAll('.workplace-tool')).map((el) => ({
-      id: el.getAttribute('data-integration'),
-      state: el.getAttribute('data-state'),
-      label: el.querySelector('.workplace-tool-label')?.textContent?.trim() ?? '',
-      detail: el.querySelector('.workplace-tool-detail')?.textContent?.trim() ?? '',
-    }))
-    return {
-      present: !!root,
-      copy: root?.textContent ?? '',
-      tools,
-    }
-  })
+  const optionalSurfaces = await page.evaluate(() => ({
+    workplaceTools: !!document.querySelector('.workplace-tools'),
+    futureDesks: !!document.querySelector('.future-desks'),
+    coreDirections: document.querySelectorAll('.path-card').length,
+    copy: document.querySelector('.path-chooser')?.textContent ?? '',
+  }))
   step(
-    'desk shows honest disconnected workplace tools',
-    workplaceTools.present
-      && workplaceTools.tools.length === 2
-      && workplaceTools.tools.every((t) => t.state === 'disconnected' && /Not connected/i.test(t.detail))
-      && /Star67/i.test(workplaceTools.copy)
-      && !/live issue|live PR|unread mention/i.test(workplaceTools.copy),
-    JSON.stringify(workplaceTools),
-  )
-  const futureDesks = await page.evaluate(() => {
-    const rows = Array.from(document.querySelectorAll('.future-desk')).map((el) => ({
-      id: el.getAttribute('data-pack-id'),
-      state: el.getAttribute('data-state'),
-      label: el.querySelector('.future-desk-label')?.textContent?.trim() ?? '',
-      status: el.querySelector('.future-desk-state')?.textContent?.trim() ?? '',
-    }))
-    return {
-      present: !!document.querySelector('.future-desks'),
-      rows,
-      copy: document.querySelector('.future-desks')?.textContent ?? '',
-    }
-  })
-  step(
-    'desk lists future Eng/Design packs as not installed',
-    futureDesks.present
-      && futureDesks.rows.length === 2
-      && futureDesks.rows.every((r) => r.state === 'not-installed' && r.status === 'Not installed')
-      && futureDesks.rows.some((r) => r.id === 'engineer-desk')
-      && futureDesks.rows.some((r) => r.id === 'designer-desk')
-      && /content not installed/i.test(futureDesks.copy),
-    JSON.stringify(futureDesks),
+    'desk keeps the core directions focused',
+    !optionalSurfaces.workplaceTools
+      && !optionalSurfaces.futureDesks
+      && optionalSurfaces.coreDirections === 4
+      && /what would you like to do|switch anytime/i.test(optionalSurfaces.copy),
+    JSON.stringify(optionalSurfaces),
   )
   await openScenarioLibrary(page)
   await page.waitForFunction(() => document.activeElement?.id === 'scenario-library-title')

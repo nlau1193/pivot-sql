@@ -30,6 +30,11 @@ one adaptive next-step action, deterministic and browser-local today.
    now show the real local app and the current coaching surface; a clean Chrome
    Guest Computer Use pass is also saved as
    [`pivot-computer-desk.png`](pivot-computer-desk.png).
+9. **The desk displayed disconnected GitHub/Slack cards and not-installed
+   future desks.** Those were static placeholders with no connection or install
+   action, so they added decision noise without capability. The learner surface
+   now keeps the four core directions and local progress/import only; the
+   internal pack registry remains a code seam, not a promise of integrations.
 
 ## Reproduced or source-backed follow-up inventory
 
@@ -56,13 +61,10 @@ one adaptive next-step action, deterministic and browser-local today.
 18. A few relationship cards still need stronger per-field semantics for
     screen-reader navigation; the relationship work surface itself remains
     usable at 320–1,440 CSS pixels.
-19. The optional Workplace Tools panel contains clearly marked unavailable
-    integrations; it is deferred rather than pretending GitHub, Slack, or a
-    cloud connection exists.
-20. DuckDB WASM Arrow date/time/decimal conversion needs a browser-native fixture
+19. DuckDB WASM Arrow date/time/decimal conversion needs a browser-native fixture
     before it can be called fully proven; Node-side checks are not enough.
 
-Items 9–20 are explicit follow-up risks, not hidden release gates. No private
+Items 10–19 are explicit follow-up risks, not hidden release gates. No private
 resume, account, paid API key, LinkedIn session, or real interview material is
 required or committed.
 
@@ -70,8 +72,9 @@ required or committed.
 
 - Taste lint: **0 errors, 0 warnings, 0 suggestions** across `docs/`,
   `README.md`, and the coaching source touched in this pass.
-- Impeccable detector: one intentional warning remains on the amber advisory
-  assessment rule. It is a semantic state marker, not a decorative card stripe.
+- Impeccable detector: unavailable in this environment; no detector result is
+  claimed. The amber advisory rule remains a semantic state marker, not a
+  decorative card stripe.
 - Browser proof: Playwright smoke is **174/174 steps green**; the clean Chrome
   Guest Computer Use pass opened the local desk and captured
   [`pivot-computer-desk.png`](pivot-computer-desk.png) with the warehouse,
@@ -122,9 +125,10 @@ credential, retention, and rate-limit policy. Until then, Frosty is the truthful
 private default.
 
 Lower-risk follow-ups remain explicit: run the full browser smoke path in CI,
-publish per-artifact checksums, make generator output transactional, add a few
-relationship-field screen-reader labels, and keep the optional Workplace Tools
-surfaces visibly disconnected. These are not hidden release gates.
+publish per-artifact checksums, make generator output transactional, and add a
+few relationship-field screen-reader labels. The removed integration cards are
+not a release gate; a future integration would need a real consented boundary
+before it returns to the learner surface.
 
 ### Fresh proof
 
@@ -210,7 +214,7 @@ claim.
 - `npm run build`: green — regenerated **2,930,845 rows / 25.7 MB**, all
   contracts, TypeScript, and Vite production output; the largest JS bundle is
   2.61 MB before DuckDB WASM.
-- `npm run smoke -- http://127.0.0.1:5198`: **176/176 steps green**, with no
+- `npm run smoke -- http://127.0.0.1:5198`: **175/175 steps green**, with no
   uncaught page errors and no hosted/private API requests. The proof covers
   Riff-first hierarchy, the one-action local Frosty coach, desktop/narrow
   workbench behavior, progress language, cancellation, and screen practice.
@@ -222,10 +226,19 @@ claim.
   seam accepts only relative or same-origin endpoints, validates replies,
   cannot grade or mutate progress, and falls back to Frosty on timeout or
   malformed output. No Luna-high endpoint, credential, or paid tool is shipped.
-- Impeccable's single amber assessment warning is intentional: it marks an
-  advisory state rather than a decorative card stripe.
+- Impeccable was not installed or available in this environment, so no detector
+  result is claimed. The amber assessment remains an intentional semantic state
+  marker rather than a decorative card stripe.
 
 The remaining candidates are deliberately bounded: CI browser smoke,
 transactional/checksummed generation, relationship-field labels, CSP/error
 boundary, code splitting, and development-only debug hooks. They are not
 reproduced release regressions, so this pass does not churn the proven surface.
+
+## Simplification fix — 2026-08-02
+
+The old disconnected-tools and future-desk cards are gone from the learner UI.
+The browser proof now asserts their absence, four core directions, and the same
+local-only privacy boundary: **175/175 steps green** after the removal. This is
+the final learner-facing boundary for this pass; no GitHub, Slack, OAuth, or
+cloud connection is shipped or implied.

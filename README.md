@@ -1,6 +1,9 @@
 # Star67
 
-[Open Star67 in your browser →](https://learn-sql-peach.vercel.app/)
+Star67 runs locally in your browser. The repository intentionally does not
+link to a hosted preview: a hosted build can lag this source until its owner
+redeploys it. The local instructions below always use the exact code you
+cloned.
 
 Learn SQL by solving realistic finance questions inside a fictional company.
 Practice at the Star67 finance desk in your browser—no account, uploads, or AI

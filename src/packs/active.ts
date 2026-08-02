@@ -1,7 +1,5 @@
 import { ACTIVE_PACK_ID, type PackManifest } from '../kit/pack-manifest'
 import { parklineDeskPaths, type DeskPath } from '../kit/path-registry'
-import { listIntegrationStatuses } from '../integrations/registry'
-import type { IntegrationStatus } from '../integrations/types'
 import parklineFpaManifest from '../packs/parkline-fpa/manifest'
 import engineerDeskManifest from '../packs/engineer-desk/manifest'
 import designerDeskManifest from '../packs/designer-desk/manifest'
@@ -29,7 +27,7 @@ export function installedPacks(): PackManifest[] {
   return registeredPacks().filter((pack) => pack.id === ACTIVE_PACK_ID)
 }
 
-/** Packs registered but not installed — honest Not-installed desks. */
+/** Packs registered for a future install seam; no learner-facing cards imply they exist. */
 export function notInstalledPacks(): PackManifest[] {
   const installed = new Set(installedPacks().map((pack) => pack.id))
   return registeredPacks().filter((pack) => !installed.has(pack.id))
@@ -39,12 +37,6 @@ export function deskPathsForActivePack(opts: { screensUnlocked: boolean }): Desk
   const pack = activePack()
   const allowed = new Set(pack.pathIds)
   return parklineDeskPaths({ ...opts, place: pack.place }).filter((path) => allowed.has(path.id))
-}
-
-export function integrationsForActivePack(): IntegrationStatus[] {
-  const pack = activePack()
-  const wanted = new Set(pack.integrationIds)
-  return listIntegrationStatuses().filter((status) => wanted.has(status.id))
 }
 
 export function screenUnlockMissionId(): string | null {
