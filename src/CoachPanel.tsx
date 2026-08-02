@@ -119,6 +119,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
   const restoreActionFocusRef = useRef(false)
   const frosty = DESK_CREW.frosty
   const optionalTransport = configuredCoachTransport()
+  const providerLabel = optionalTransport?.id?.trim() || 'optional AI'
   const currentAttempt = attempt !== null && attemptIsCurrent
   // A result belongs to the query that produced it. Once the learner edits
   // the draft, the old verdict/error is still visible for context but cannot
@@ -204,7 +205,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
             <h2 id="frosty-coach-title">Ask Frosty</h2>
             {visibleResponse && (
               <span className="coach-panel__source">
-                {visibleResponse.source === 'remote' ? 'Optional AI · Luna-high' : 'Built-in · private'}
+                {visibleResponse.source === 'remote' ? `Optional AI · ${providerLabel}` : 'Built-in · private'}
               </span>
             )}
           </div>
@@ -217,7 +218,6 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
           ref={actionRef}
           type="button"
           className="btn-primary btn-small coach-panel__action"
-          aria-pressed={visibleResponse !== null}
           disabled={pendingMode !== null}
           onClick={() => {
             if (pendingMode !== null) return
@@ -239,7 +239,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
       <details className="coach-panel__privacy">
         <summary>How coaching uses your work</summary>
         <p>{optionalTransport
-          ? 'This build has an optional Luna-high bridge. Nothing is sent until you choose this action; the bridge receives only this query, a small visible result sample, and authored schema. It never receives the answer key or progress. Frosty cannot run SQL, insert an answer, or mark work complete.'
+          ? `This build has an optional ${providerLabel} bridge. Nothing is sent until you choose this action; the bridge receives only this query, a small visible result sample, and authored schema. It never receives the answer key or progress. Frosty cannot run SQL, insert an answer, or mark work complete.`
           : 'Frosty runs only when you choose an action. Guidance is authored into Star67 and stays in this browser. Optional AI coaching is off in this build. Frosty cannot run SQL, insert an answer, or mark work complete.'}</p>
       </details>
 
@@ -248,7 +248,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
         {visibleResponse && (
           <article className="coach-response">
             <div className="coach-response__eyebrow">
-              {visibleResponse.source === 'remote' ? 'Frosty · optional Luna-high guidance' : 'Frosty · built-in, private guidance'}
+              {visibleResponse.source === 'remote' ? `Frosty · optional ${providerLabel} guidance` : 'Frosty · built-in, private guidance'}
             </div>
             {assessment && (
               <div className="coach-response__assessment">

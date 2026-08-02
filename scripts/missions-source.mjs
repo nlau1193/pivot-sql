@@ -1393,7 +1393,7 @@ export const MISSIONS = [
       `SELECT count(*) AS transaction_lines\nFROM fct_gl_transactions;\n\ncount(*) counts rows; FROM says which table; AS just gives the answer a readable name. That's the whole query. Every query you'll ever write starts with this skeleton: SELECT what, FROM where.`,
     ],
     sayIt: `"I'd start any new table by checking its row count and asking what one row represents — here, one row is one GL line."`,
-    successNote: `Excel tops out at 1,048,576 rows. You just queried more than double that, in a tenth of a second. This is why finance teams at Figma and Datadog live in the warehouse — and you're now someone who queries it.`,
+    successNote: `Excel tops out at 1,048,576 rows. You just queried more than double that, in a tenth of a second. This is why modern FP&A teams work in a warehouse — and you're now someone who queries it.`,
     jdCompanies: ['Figma'],
   },
   {

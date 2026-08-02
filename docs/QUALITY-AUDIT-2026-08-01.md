@@ -158,3 +158,74 @@ surfaces visibly disconnected. These are not hidden release gates.
 31. The public debug seams used by browser proof are bounded today, but a
     future release should keep test-only hooks behind an explicit development
     build flag so production bundles expose fewer inspection affordances.
+
+### Focused review fix — 2026-08-02
+
+32. **A non-cooperative optional coach could hang the learner forever.** The
+    timeout previously aborted the signal but still awaited a transport that
+    ignored it. `requestCoach` now races the provider promise against the same
+    timeout boundary, falls back to local Frosty guidance, and the provider
+    contract holds a deliberately hanging adapter for the full timeout window.
+
+### Focused review fixes — 2026-08-02
+
+33. **A host could point the optional coach at an arbitrary origin.** The
+    transport now accepts relative or same-origin endpoints only. A host may
+    still proxy to a paid model behind its own consent and retention policy;
+    the public build cannot silently post visible SQL and schema cross-origin.
+34. **A completed ask could become a dead end after a later SQL error.** The
+    delivered bar now follows the persisted campaign completion state and keeps
+    the next navigation action available while the learner retries freely.
+35. **The raw engine-error disclosure advertised a conditional target.** Its
+    controlled `<pre>` now stays mounted and toggles hidden state, so the
+    `aria-controls` relationship is truthful before and after expansion.
+36. **The editor had no accessible name and the mobile Data opener had no state.**
+    The SQL editor is now labelled, and the database drawer opener exposes
+    `aria-expanded` alongside its dialog relationship.
+37. **Public metadata and first success copy implied a real employer or job.**
+    The title, social metadata, and learner-facing lesson copy now say
+    “realistic finance questions” inside a fictional Star67 desk; named-company
+    readiness data remains an internal, explicitly fictional practice layer.
+38. **Progress language still exposed badge/dossier jargon.** The visible
+    Progress view now leads with “skills,” “next skill to practice,” and plain
+    “more skills,” while evidence IDs remain implementation-only contracts.
+
+The company-card/readiness generator remains a documented simplification
+candidate: it is not a visible Progress dependency today, but removing the
+catalog would be a deliberate content migration rather than a review-side
+cleanup. Generated-data transactionality/checksums, relationship-field labels,
+browser smoke in CI, CSP/error boundary, code-splitting, and description search
+remain bounded follow-ups.
+
+## Final takeover receipt — 2026-08-02
+
+This receipt supersedes the earlier browser proof counts above. It records the
+final Star67 workbench boundary without inventing a hosted or paid-provider
+claim.
+
+- `npm test`: green — deterministic artifacts, error corpus, format, pack,
+  progression, crew, casebook, navigator, ProgressV2, screen-runner, and
+  coaching contracts.
+- `npx tsc -b --pretty false`: green.
+- `npm run build`: green — regenerated **2,930,845 rows / 25.7 MB**, all
+  contracts, TypeScript, and Vite production output; the largest JS bundle is
+  2.61 MB before DuckDB WASM.
+- `npm run smoke -- http://127.0.0.1:5198`: **176/176 steps green**, with no
+  uncaught page errors and no hosted/private API requests. The proof covers
+  Riff-first hierarchy, the one-action local Frosty coach, desktop/narrow
+  workbench behavior, progress language, cancellation, and screen practice.
+- Visual proof remains [`pivot-computer-desk.png`](pivot-computer-desk.png),
+  showing the ask, editor, result area, and secondary Frosty card in one desk.
+- Taste lint: **0 errors, 0 warnings, 0 suggestions** across `docs/` and
+  `README.md`.
+- The public default is deterministic and browser-local. The optional coach
+  seam accepts only relative or same-origin endpoints, validates replies,
+  cannot grade or mutate progress, and falls back to Frosty on timeout or
+  malformed output. No Luna-high endpoint, credential, or paid tool is shipped.
+- Impeccable's single amber assessment warning is intentional: it marks an
+  advisory state rather than a decorative card stripe.
+
+The remaining candidates are deliberately bounded: CI browser smoke,
+transactional/checksummed generation, relationship-field labels, CSP/error
+boundary, code splitting, and development-only debug hooks. They are not
+reproduced release regressions, so this pass does not churn the proven surface.

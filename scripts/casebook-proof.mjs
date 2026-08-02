@@ -97,7 +97,7 @@ check('plain-language progress layout is styled, not bare unstyled markup', () =
   assert.match(css, /\.future-skills\s*\{/)
   assert.match(css, /\.progress-complete\s*\{/)
   assert.match(progressView, />Your progress</)
-  assert.match(progressView, />Your next skill badge</)
+  assert.match(progressView, />Your next skill to practice</)
   assert.doesNotMatch(progressView, /Target-company readiness|Career dossier|saved pulls/i)
 })
 

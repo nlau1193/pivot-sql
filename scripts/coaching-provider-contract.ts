@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { requestCoach, type CoachTransport } from '../src/coaching-client.ts'
+import { createHttpCoachTransport, requestCoach, type CoachTransport } from '../src/coaching-client.ts'
 import type { CoachRequestV1 } from '../src/kit/coaching-contract.ts'
 
 const request: CoachRequestV1 = {
@@ -58,6 +58,12 @@ globalThis.fetch = (async () => {
 const local = await requestCoach(request)
 assert.equal(local.source, 'local')
 assert.equal(fetchCalls, 0, 'no endpoint must mean no network')
+assert.doesNotThrow(() => createHttpCoachTransport('/api/coach'), 'same-origin relative endpoints remain available')
+assert.throws(
+  () => createHttpCoachTransport('https://coach.example.test/v1/nudge'),
+  /same-origin/,
+  'an absolute provider endpoint must not exfiltrate visible SQL by default',
+)
 
 let providerCalls = 0
 const provider: CoachTransport = {
@@ -93,6 +99,18 @@ const mismatched = await requestCoach(request, {
   },
 })
 assert.equal(mismatched.source, 'local', 'mismatched provider replies must fall back locally')
+
+const hangingStartedAt = Date.now()
+const hanging = await requestCoach(request, {
+  transport: {
+    id: 'non-cooperative',
+    async ask() {
+      return new Promise<never>(() => {})
+    },
+  },
+})
+assert.equal(hanging.source, 'local', 'a non-cooperative provider must time out to local guidance')
+assert.ok(Date.now() - hangingStartedAt >= 8_500, 'the provider timeout must actually bound the await')
 
 const abort = new AbortController()
 const pending = requestCoach(request, {

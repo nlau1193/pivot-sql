@@ -48,7 +48,7 @@ export function parklineDeskPaths(opts: { screensUnlocked: boolean; place?: stri
     {
       id: 'career-dossier',
       title: 'Progress',
-      summary: 'See completed tasks, earned skills, and the next badge you are working toward.',
+      summary: 'See completed tasks, earned skills, and the next skill you are working toward.',
       actionLabel: 'View progress',
     },
     {

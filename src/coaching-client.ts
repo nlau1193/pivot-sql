@@ -43,10 +43,24 @@ function configuredEndpoint(): string {
 export function createHttpCoachTransport(endpoint: string, id = 'luna-high'): CoachTransport {
   const target = endpoint.trim()
   if (!target) throw new Error('A coaching endpoint is required')
+  let parsed: URL
+  try {
+    parsed = new URL(target, typeof location === 'undefined' ? 'http://localhost/' : location.href)
+  } catch {
+    throw new Error('The coaching endpoint must be a valid same-origin URL')
+  }
+  const browserOrigin = typeof location === 'undefined' ? null : location.origin
+  // The coach receives the learner's visible SQL and schema. Keep the public
+  // seam same-origin by construction; a host can still proxy to any provider
+  // behind its own consent, credentials, retention, and rate-limit policy.
+  if ((browserOrigin && parsed.origin !== browserOrigin)
+      || (!browserOrigin && /^(?:https?:)?\/\//i.test(target))) {
+    throw new Error('The coaching endpoint must be same-origin')
+  }
   return {
     id,
     async ask(request, options) {
-      const response = await fetch(target, {
+      const response = await fetch(parsed.href, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(request),
@@ -64,11 +78,24 @@ export function configuredCoachTransport(): CoachTransport | null {
   return endpoint ? createHttpCoachTransport(endpoint) : null
 }
 
-function withTimeout(signal: AbortSignal | undefined): { signal: AbortSignal; timedOut: () => boolean; dispose: () => void } {
+function withTimeout(signal: AbortSignal | undefined): {
+  signal: AbortSignal
+  timedOut: () => boolean
+  aborted: Promise<never>
+  dispose: () => void
+} {
   const controller = new AbortController()
   let timedOut = false
+  let rejectAbort!: (reason?: unknown) => void
+  const aborted = new Promise<never>((_, reject) => {
+    rejectAbort = reject
+  })
   const onAbort = () => controller.abort(signal?.reason)
+  const onControllerAbort = () => {
+    rejectAbort(controller.signal.reason ?? new Error('Coach provider aborted'))
+  }
   signal?.addEventListener('abort', onAbort, { once: true })
+  controller.signal.addEventListener('abort', onControllerAbort, { once: true })
   const timeout = setTimeout(() => {
     timedOut = true
     controller.abort(new Error('Coach provider timed out'))
@@ -76,9 +103,11 @@ function withTimeout(signal: AbortSignal | undefined): { signal: AbortSignal; ti
   return {
     signal: controller.signal,
     timedOut: () => timedOut,
+    aborted,
     dispose: () => {
       clearTimeout(timeout)
       signal?.removeEventListener('abort', onAbort)
+      controller.signal.removeEventListener('abort', onControllerAbort)
     },
   }
 }
@@ -100,7 +129,13 @@ export async function requestCoach(
 
   const timed = withTimeout(options.signal)
   try {
-    const raw = await transport.ask(request, { signal: timed.signal })
+    // Aborting a signal cannot force a host-owned transport to settle. Race
+    // the provider promise as well, so a non-cooperative adapter cannot leave
+    // the learner in a permanent "Thinking…" state.
+    const raw = await Promise.race([
+      transport.ask(request, { signal: timed.signal }),
+      timed.aborted,
+    ])
     if (options.signal?.aborted) throw options.signal.reason
     if (timed.timedOut()) return createLocalCoachResponse(request)
     const candidate = raw && typeof raw === 'object'

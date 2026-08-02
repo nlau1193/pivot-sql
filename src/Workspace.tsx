@@ -751,6 +751,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
             aria-label="Open database objects"
             aria-haspopup="dialog"
             aria-controls="database-navigator"
+            aria-expanded={navigatorDrawerOpen}
             onClick={() => setNavigatorDrawerOpen(true)}
           >
             Data
@@ -895,6 +896,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
               ref={cmRef}
               value={code}
               onChange={persistDraft}
+              aria-label="SQL editor"
               extensions={[sqlLang(), runKeymap, EditorView.lineWrapping]}
               placeholder={isSim ? 'Type your query here — say your plan out loud first.' : active ? 'Type your query here — or start from a hint.' : 'SELECT …'}
               basicSetup={{ lineNumbers: true, foldGutter: false, autocompletion: false, highlightActiveLine: false }}
@@ -913,7 +915,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
 
           <ResultsPanel
             run={run}
-            solvedThis={solvedThis}
+            delivered={showDelivered}
             mission={mission}
             simQuestion={simQuestion}
             onNext={() => {
@@ -1332,8 +1334,8 @@ function clampWarehouseSheetHeight(height: number, maximum: number): number {
   )
 }
 
-function ResultsPanel({ run, solvedThis, mission, simQuestion, onNext, nextLabel }: {
-  run: RunState; solvedThis: boolean
+function ResultsPanel({ run, delivered, mission, simQuestion, onNext, nextLabel }: {
+  run: RunState; delivered: boolean
   mission: CompiledMission | null; simQuestion: SimQuestion | null
   onNext: () => void; nextLabel: string
 }) {
@@ -1351,9 +1353,20 @@ function ResultsPanel({ run, solvedThis, mission, simQuestion, onNext, nextLabel
         <div className="verdict verdict-error">
           <div className="verdict-head">{e.headline}</div>
           <p>{e.detail}</p>
-          <button className="disclosure" onClick={() => setShowRaw(!showRaw)}>{showRaw ? 'Hide' : 'What the engine actually said'}</button>
-          {showRaw && <pre className="rawerror">{e.raw}</pre>}
+          <button
+            className="disclosure"
+            aria-expanded={showRaw}
+            aria-controls="raw-engine-error"
+            onClick={() => setShowRaw(!showRaw)}
+          >{showRaw ? 'Hide' : 'What the engine actually said'}</button>
+          <pre id="raw-engine-error" className="rawerror" hidden={!showRaw}>{e.raw}</pre>
         </div>
+        {delivered && (mission || simQuestion) && (
+          <div className="delivered-bar">
+            <span>✓ Delivered — run anything you like here.</span>
+            <button className="btn-primary btn-small" onClick={onNext}>{nextLabel} →</button>
+          </div>
+        )}
       </div>
     )
   }
@@ -1373,19 +1386,19 @@ function ResultsPanel({ run, solvedThis, mission, simQuestion, onNext, nextLabel
           <button className="btn-primary" onClick={onNext}>{nextLabel} →</button>
         </div>
       )}
-      {solvedThis && (!verdict || verdict.kind !== 'correct') && (mission || simQuestion) && (
+      {delivered && (!verdict || verdict.kind !== 'correct') && (mission || simQuestion) && (
         <div className="delivered-bar">
           <span>✓ Delivered — run anything you like here.</span>
           <button className="btn-primary btn-small" onClick={onNext}>{nextLabel} →</button>
         </div>
       )}
-      {verdict?.kind === 'unavailable' && !solvedThis && (
+      {verdict?.kind === 'unavailable' && !delivered && (
         <div className="verdict verdict-error">
           <div className="verdict-head">The answer checker hiccupped — this is Star67, not your SQL.</div>
           <p>{verdict.message}</p>
         </div>
       )}
-      {verdict && verdict.kind !== 'correct' && verdict.kind !== 'unavailable' && !solvedThis && (
+      {verdict && verdict.kind !== 'correct' && verdict.kind !== 'unavailable' && !delivered && (
         <div className="verdict verdict-wrong">
           <div className="verdict-head">Not it yet — but you ran clean SQL, and here's the trail:</div>
           <p>{verdict.message}</p>

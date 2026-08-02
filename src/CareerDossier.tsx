@@ -65,7 +65,7 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
           <h2 id="dossier-title">Your progress</h2>
           <p>
             {completedTaskCount} {completedTaskCount === 1 ? 'task' : 'tasks'} complete ·{' '}
-            {earnedCount} skill {earnedCount === 1 ? 'badge' : 'badges'} earned
+            {earnedCount} skill{earnedCount === 1 ? '' : 's'} earned
           </p>
         </div>
         <DeskCrew />
@@ -74,8 +74,8 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
       {nextBadge && (
         <section className="dossier-section" aria-labelledby="next-skill-title">
           <div className="dossier-section-head">
-            <h2 id="next-skill-title">Your next skill badge</h2>
-            <p>Complete the listed tasks to earn it. No points, streaks, or hidden scoring.</p>
+            <h2 id="next-skill-title">Your next skill to practice</h2>
+            <p>Complete the listed tasks to add it to your progress. No points, streaks, or hidden scoring.</p>
           </div>
           <div className="evidence-seal-grid evidence-seal-grid--focus">
             {badgeCard(nextBadge)}
@@ -87,7 +87,7 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
         <section className="dossier-section" aria-labelledby="earned-skills-title">
           <div className="dossier-section-head">
             <h2 id="earned-skills-title">Skills you have earned</h2>
-            <p>Each badge is backed by specific, checked SQL work.</p>
+            <p>Each skill is backed by specific, checked SQL work.</p>
           </div>
           <div className="evidence-seal-grid">
             {earnedBadges.map(badgeCard)}
@@ -97,14 +97,14 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
 
       {!nextBadge && (
         <section className="progress-complete" aria-labelledby="progress-complete-title">
-          <h2 id="progress-complete-title">Every skill badge is complete</h2>
+          <h2 id="progress-complete-title">Every listed skill is complete</h2>
           <p>Your checked work and saved queries remain available whenever you want to revisit them.</p>
         </section>
       )}
 
       {laterBadges.length > 0 && (
         <details className="future-skills">
-          <summary>See {laterBadges.length} later skill {laterBadges.length === 1 ? 'badge' : 'badges'}</summary>
+          <summary>See {laterBadges.length} more skill{laterBadges.length === 1 ? '' : 's'}</summary>
           <p>These unlock naturally as you finish more finance projects.</p>
           <div className="evidence-seal-grid">
             {laterBadges.map(badgeCard)}

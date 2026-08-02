@@ -73,14 +73,10 @@ async function setEditor(page, sql) {
   await page.locator('.editor .cm-content').click()
   await page.keyboard.press(process.platform === 'darwin' ? 'Meta+a' : 'Control+a')
   await page.keyboard.press('Delete')
-  // insertText avoids CM autocompletion/timing flakes vs keyboard.type
-  await page.locator('.editor .cm-content').evaluate((el, text) => {
-    const view = el.cmView?.view ?? null
-    if (view) view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } })
-  }, sql).catch(async () => { await page.keyboard.insertText(sql) })
-  // fallback if evaluate path didn't take
-  const val = await page.locator('.editor .cm-content').innerText()
-  if (!val.includes(sql.slice(0, 20))) await page.keyboard.insertText(sql)
+  // Use the same visible keyboard path a learner has. A private CodeMirror
+  // instance is not a stable automation API, and dispatching into an adapter
+  // that is between React renders can leave the controlled value stale.
+  await page.keyboard.insertText(sql)
 }
 
 async function runQuery(page) {
@@ -1834,10 +1830,30 @@ try {
   await page.locator('.verdict-correct').waitFor({ timeout: 30000 })
   step('mission 1 graded correct', true, `${Date.now() - t0}ms from click to green`)
 
-  // 4. Next ask navigation
-  await page.getByRole('button', { name: /Next ask/ }).click()
+  // A completed mission must remain navigable even when a later retry hits a
+  // normal SQL error. The error detail and raw disclosure are useful, but they
+  // cannot strand the learner at a finished desk.
+  await setEditor(page, 'SELECT * FROM table_that_does_not_exist;')
+  await runQuery(page)
+  await page.locator('.verdict-error').waitFor({ timeout: 30000 })
+  const deliveredAfterError = page.locator('.delivered-bar')
+  step(
+    'a completed mission keeps Next ask after a later SQL error',
+    await deliveredAfterError.isVisible() && await deliveredAfterError.getByRole('button', { name: /Next ask/ }).isVisible(),
+  )
+  const rawDisclosure = page.locator('.disclosure')
+  await rawDisclosure.waitFor({ state: 'visible' })
+  if (await rawDisclosure.getAttribute('aria-expanded') !== 'true') await rawDisclosure.click()
+  step(
+    'engine error disclosure exposes its expanded region',
+    await rawDisclosure.getAttribute('aria-expanded') === 'true'
+      && await page.locator('#raw-engine-error').isVisible(),
+  )
+  await deliveredAfterError.getByRole('button', { name: /Next ask/ }).click()
   await page.locator('.ask-card').waitFor()
-  step('advanced to mission 2', true)
+
+  // 4. Next ask navigation
+  step('advanced to mission 2', (await page.locator('.ask-title').textContent())?.includes('One number for the board deck'))
 
   // 5. Wrong answer → warm diagnostic (not a bare red X)
   await setEditor(page, `SELECT sum(amount) FROM fct_gl_transactions WHERE account_id = '4000'`)
@@ -2673,7 +2689,7 @@ try {
     }
   })
   step(
-    'progress mounts the Star67 crew, one next badge, earned badges, and a closed later-skills list',
+    'progress mounts the Star67 crew, one next skill, earned skills, and a closed later-skills list',
     progressVisual.heroOk
       && /Animina crew at Star67/i.test(progressVisual.crewLabel)
       && progressVisual.crewMembers === expectedDeskCrew.length
@@ -2695,7 +2711,7 @@ try {
       && progressVisual.kicker === 'Your FP&A practice'
       && progressVisual.sealGridDisplay === 'grid'
       && progressVisual.futureClosed
-      && /later skill badges/i.test(progressVisual.futureSummary)
+      && /more skill/i.test(progressVisual.futureSummary)
       && !progressVisual.overflow,
     JSON.stringify(progressVisual),
   )
@@ -2826,7 +2842,7 @@ try {
   const revisitReveal = await page.evaluate(() =>
     Array.from(document.querySelectorAll('.evidence-seal')).every((seal) => seal.getAttribute('data-reveal') === 'false'),
   )
-  step('skill badges do not replay a reveal on revisit', revisitReveal)
+  step('skill reveals do not replay on revisit', revisitReveal)
 
   await page.getByRole('button', { name: /Saved SQL/ }).click()
   const pulls = await page.locator('.pull-item').count()
