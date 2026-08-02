@@ -38,8 +38,10 @@ one adaptive next-step action, deterministic and browser-local today.
 
 ## Reproduced or source-backed follow-up inventory
 
-9. CI currently builds and runs contract suites but does not install a browser
-   and run the full smoke path on every pull request.
+9. **Current CI browser proof:** `.github/workflows/ci.yml` installs Chromium and
+   runs the production-preview smoke path on every push and pull request. The
+   earlier audit wording that said otherwise predates that workflow change and
+   is no longer an open release follow-up.
 10. The generated warehouse is a large first-use download; every fresh browser
     profile pays the cold-load cost.
 11. Data generation writes directly to its target artifacts; an interrupted
@@ -124,11 +126,11 @@ endpoint. A future host may provide the endpoint behind its own consent,
 credential, retention, and rate-limit policy. Until then, Frosty is the truthful
 private default.
 
-Lower-risk follow-ups remain explicit: run the full browser smoke path in CI,
-publish per-artifact checksums, make generator output transactional, and add a
-few relationship-field screen-reader labels. The removed integration cards are
-not a release gate; a future integration would need a real consented boundary
-before it returns to the learner surface.
+Lower-risk follow-ups remain explicit: publish per-artifact checksums, make
+generator output transactional, and add a few relationship-field screen-reader
+labels. The removed integration cards are not a release gate; a future
+integration would need a real consented boundary before it returns to the
+learner surface.
 
 ### Fresh proof
 
@@ -230,10 +232,11 @@ claim.
   result is claimed. The amber assessment remains an intentional semantic state
   marker rather than a decorative card stripe.
 
-The remaining candidates are deliberately bounded: CI browser smoke,
-transactional/checksummed generation, relationship-field labels, CSP/error
-boundary, code splitting, and development-only debug hooks. They are not
-reproduced release regressions, so this pass does not churn the proven surface.
+The remaining candidates are deliberately bounded: transactional/checksummed
+generation, relationship-field labels, CSP/error boundary, code splitting, and
+development-only debug hooks. CI browser smoke is already covered by the
+current workflow. These are not reproduced release regressions, so this pass
+does not churn the proven surface.
 
 ## Simplification fix — 2026-08-02
 
