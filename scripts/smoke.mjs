@@ -2594,10 +2594,10 @@ try {
   await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).click()
   const hightouchSim = SCREEN_SIMS.find((sim) => sim.id === 'sim01')
   const affirmSim = SCREEN_SIMS.find((sim) => sim.id === 'sim05')
-  if (!hightouchSim || !affirmSim) throw new Error('sim01 and sim05 must both exist in the authored audition source')
+  if (!hightouchSim || !affirmSim) throw new Error('sim01 and sim05 must both exist in the authored practice source')
   const staleSharedProcessClaim = /Navan|shared editor|most of your list|live SQL interview assessment|interviewer who cares more/i
   step(
-    'audition copy separates verified employer evidence from invented interview process',
+    'practice source keeps its provenance boundary',
     /fictional Star67/i.test(hightouchSim.intro)
       && /Hightouch/i.test(hightouchSim.intro)
       && /not a claim/i.test(hightouchSim.intro)
@@ -3216,10 +3216,7 @@ try {
   const firstSim = SCREEN_SIMS[0]
   const secondSim = SCREEN_SIMS[1]
   if (!firstSim || !secondSim) throw new Error('smoke requires two screen variants')
-  // company lives on the COMPILED sims (the queue renders per-company audition rows)
-  const compiledSims = compiledContent.sims
-  const secondCompany = compiledSims.find((sim) => sim.id === secondSim.id)?.company ?? ''
-  const firstCompany = compiledSims.find((sim) => sim.id === firstSim.id)?.company ?? ''
+  const practiceLabels = ['Customer metrics', 'Workforce planning', 'Close debugging', 'Plan outcomes', 'Revenue sensitivity']
   await page.evaluate(({ missionIds, firstSimIds, secondSimIds }) => {
     const now = new Date().toISOString()
     // Practice routing is a ProgressV2 contract. Start from a clean authority
@@ -3282,8 +3279,16 @@ try {
   await page.getByRole('button', { name: 'Back to my desk' }).click()
   await page.locator('.ask-card').waitFor({ timeout: 120000 })
   await page.getByRole('button', { name: 'Your desk' }).click()
-  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
+  await page.getByRole('button', { name: /Start practice: SQL practice/ }).click()
   const screenProgressText = await page.locator('.scenario-library-head p').textContent()
+  const practiceLibraryText = await page.locator('.scenario-library').textContent()
+  step(
+    'practice library uses plain set labels without employer names',
+    /Practice set 1: Customer metrics/i.test(practiceLibraryText ?? '')
+      && /Practice set 2: Workforce planning/i.test(practiceLibraryText ?? '')
+      && !/Hightouch|Datadog|1Password|Figma|Affirm/i.test(practiceLibraryText ?? ''),
+    practiceLibraryText?.slice(0, 240) ?? '',
+  )
   await page.getByRole('button', { name: 'Progress', exact: true }).click()
   await page.waitForFunction(() => {
     const earnedIds = Array.from(document.querySelectorAll('.evidence-seal[data-earned="true"]'))
@@ -3316,7 +3321,7 @@ try {
   step('backfilled skill badges do not replay on Progress revisit', backfillRevisitReveals === 0, `${backfillRevisitReveals} replaying`)
   await page.locator('.desk-tabs').getByRole('button', { name: 'My work', exact: true }).click()
   // Returning to My work preserves the already-open practice library.
-  await page.locator('.scenario-row', { has: page.getByRole('heading', { name: secondCompany, exact: true }) }).getByRole('button', { name: `Start ${secondCompany} audition` }).click()
+  await page.locator('.scenario-row', { has: page.getByRole('heading', { name: /Practice set 2: Workforce planning/, exact: true }) }).getByRole('button', { name: 'Start practice set 2' }).click()
   await page.waitForFunction((expected) => {
     const used = Array.from(document.querySelectorAll('[data-used-in-ask="true"]'))
       .map((element) => element.getAttribute('data-relation-name')).filter(Boolean).sort()
@@ -3327,7 +3332,7 @@ try {
   )))
   const expectedAuditionRelations = [...secondSim.questions[0].tables].sort()
   step(
-    'audition questions mark their exact tables in Database objects',
+    'practice questions mark their exact tables in Database objects',
     JSON.stringify(auditionUsedRelations) === JSON.stringify(expectedAuditionRelations),
     `${auditionUsedRelations.join(', ')} | expected ${expectedAuditionRelations.join(', ')}`,
   )
@@ -3353,7 +3358,7 @@ try {
   const startedAttemptId = draftIsolation.currentAttemptId
   step(
     'completed first simulation routes to a blank second set',
-    newSetTitle === secondSim.title && newSetEditor === '' && /1 of \d+ complete/i.test(screenProgressText ?? ''),
+    newSetTitle === practiceLabels[1] && newSetEditor === '' && /1 of \d+ complete/i.test(screenProgressText ?? ''),
     `${screenProgressText?.trim()} | ${newSetTitle} | ${newSetEditor.slice(0, 40)}`,
   )
   step(
@@ -3368,8 +3373,8 @@ try {
   await page.waitForTimeout(2200)
   const agedTimerText = await page.locator('.sim-timer').textContent()
   await page.getByRole('button', { name: 'Your desk' }).click()
-  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
-  await page.getByRole('button', { name: `Restart ${secondCompany} audition` }).click()
+  await page.getByRole('button', { name: /Start practice: SQL practice/ }).click()
+  await page.getByRole('button', { name: 'Restart practice set 2' }).click()
   await page.waitForTimeout(100)
   const retakeEditor = (await readEditorText(page)).trim()
   const restartAttemptState = await page.evaluate(({ auditionId, oldAttemptId, questionIds }) => {
@@ -3451,7 +3456,7 @@ try {
   await page.locator('.verdict-wrong, .verdict-shape').waitFor({ timeout: 30000 })
   step('simulation retake resets grading', !await page.locator('.delivered-bar').count())
 
-  // Each audition row owns its Retake now; the user picks the set. Retaking
+  // Each practice row owns its Retake now; the user picks the set. Retaking
   // the older completion must open ITS intro blank, claiming nothing delivered.
   await page.evaluate(({ firstSimIds, secondSimIds }) => {
     const key = 'pivot.progress.v1'
@@ -3464,11 +3469,11 @@ try {
   await page.getByRole('button', { name: 'Back to my desk' }).click()
   await page.locator('.ask-card').waitFor({ timeout: 120000 })
   await page.getByRole('button', { name: 'Your desk' }).click()
-  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
-  await page.getByRole('button', { name: `Retake ${firstCompany} audition` }).click()
+  await page.getByRole('button', { name: /Start practice: SQL practice/ }).click()
+  await page.getByRole('button', { name: 'Retake practice set 1' }).click()
   const olderFirstTitle = await page.locator('.sim-intro-title').textContent()
   step(
-    'fresh simulation retake does not claim the blank answer is delivered',
+    'fresh practice retake does not claim the blank answer is delivered',
     await page.locator('.delivered-chip').count() === 0,
   )
 
@@ -3481,12 +3486,12 @@ try {
   await page.getByRole('button', { name: 'Back to my desk' }).click()
   await page.locator('.ask-card').waitFor({ timeout: 120000 })
   await page.getByRole('button', { name: 'Your desk' }).click()
-  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
-  await page.getByRole('button', { name: `Retake ${firstCompany} audition` }).click()
+  await page.getByRole('button', { name: /Start practice: SQL practice/ }).click()
+  await page.getByRole('button', { name: 'Retake practice set 1' }).click()
   const partialRetakeTitle = await page.locator('.sim-intro-title').textContent()
   step(
-    'abandoned partial attempt leaves its audition retakeable in place',
-    olderFirstTitle === firstSim.title && partialRetakeTitle === firstSim.title,
+    'abandoned partial attempt leaves its practice set retakeable in place',
+    olderFirstTitle === practiceLabels[0] && partialRetakeTitle === practiceLabels[0],
     `${olderFirstTitle} → ${partialRetakeTitle}`,
   )
 
@@ -3500,12 +3505,12 @@ try {
   await page.getByRole('button', { name: 'Back to my desk' }).click()
   await page.locator('.ask-card').waitFor({ timeout: 120000 })
   await page.getByRole('button', { name: 'Your desk' }).click()
-  await page.getByRole('button', { name: /Start practice: Interview practice/ }).click()
-  await page.getByRole('button', { name: `Retake ${secondCompany} audition` }).click()
+  await page.getByRole('button', { name: /Start practice: SQL practice/ }).click()
+  await page.getByRole('button', { name: 'Retake practice set 2' }).click()
   const olderSecondTitle = await page.locator('.sim-intro-title').textContent()
   step(
-    'each completed audition retakes from its own row',
-    olderFirstTitle === firstSim.title && olderSecondTitle === secondSim.title,
+    'each completed practice set retakes from its own row',
+    olderFirstTitle === practiceLabels[0] && olderSecondTitle === practiceLabels[1],
     `${olderFirstTitle} → ${olderSecondTitle}`,
   )
 

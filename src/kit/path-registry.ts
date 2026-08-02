@@ -53,8 +53,8 @@ export function parklineDeskPaths(opts: { screensUnlocked: boolean; place?: stri
     },
     {
       id: 'screen-practice',
-      title: 'Interview practice',
-      summary: 'Optional timed SQL practice based on common FP&A hiring exercises.',
+      title: 'SQL practice',
+      summary: 'Optional timed SQL practice with common FP&A questions.',
       actionLabel: opts.screensUnlocked ? 'Start practice' : 'Locked for now',
       lockedReason: opts.screensUnlocked
         ? undefined

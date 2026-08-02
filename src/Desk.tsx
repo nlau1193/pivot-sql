@@ -6,6 +6,7 @@ import { PathChooser } from './PathChooser'
 import type { PathId } from './kit/path-registry'
 import { PARKLINE_SCENARIOS, scenarioProgress } from './packs/parkline-fpa/scenarios'
 import { screenUnlockMissionId } from './packs/active'
+import { practiceCopy } from './kit/practice-copy'
 
 interface Props {
   progress: ProgressV2
@@ -192,28 +193,29 @@ function PracticeLibrary({
       <div className="scenario-library-head">
         <button className="scenario-library-back" type="button" onClick={onBack}>← All directions</button>
         <div className="scenario-library-era">Optional practice</div>
-        <h2 id="practice-library-title">Choose an interview practice set</h2>
+        <h2 id="practice-library-title">Choose a practice set</h2>
         <p>
-          {completed} of {DATA.sims.length} complete. These use fictional Star67 data and do not
-          claim to reproduce any company’s interview.
+          {completed} of {DATA.sims.length} complete. Each set uses fictional Star67 data and
+          keeps the focus on the SQL skill—not a company’s interview process.
         </p>
       </div>
       <div className="scenario-list">
-        {DATA.sims.map((sim) => {
+        {DATA.sims.map((sim, index) => {
           const done = simIsComplete(sim, progress)
           const active = activeSimId === sim.id
           const action = active ? 'Restart' : done ? 'Retake' : 'Start'
+          const copy = practiceCopy(sim)
           return (
             <article className={`scenario-row${active ? ' scenario-row-active' : ''}`} key={sim.id}>
               <div className="scenario-copy">
                 <div className="scenario-kicker">{sim.questions.length} questions · {done ? 'Complete' : active ? 'In progress' : 'Not started'}</div>
-                <h3>{sim.company}</h3>
-                <p>{sim.title}</p>
+                <h3>Practice set {index + 1}: {copy.label}</h3>
+                <p>{copy.summary}</p>
               </div>
               <button
                 className={done || active ? 'btn-ghost btn-small' : 'btn-primary btn-small'}
                 type="button"
-                aria-label={`${action} ${sim.company} audition`}
+                aria-label={`${action} practice set ${index + 1}`}
                 onClick={() => onOpen(sim.questions[0]?.id ?? '')}
               >
                 {action}

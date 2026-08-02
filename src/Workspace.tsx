@@ -18,6 +18,7 @@ import { createAttemptReviewEvidence } from './kit/attempt-review'
 import type { AttemptDeterministicVerdictV1, CoachVerdictV1 } from './kit/coaching-contract'
 import type { Star67CoachMission } from './packs/parkline-fpa/coach-context'
 import { DataWorkbook, type DataWorkbookHandle } from './workbook/DataWorkbook'
+import { practiceCopy } from './kit/practice-copy'
 
 interface Props {
   mission: CompiledMission | null
@@ -862,8 +863,8 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
               </div>
               {isSim && simVariant && active.id === simVariant.questions[0]?.id && (
                 <div className="sim-intro">
-                  <div className="sim-intro-title">{simVariant.title}</div>
-                  {simVariant.intro.split('\n\n').map((p, i) => <p key={i}>{p}</p>)}
+                  <div className="sim-intro-title">{practiceCopy(simVariant).label}</div>
+                  <p>{practiceCopy(simVariant).intro}</p>
                 </div>
               )}
               <div className="ask-body">{(isSim ? (active as SimQuestion).ask : (active as CompiledMission).ask).split('\n\n').map((p, i) => <p key={i}>{renderInline(p)}</p>)}</div>

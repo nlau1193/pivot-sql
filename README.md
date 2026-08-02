@@ -21,7 +21,7 @@ progress stay in this browser.
 
 - Answer questions about revenue, planning, headcount, customers, and performance.
 - Learn practical SQL through guided tasks, reusable queries, and clear feedback.
-- Work through 242 guided tasks, optional interview practice, and skills you can clearly see earning.
+- Work through 242 guided tasks, optional SQL practice, and skills you can clearly see earning.
 
 ## Private by design
 

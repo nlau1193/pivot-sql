@@ -3,7 +3,6 @@
 // Proves end-to-end that no mission is broken, ungradable, or mis-keyed.
 // Usage: PW_BROWSER=chromium|webkit|firefox node scripts/play-all.mjs [baseURL]
 import { chromium, webkit, firefox } from 'playwright'
-import { readFileSync } from 'node:fs'
 import { MISSIONS, SCREEN_SIMS } from './missions-source.mjs'
 
 const engines = { chromium, webkit, firefox }
@@ -75,29 +74,28 @@ for (const m of MISSIONS) {
   }
 }
 
-// every company audition (unlock after the capstone); each row owns its own
+// every practice set (unlock after the capstone); each row owns its own
 // Start button and every set must play through blank on its own evidence.
-const compiledSims = JSON.parse(readFileSync(new URL('../src/missions.compiled.json', import.meta.url), 'utf8')).sims
 try {
   for (let simIndex = 0; simIndex < SCREEN_SIMS.length; simIndex++) {
     const sim = SCREEN_SIMS[simIndex]
-    const company = compiledSims.find((compiled) => compiled.id === sim.id)?.company ?? ''
-    // Each audition ends back in the workspace, so reopen the desk and enter
-    // the interview-practice library before selecting the next company.
+    // Each practice set ends back in the workspace, so reopen the desk and enter
+    // the plain-language practice library before selecting the next set.
     await page.getByRole('button', { name: 'Your desk' }).click()
     const practiceCta = page.getByRole('button', { name: 'Start practice' })
     await practiceCta.waitFor({ state: 'visible' })
     await practiceCta.click()
-    await page.getByRole('heading', { name: 'Choose an interview practice set' }).waitFor()
-    await page.getByRole('button', { name: `Start ${company} audition` }).click()
-    await page.locator('.sim-intro-title', { hasText: sim.title }).waitFor()
+    await page.getByRole('heading', { name: 'Choose a practice set' }).waitFor()
+    await page.getByRole('button', { name: `Start practice set ${simIndex + 1}` }).click()
+    await page.locator('.sim-intro-title').waitFor()
     if (sim.id === 'sim04') {
       const intro = (await page.locator('.sim-intro').textContent()) ?? ''
-      if (!intro.includes('fictional Star67 screen')
-        || !intro.includes("not a claim about Figma's interview format, planning process, or forecast governance")) {
-        throw new Error(`sim04 lost its Figma anti-claim boundary: ${intro.slice(0, 180)}`)
+      if (!intro.includes('fictional Star67 data')
+        || !intro.includes('not an employer interview')
+        || /Figma|interview format|forecast governance/i.test(intro)) {
+        throw new Error(`sim04 exposed employer-specific copy: ${intro.slice(0, 180)}`)
       }
-      console.log('✓ sim04 Figma anti-claim boundary')
+      console.log('✓ sim04 plain practice boundary')
     }
     for (const q of sim.questions) {
       const t0 = Date.now()

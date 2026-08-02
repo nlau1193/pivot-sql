@@ -200,8 +200,8 @@ The company-card/readiness generator remains a documented simplification
 candidate: it is not a visible Progress dependency today, but removing the
 catalog would be a deliberate content migration rather than a review-side
 cleanup. Generated-data transactionality/checksums, relationship-field labels,
-browser smoke in CI, CSP/error boundary, code-splitting, and description search
-remain bounded follow-ups.
+CSP/error boundary, code-splitting, and description search remain bounded
+follow-ups.
 
 ## Final takeover receipt — 2026-08-02
 
@@ -245,3 +245,22 @@ The browser proof now asserts their absence, four core directions, and the same
 local-only privacy boundary: **175/175 steps green** after the removal. This is
 the final learner-facing boundary for this pass; no GitHub, Slack, OAuth, or
 cloud connection is shipped or implied.
+
+## Practice-language simplification — 2026-08-02
+
+The optional `SQL practice` path and its library now use five plain skill sets
+rather than named employer auditions: Customer metrics, Workforce planning,
+Close debugging, Plan outcomes, and Revenue sensitivity. Each set explains the
+skill in one short line and says that the data is fictional Star67 practice
+data. Employer/JD provenance remains compiled for authoring and regression
+review, but it is no longer presented as a learner directive or an implied
+interview relationship.
+
+- `npm run build`: green on the current source; generated 2,930,845 rows / 25.7
+  MB and passed all deterministic, contract, TypeScript, and Vite gates.
+- `npm run smoke -- http://127.0.0.1:5222`: **176/176 steps green**, including
+  the practice-library labels, no-employer-name assertion, generic set
+  navigation, retakes, timer, draft isolation, progress, and privacy checks.
+- `git diff --check`: clean.
+- Taste lint remains clean for the public docs and README. Impeccable is not
+  installed in this environment, so no detector result is claimed.
