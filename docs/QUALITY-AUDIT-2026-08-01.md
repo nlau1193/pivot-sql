@@ -335,3 +335,48 @@ uses the same three-engine matrix.
   earlier concurrent invocation was discarded because generated parquet data is
   intentionally rebuilt in place. No hosted connection, paid model, or
   progress mutation was introduced.
+
+## Bounded takeover receipt — 2026-08-02
+
+This receipt records the final public source pass after the exact-head GitHub
+Action exposed one browser-proof reliability gap and a free-form SQL privacy
+regression. It does not claim that the hosted Vercel preview has been
+redeployed.
+
+- Public source is `afcbe0f` on `nlau1193/pivot-sql`, authored and pushed as
+  Nicole. The source remains local-first, free, and browser-only by default.
+- The failed exact-head Action `30768083244` reached **65/66** Chromium smoke
+  steps before a CI click timed out after a 200%-equivalent viewport change;
+  Firefox and WebKit were cancelled by the matrix. This was a harness
+  flake, not a learner-data or SQL regression. The smoke path now explicitly
+  scrolls the workbook-focus control into view and waits for visibility before
+  clicking it.
+- A real browser probe also reproduced a higher-impact privacy failure:
+  `read_parquet('https://…')` attempted an outbound request from learner SQL.
+  The single `guardUserSQL` boundary now rejects `http`, `https`, `s3`, `gs`,
+  `az`, `file`, and `data` URI sources before DuckDB sees them, and the error
+  copy says plainly that the bundled practice warehouse stays on this device.
+  The regression smoke assertion records **0 attempted third-party requests**.
+- Local production smoke after both fixes: **183/183 Chromium**, **183/183
+  Firefox**, and **183/183 WebKit** steps green, with no uncaught page errors
+  and no hosted/private API requests. The exact scenario, workbook, focus,
+  keyboard, progress, retry, coach, and privacy paths remain covered.
+- `npm test`, `npx tsc -b`, `npm run build`, `npm audit --audit-level=high`,
+  `node --check scripts/smoke.mjs`, `git diff --check`, and Taste lint are
+  green. Build regenerated **2,930,845 rows / 25.7 MB** and produced the
+  2.61 MB application bundle before DuckDB WASM.
+- README now distinguishes `./start` (first-run build/readiness path) from
+  `npm run dev` (editor loop) and documents the full Chromium/Firefox/WebKit
+  smoke matrix. The Impeccable skill/CLI was not installed here, so no
+  Impeccable detector result is claimed.
+- The live hosted URL remains a separate owner/deploy receipt: it still serves
+  stale finance/FP&A metadata relative to this source. No redeploy or hosted
+  mutation was performed in this pass.
+
+The remaining review candidates are deliberately bounded: collapse Frosty or
+label it more visibly as optional coaching, keep a compact “tables in this ask”
+hint near the editor on narrow screens, consider a less technical name for
+internal dossier/pull contracts, add a CSP/error boundary, and split the large
+DuckDB bundle. The arbitrary remote/file SQL fetch regression is closed; none
+of these remaining candidates was a reproduced correctness regression in this
+source pass, so the proven learner surface was not churned.
