@@ -8,11 +8,12 @@
   --paper-sunken: #F2EDE3;
   --ink: #211D16;
   --ink-soft: #5C554A;
-  --ink-faint: #948B7C;
+  /* Small status text needs 4.5:1 contrast on the raised paper. */
+  --ink-faint: #6F675B;
   --line: #E4DDCF;
   --green: #1B6E53;
   --green-soft: #E7F1EC;
-  --amber: #B7791F;
+  --amber: #8C651F;
   --amber-soft: #F8EFDD;
   --clay: #B54A35;
   --clay-soft: #F7E9E5;

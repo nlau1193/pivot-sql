@@ -157,6 +157,9 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
   const runningRef = useRef(false)
   const runPhaseRef = useRef<'idle' | 'display' | 'grading'>('idle')
   const [draftStorageAvailable, setDraftStorageAvailable] = useState(true)
+  const displayedRuntimeLabel = progress.storageAvailable && draftStorageAvailable
+    ? runtimeLabel
+    : 'Not saved across reloads'
 
   const loadNavigatorCatalog = useCallback(async () => {
     const request = ++navigatorCatalogSeqRef.current
@@ -758,7 +761,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
           >
             Data
           </button>
-          <span className="topbar-runtime">{runtimeLabel}</span>
+          <span className="topbar-runtime">{displayedRuntimeLabel}</span>
           {syncMode === 'lan' && (syncStatus.pendingCount > 0 || syncStatus.error || syncStatus.conflictCount > 0) && (
             <span className={`topbar-sync ${syncStatus.conflictCount > 0 ? 'topbar-sync--conflict' : ''}`} role="status">
               {syncStatus.conflictCount > 0
@@ -820,6 +823,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
         />
 
         <main className={`main${workbookFocusMode ? ' main--workbook-focus' : ''}`}>
+          <h1 className="sr-only">Star67 SQL practice workspace</h1>
           <div
             ref={workbenchRef}
             className={`warehouse-workbench${workbookFocusMode ? ' warehouse-workbench--focus' : ''}`}
@@ -899,7 +903,12 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
               value={code}
               onChange={persistDraft}
               aria-label="SQL editor"
-              extensions={[sqlLang(), runKeymap, EditorView.lineWrapping]}
+              extensions={[
+                sqlLang(),
+                runKeymap,
+                EditorView.lineWrapping,
+                EditorView.contentAttributes.of({ 'aria-label': 'SQL editor' }),
+              ]}
               placeholder={isSim ? 'Type your query here — say your plan out loud first.' : active ? 'Type your query here — or start from a hint.' : 'SELECT …'}
               basicSetup={{ lineNumbers: true, foldGutter: false, autocompletion: false, highlightActiveLine: false }}
               className="editor"

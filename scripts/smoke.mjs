@@ -268,6 +268,35 @@ try {
   step('cold-load outage is truthful and recovers in place with streamed progress', Object.values(coldRecovery).every(Boolean), JSON.stringify(coldRecovery))
   await downloadContext.close()
 
+  // A truncated 200 response is still an interrupted download. Do not let
+  // DuckDB turn it into a confusing parquet magic-byte error.
+  const shortReadContext = await browser.newContext()
+  await keepFirstParty(shortReadContext)
+  await shortReadContext.route('**/data/fct_gl_transactions.parquet*', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/octet-stream', body: Buffer.alloc(32) })
+  })
+  const shortReadPage = await shortReadContext.newPage()
+  await shortReadPage.goto(BASE)
+  await shortReadPage.getByRole('button', { name: /Open my desk|Back to my desk/ }).click()
+  const shortReadHeading = shortReadPage.getByRole('heading', { name: /download was interrupted/i })
+  await shortReadHeading.waitFor({ timeout: 30000 })
+  const shortReadText = await shortReadPage.locator('.intro-card').textContent()
+  step('truncated 200 data is reported as an interrupted download', !/magic bytes|didn't wake up/i.test(shortReadText ?? ''), shortReadText?.slice(0, 160))
+  await shortReadContext.close()
+
+  const manifestOutageContext = await browser.newContext()
+  await keepFirstParty(manifestOutageContext)
+  await manifestOutageContext.route('**/data/manifest.json*', async (route) => {
+    await route.abort('failed')
+  })
+  const manifestOutagePage = await manifestOutageContext.newPage()
+  await manifestOutagePage.goto(BASE)
+  await manifestOutagePage.getByRole('button', { name: /Open my desk|Back to my desk/ }).click()
+  await manifestOutagePage.getByRole('heading', { name: /download was interrupted/i }).waitFor({ timeout: 30000 })
+  const manifestOutageText = await manifestOutagePage.locator('.intro-card').textContent()
+  step('manifest network failure is reported as an interrupted download', !/magic bytes|didn't wake up/i.test(manifestOutageText ?? ''), manifestOutageText?.slice(0, 160))
+  await manifestOutageContext.close()
+
   // Reproduce the cross-mission overlap that used to let m01's grader overwrite
   // m02's temp tables and paint the exact canonical m02 answer red.
   const raceContext = await browser.newContext()
@@ -1865,6 +1894,8 @@ try {
   // 3. Mission 1: pre-filled query runs and grades green with ZERO typing
   const editorText = await readEditorText(page)
   step('mission 1 pre-filled', editorText.includes('count(*)'), editorText.slice(0, 60))
+  const namedEditor = page.getByRole('textbox', { name: 'SQL editor', exact: true })
+  step('SQL editor has a usable accessible name', await namedEditor.count() === 1)
   await page.locator('.editor .cm-content').click()
   const editorFocusState = await page.evaluate(() => {
     const block = document.querySelector('.editor-block')

@@ -166,4 +166,9 @@ check('completion and copy failures always leave a clear next action', () => {
   assert.match(routing, /reason: 'your current draft'/)
 })
 
+check('SQL editor exposes its name on the editable CodeMirror surface', () => {
+  assert.match(workspace, /EditorView\.contentAttributes\.of\(\{\s*'aria-label': 'SQL editor'\s*\}\)/)
+  assert.match(workspace, /<h1 className="sr-only">Star67 SQL practice workspace<\/h1>/)
+})
+
 console.log(`Casebook visual contract: ${passed}/${passed}`)

@@ -51,6 +51,48 @@ if [ "$needs_build" -eq 1 ]; then
 fi
 
 URL="http://127.0.0.1:${PORT}/"
+LOG_FILE="$(mktemp -t star67-preview.XXXXXX)"
+PREVIEW_PID=""
+cleanup() {
+  local status=$?
+  if [ -n "$PREVIEW_PID" ] && kill -0 "$PREVIEW_PID" >/dev/null 2>&1; then
+    kill "$PREVIEW_PID" >/dev/null 2>&1 || true
+    wait "$PREVIEW_PID" >/dev/null 2>&1 || true
+  fi
+  rm -f "$LOG_FILE"
+  trap - EXIT
+  exit "$status"
+}
+trap cleanup EXIT INT TERM
+
+# Bind first and refuse a silent port fallback. The old order opened the URL
+# before Vite was listening and printed the requested port even when Vite had
+# moved to another one, which made a healthy local install look broken.
+node_modules/.bin/vite preview --host 127.0.0.1 --port "$PORT" --strictPort >"$LOG_FILE" 2>&1 &
+PREVIEW_PID=$!
+ready=0
+for _ in $(seq 1 100); do
+  if grep -q "127.0.0.1:${PORT}" "$LOG_FILE" \
+      && curl -fsS "$URL" | grep -q '<div id="root"></div>'; then
+    ready=1
+    break
+  fi
+  if grep -qi "already in use" "$LOG_FILE"; then
+    cat "$LOG_FILE" >&2
+    exit 1
+  fi
+  if ! kill -0 "$PREVIEW_PID" >/dev/null 2>&1; then
+    cat "$LOG_FILE" >&2
+    exit 1
+  fi
+  sleep 0.1
+done
+if [ "$ready" -ne 1 ]; then
+  echo "Star67 did not become ready at ${URL}." >&2
+  cat "$LOG_FILE" >&2
+  exit 1
+fi
+
 echo "Star67 is ready at ${URL}"
 echo "Keep this Terminal window open. Press Ctrl-C to stop."
 
@@ -62,4 +104,4 @@ if [ "${STAR67_NO_OPEN:-0}" != "1" ]; then
   fi
 fi
 
-exec node_modules/.bin/vite preview --host 127.0.0.1 --port "$PORT"
+wait "$PREVIEW_PID"

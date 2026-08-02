@@ -68,9 +68,19 @@ class Engine {
 
   private async _boot(onProgress: Progress) {
     onProgress('Waking the warehouse engine…', 0.02)
-    const manifestResponse = await fetch(dataURL('manifest.json'))
+    let manifestResponse: Response
+    try {
+      manifestResponse = await fetch(dataURL('manifest.json'))
+    } catch {
+      throw new Error('__datafetch__:manifest:network')
+    }
     if (!manifestResponse.ok) throw new Error(`__datafetch__:manifest:${manifestResponse.status}`)
-    const manifest: Manifest = await manifestResponse.json()
+    let manifest: Manifest
+    try {
+      manifest = await manifestResponse.json()
+    } catch {
+      throw new Error('__datafetch__:manifest:invalid')
+    }
     this.manifest = manifest
     const tables = Object.keys(manifest.tables)
     const totalBytes = Object.values(manifest.tables).reduce((a, t) => a + t.bytes, 0)
@@ -121,6 +131,7 @@ class Engine {
   ): Promise<Uint8Array> {
     if (!response.body) {
       const buffer = new Uint8Array(await response.arrayBuffer())
+      if (expectedBytes > 0 && buffer.byteLength !== expectedBytes) throw new Error('__datafetch__:short-read')
       onProgress(label, this.downloadFraction(completedBytes + buffer.byteLength, totalBytes), completedBytes + buffer.byteLength, totalBytes)
       return buffer
     }
@@ -141,6 +152,7 @@ class Engine {
       received += value.byteLength
       onProgress(label, this.downloadFraction(completedBytes + received, totalBytes), completedBytes + received, totalBytes)
     }
+    if (expectedBytes > 0 && received !== expectedBytes) throw new Error('__datafetch__:short-read')
     return received === buffer.byteLength ? buffer : buffer.slice(0, received)
   }
 
