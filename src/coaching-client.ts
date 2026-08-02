@@ -72,10 +72,20 @@ export function createHttpCoachTransport(endpoint: string, id = 'luna-high'): Co
   }
 }
 
-/** Return the optional host transport, or null for the no-network default. */
-export function configuredCoachTransport(): CoachTransport | null {
-  const endpoint = configuredEndpoint()
-  return endpoint ? createHttpCoachTransport(endpoint) : null
+/**
+ * Return the optional host transport, or null for the no-network default.
+ *
+ * Endpoint configuration is host-owned input. A typo or an endpoint that
+ * violates the same-origin boundary must not make the learner app fail during
+ * render; the built-in Frosty path remains the safe fallback.
+ */
+export function configuredCoachTransport(endpoint = configuredEndpoint()): CoachTransport | null {
+  if (!endpoint) return null
+  try {
+    return createHttpCoachTransport(endpoint)
+  } catch {
+    return null
+  }
 }
 
 function withTimeout(signal: AbortSignal | undefined): {

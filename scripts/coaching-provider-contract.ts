@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { createHttpCoachTransport, requestCoach, type CoachTransport } from '../src/coaching-client.ts'
+import { configuredCoachTransport, createHttpCoachTransport, requestCoach, type CoachTransport } from '../src/coaching-client.ts'
 import type { CoachRequestV1 } from '../src/kit/coaching-contract.ts'
 
 const request: CoachRequestV1 = {
@@ -64,6 +64,20 @@ assert.throws(
   /same-origin/,
   'an absolute provider endpoint must not exfiltrate visible SQL by default',
 )
+assert.equal(
+  configuredCoachTransport('https://coach.example.test/v1/nudge'),
+  null,
+  'an invalid configured endpoint must fall back instead of crashing the app during render',
+)
+assert.equal(
+  configuredCoachTransport('https://[invalid'),
+  null,
+  'a malformed configured endpoint must fall back instead of crashing the app during render',
+)
+const configuredFallback = await requestCoach(request, {
+  transport: configuredCoachTransport('https://coach.example.test/v1/nudge') ?? undefined,
+})
+assert.equal(configuredFallback.source, 'local', 'an invalid configured endpoint keeps Frosty available')
 
 let providerCalls = 0
 const provider: CoachTransport = {
