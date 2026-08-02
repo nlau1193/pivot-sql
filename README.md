@@ -49,6 +49,14 @@ code is MIT licensed; the Animina artwork has a separate
 [asset license](public/characters/desk-crew/ASSET_LICENSE.md), described in
 the [third-party notices](THIRD_PARTY_NOTICES.md).
 
+To replay the browser proof locally, start a production preview in one
+terminal, then run the existing smoke path in another:
+
+```bash
+npm run preview -- --host 127.0.0.1
+npm run smoke -- http://127.0.0.1:5199
+```
+
 The optional coaching bridge is a developer integration, not part of setup. A
 host that owns a safe server boundary may build with
 `VITE_STAR67_COACH_ENDPOINT=/api/coach`; the public build leaves it unset and
