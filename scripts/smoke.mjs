@@ -1760,6 +1760,12 @@ try {
   )
   await page.setViewportSize({ width: 640, height: 800 })
   const narrowFocusButton = narrowDataSheet.getByRole('button', { name: 'Focus on workbook' })
+  // A preceding 200%-equivalent viewport can leave the sheet scrolled below
+  // the fold on slower CI runners. Make the next control explicitly visible
+  // before clicking it so the browser proof tests the product action rather
+  // than Playwright's implicit scroll race.
+  await narrowFocusButton.scrollIntoViewIfNeeded()
+  await narrowFocusButton.waitFor({ state: 'visible', timeout: 15000 })
   await narrowFocusButton.click()
   await page.waitForFunction(() => document.querySelector('[data-data-workbook]')?.getAttribute('data-focus-mode') === 'true')
   const narrowFocusState = await page.evaluate(() => {

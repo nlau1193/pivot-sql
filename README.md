@@ -44,8 +44,31 @@ npm ci
 npm run dev
 ```
 
-Before opening a pull request, run `npm test` and `npm run build`. The source
-code is MIT licensed; the Animina artwork has a separate
+`./start` is the first-run path because it builds the local warehouse, checks
+that the chosen port is ready, and opens the browser. `npm run dev` is the
+usual Vite hot-reload loop once you are editing the source. Before opening a
+pull request, run the deterministic contracts, type check, production build,
+and dependency audit:
+
+```bash
+npm test
+npx tsc -b
+npm run build
+npm audit --audit-level=high
+```
+
+The browser smoke suite is intentionally cross-engine. Install the three
+Playwright browsers once, then run a production preview and each lane:
+
+```bash
+npx playwright install chromium firefox webkit
+npm run preview -- --host 127.0.0.1 --port 5199
+PW_BROWSER=chromium npm run smoke -- http://127.0.0.1:5199
+PW_BROWSER=firefox npm run smoke -- http://127.0.0.1:5199
+PW_BROWSER=webkit npm run smoke -- http://127.0.0.1:5199
+```
+
+The source code is MIT licensed; the Animina artwork has a separate
 [asset license](public/characters/desk-crew/ASSET_LICENSE.md), described in
 the [third-party notices](THIRD_PARTY_NOTICES.md).
 
