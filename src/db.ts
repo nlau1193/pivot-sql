@@ -394,9 +394,17 @@ export function stripTrailingSemicolon(sql: string): string {
  *   the display/grading wrappers (the injection escape found in round-1 bug hunt)
  * - '__readonly__' for write/DDL/config statements — the warehouse is read-only,
  *   exactly like the one she'll have at work.
+ * - '__externaldata__' for remote/file URI sources — this public build stays
+ *   local and must never turn a learner query into an outbound request.
  * - '__smartquotes__' when Notes/Docs changed SQL delimiters into curly quotes.
  */
 export function guardUserSQL(sql: string): void {
+  // DuckDB table functions can fetch arbitrary remote or local resources from a
+  // string literal (for example read_parquet('https://…')). The browser build
+  // owns only the bundled warehouse; reject URI schemes before DuckDB sees the
+  // query so the local-first/privacy contract is true even for free-form SQL.
+  if (/\b(?:https?|s3|gs|az|file|data):\/\//i.test(sql)) throw new Error('__externaldata__')
+
   // scan for a top-level ';' with real content after it (string/comment/$$-aware)
   let inS = false, inD = false, inLine = false, inBlock = false, inDollar = false
   for (let i = 0; i < sql.length; i++) {

@@ -2220,8 +2220,30 @@ try {
   await setEditor(page, `SELECT dept FROM fct_gl_transactions LIMIT 5`)
   await runQuery(page)
   await page.locator('.verdict-error').waitFor({ timeout: 30000 })
-  const errText = await page.locator('.verdict-error').textContent()
+  let errText = await page.locator('.verdict-error').textContent()
   step('error is translated (no bare Binder Error)', !errText.startsWith('Binder'), errText.slice(0, 90))
+
+  // A local-only build must not let a free-form DuckDB table function turn a
+  // learner query into a remote request. The context route blocks any such
+  // request; the invariant is stronger: the guard must prevent the attempt.
+  const blockedBeforeRemoteSQL = blockedThirdParty.length
+  await setEditor(page, `SELECT * FROM read_parquet('https://example.com/remote.parquet')`)
+  await runQuery(page)
+  await page.locator('.verdict-error').waitFor({ timeout: 30000 })
+  const remoteSQLText = await page.locator('.verdict-error').textContent()
+  step(
+    'remote SQL sources are rejected before any outbound request',
+    blockedThirdParty.length === blockedBeforeRemoteSQL
+      && /stays on this device|nothing was sent anywhere/i.test(remoteSQLText ?? ''),
+    JSON.stringify({ attemptedRequests: blockedThirdParty.length - blockedBeforeRemoteSQL, copy: remoteSQLText?.slice(0, 140) }),
+  )
+
+  // Restore the ordinary binder error before the coaching assertions below;
+  // both tests intentionally share this long-lived real user-flow page.
+  await setEditor(page, `SELECT dept FROM fct_gl_transactions LIMIT 5`)
+  await runQuery(page)
+  await page.locator('.verdict-error').waitFor({ timeout: 30000 })
+  errText = await page.locator('.verdict-error').textContent()
 
   // Frosty is learner-invoked and advisory. An offline build answers locally;
   // an AI-enabled deployment makes exactly one explicit first-party POST.

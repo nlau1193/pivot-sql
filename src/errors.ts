@@ -38,6 +38,13 @@ export function translateError(rawIn: string, userSQL: string): FriendlyError {
       raw: 'Curly quote marks (‘ ’ “ ”) cannot act as SQL quote delimiters.',
     }
   }
+  if (/__externaldata__/.test(r)) {
+    return {
+      headline: `This browser warehouse stays on this device.`,
+      detail: `Star67 only runs against its bundled practice data. Remove the web or file address from that query and choose one of the tables in Database objects instead — nothing was sent anywhere.`,
+      raw: 'Remote and file-backed SQL sources are disabled in the local Star67 build.',
+    }
+  }
   if (/detached|postMessage.*Worker/i.test(r)) {
     return {
       headline: `The warehouse needs a fresh start — reload the page and it comes back exactly as it was.`,
