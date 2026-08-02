@@ -39,6 +39,12 @@ export interface QueryResult {
   truncated: boolean
 }
 
+interface RawQueryResult {
+  columns: string[]
+  types: string[]
+  rows: unknown[][]
+}
+
 type Progress = (msg: string, frac: number, loadedBytes?: number, totalBytes?: number) => void
 
 class Engine {
@@ -195,6 +201,13 @@ class Engine {
 
   /** Run a query for DISPLAY: capped rows, timeout watchdog, cancel support. */
   async runDisplay(sql: string, signal?: AbortSignal): Promise<QueryResult> {
+    const hook = typeof window !== 'undefined' ? window.__pivotDisplayHook : undefined
+    if (hook) return hook(sql, signal, () => this.runDisplayDirect(sql, signal))
+    return this.runDisplayDirect(sql, signal)
+  }
+
+  private async runDisplayDirect(sql: string, signal?: AbortSignal): Promise<QueryResult> {
+    if (signal?.aborted) throw new Error('__cancelled__')
     if (!this.conn) throw new Error('engine not ready')
     const conn = this.conn
     guardUserSQL(stripTrailingSemicolon(sql))
@@ -239,8 +252,20 @@ class Engine {
     return { columns, types, rows, rowCount: rows.length, totalRowCount: null, elapsedMs, truncated }
   }
 
-  /** Run arbitrary SQL (grading, counts) and return raw arrow-ish rows. Watchdog-protected. */
-  async runRaw(sql: string): Promise<{ columns: string[]; types: string[]; rows: unknown[][] }> {
+  /** Run a read-only raw query (catalog previews/counts) and return arrow-ish rows. */
+  async runRaw(sql: string): Promise<RawQueryResult> {
+    const hook = typeof window !== 'undefined' ? window.__pivotRawHook : undefined
+    if (hook) return hook(sql, () => this.runRawDirect(sql))
+    return this.runRawDirect(sql)
+  }
+
+  private async runRawDirect(sql: string): Promise<RawQueryResult> {
+    guardUserSQL(stripTrailingSemicolon(sql))
+    return this.runInternal(sql)
+  }
+
+  /** Internal grading lane; never expose this mutating capability on window.__engine. */
+  async runInternal(sql: string): Promise<{ columns: string[]; types: string[]; rows: unknown[][] }> {
     if (!this.conn) throw new Error('engine not ready')
     const exec = this.conn.query(sql)
     let timedOut = false
@@ -266,6 +291,11 @@ class Engine {
       for (let r = 0; r < batch.numRows; r++) rows.push(cols.map((c, i) => cellToJS(c?.get(r), types[i])))
     }
     return { columns, types, rows }
+  }
+
+  /** A boolean-only diagnostic keeps tests honest without exposing DuckDB handles or buffers. */
+  isCold(): boolean {
+    return this.db === null && this.conn === null && this.manifest === null && this.buffers.size === 0 && this.booting === null
   }
 }
 
@@ -409,6 +439,29 @@ function cellToJS(v: unknown, type?: string): unknown {
 
 export const engine = new Engine()
 
-// test hook: the smoke/bug-hunt harnesses drive the real engine through this
-declare global { interface Window { __engine?: Engine } }
-if (typeof window !== 'undefined') window.__engine = engine
+// Test/diagnostic hook: expose only read-only query, display, and restart
+// operations. Grading keeps its temporary-table capability on the module-owned
+// engine and cannot be reached through the browser console surface.
+interface EngineTestSurface {
+  isCold: () => boolean
+  runDisplay: (sql: string, signal?: AbortSignal) => Promise<QueryResult>
+  runRaw: (sql: string) => Promise<{ columns: string[]; types: string[]; rows: unknown[][] }>
+  restart: () => Promise<void>
+}
+
+declare global {
+  interface Window {
+    __engine?: EngineTestSurface
+    /** Test-only fault seams; they can delay/fail read-only calls but cannot access DuckDB handles. */
+    __pivotRawHook?: (sql: string, proceed: () => Promise<RawQueryResult>) => Promise<RawQueryResult>
+    __pivotDisplayHook?: (sql: string, signal: AbortSignal | undefined, proceed: () => Promise<QueryResult>) => Promise<QueryResult>
+  }
+}
+if (typeof window !== 'undefined') {
+  window.__engine = {
+    isCold: engine.isCold.bind(engine),
+    runDisplay: engine.runDisplay.bind(engine),
+    runRaw: engine.runRaw.bind(engine),
+    restart: engine.restart.bind(engine),
+  }
+}

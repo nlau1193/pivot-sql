@@ -194,8 +194,7 @@ try {
   const downloadText = await downloadPage.locator('.intro-card').textContent()
   const documentSentinel = await downloadPage.evaluate(() => window.__pivotDocumentSentinel)
   const cleanState = await downloadPage.evaluate(() => {
-    const engine = window.__engine
-    return engine.db === null && engine.conn === null && engine.manifest === null && engine.buffers.size === 0 && engine.booting === null
+    return window.__engine.isCold()
   })
   const retryButton = downloadPage.getByRole('button', { name: /try.*again/i })
   const retryVisible = await retryButton.isVisible().catch(() => false)
@@ -282,21 +281,11 @@ try {
   await racePage.getByRole('button', { name: /Open my desk|Back to my desk/ }).click()
   await racePage.locator('.ask-card').waitFor({ timeout: 120000 })
   await racePage.evaluate(() => {
-    window.__pivotOriginalRunRaw = window.__engine.runRaw.bind(window.__engine)
-    window.__pivotRaceStarted = false
-    let firstMine = true
-    window.__engine.runRaw = async (sql) => {
-      const result = await window.__pivotOriginalRunRaw(sql)
-      if (firstMine && /^CREATE TEMP TABLE _pivot_mine_/i.test(sql)) {
-        firstMine = false
-        window.__pivotRaceStarted = true
-        await new Promise((resolve) => setTimeout(resolve, 1400))
-      }
-      return result
-    }
+    window.__pivotGradingDelayStarted = false
+    window.__pivotGradingDelayMs = 1400
   })
   await runQuery(racePage)
-  await racePage.waitForFunction(() => window.__pivotRaceStarted === true, null, { timeout: 30000 })
+  await racePage.waitForFunction(() => window.__pivotGradingDelayStarted === true, null, { timeout: 30000 })
   await racePage.evaluate((mission) => {
     const key = 'pivot.progress.v1'
     const progress = JSON.parse(localStorage.getItem(key) ?? '{"pulls":{}}')
@@ -972,16 +961,15 @@ try {
   )
 
   await page.evaluate(() => {
-    window.__pivotNavigatorOriginalRunRaw = window.__engine.runRaw.bind(window.__engine)
     window.__pivotNavigatorPreviewFaults = 1
     window.__pivotNavigatorPreviewRelease = null
-    window.__engine.runRaw = async (sql) => {
+    window.__pivotRawHook = async (sql, proceed) => {
       if (/^SELECT \* FROM "fct_gl_transactions" LIMIT 3$/i.test(String(sql).trim()) && window.__pivotNavigatorPreviewFaults > 0) {
         window.__pivotNavigatorPreviewFaults -= 1
         await new Promise((resolve) => { window.__pivotNavigatorPreviewRelease = resolve })
         throw new Error('__smoke_navigator_preview_fault__')
       }
-      return window.__pivotNavigatorOriginalRunRaw(sql)
+      return proceed()
     }
   })
   const glRelation = databaseNavigator.locator('[data-relation-name="fct_gl_transactions"]')
@@ -1004,7 +992,7 @@ try {
       && typedColumns === navigatorRuntime.glColumnCount,
     `${typedColumns} typed columns`,
   )
-  await page.evaluate(() => { window.__engine.runRaw = window.__pivotNavigatorOriginalRunRaw })
+  await page.evaluate(() => { delete window.__pivotRawHook; delete window.__pivotNavigatorPreviewFaults; delete window.__pivotNavigatorPreviewRelease })
 
   const navigatorOriginalEditor = await readEditorText(page)
   await glRelation.getByRole('button', { name: 'Use table fct_gl_transactions in the editor' }).click()
@@ -1184,20 +1172,17 @@ try {
 
   // The workbook's table-tab loading and error states are deliberate surfaces
   // (role=status loading, error + Retry). Force each through the real loadRelation
-  // path by stubbing engine.runRaw for one table, then confirm the message and
+  // path by stubbing the read-only engine seam for one table, then confirm the message and
   // recovery render correctly.
   await workbookOpener.click()
   await dataWorkbook.waitFor()
   await relationshipCanvas.waitFor()
   await page.evaluate(() => {
-    const engine = window.__engine
-    const original = engine.runRaw
-    window.__pivotWorkbookRunRaw = original
-    engine.runRaw = async function (...args) {
-      if (/SELECT\s+\*\s+FROM\s+"dim_department"/i.test(String(args[0]))) {
+    window.__pivotRawHook = async (sql, proceed) => {
+      if (/SELECT\s+\*\s+FROM\s+"dim_department"/i.test(String(sql))) {
         throw new Error('__workbook_load_fault__')
       }
-      return original.apply(this, args)
+      return proceed()
     }
   })
   await relationshipCanvas.getByRole('article', { name: /^dim_department\./ }).getByRole('button', { name: 'Open dim_department as a table' }).click()
@@ -1219,9 +1204,7 @@ try {
   )
   // Restore runRaw and retry; the table should recover into a real sheet.
   await page.evaluate(() => {
-    const engine = window.__engine
-    engine.runRaw = window.__pivotWorkbookRunRaw
-    delete window.__pivotWorkbookRunRaw
+    delete window.__pivotRawHook
   })
   await deptErrorPanel.getByRole('button').filter({ hasText: /retry/i }).click()
   await deptErrorPanel.getByRole('grid', { name: 'dim_department data sheet' }).waitFor({ timeout: 15000 })
@@ -2096,11 +2079,10 @@ try {
   // Keep Run in place while it is busy. Replacing it with Cancel at the same
   // coordinates turned an ordinary double-click into an accidental restart.
   await page.evaluate(() => {
-    window.__pivotOriginalRunDisplay = window.__engine.runDisplay.bind(window.__engine)
     window.__pivotDisplayCalls = 0
-    window.__engine.runDisplay = async (...args) => {
+    window.__pivotDisplayHook = async (sql, signal, proceed) => {
       window.__pivotDisplayCalls += 1
-      return window.__pivotOriginalRunDisplay(...args)
+      return proceed()
     }
   })
   await setEditor(page, 'SELECT count(*) AS customers FROM dim_customer')
@@ -2112,7 +2094,7 @@ try {
     cancelled: /cancelled/i.test(document.querySelector('.results')?.textContent ?? ''),
   }))
   step('double-click Run starts once without cancelling', doubleRunState.calls === 1 && !doubleRunState.cancelled, JSON.stringify(doubleRunState))
-  await page.evaluate(() => { window.__engine.runDisplay = window.__pivotOriginalRunDisplay })
+  await page.evaluate(() => { delete window.__pivotDisplayHook })
 
   // 7. Error translation: bad column name
   await setEditor(page, `SELECT dept FROM fct_gl_transactions LIMIT 5`)
@@ -2949,35 +2931,24 @@ try {
   // A grading infrastructure fault must explain itself and keep Run available;
   // silence here strands the learner even though her query itself executed.
   await page.evaluate(() => {
-    window.__pivotOriginalRunRaw = window.__engine.runRaw.bind(window.__engine)
-    window.__engine.runRaw = async () => { throw new Error('__smoke_grader_fault__') }
+    window.__pivotGradingFault = '__smoke_grader_fault__'
   })
   await setEditor(page, m13.canonical)
   await runQuery(page)
   await page.locator('.verdict-error').waitFor({ timeout: 30000 })
   const graderFaultText = await page.locator('.verdict-error').textContent()
   step('grading fault is explicit and retryable', /answer checker hiccupped.*not your SQL/is.test(graderFaultText) && await page.getByRole('button', { name: /Run/ }).isEnabled(), graderFaultText.slice(0, 100))
-  await page.evaluate(() => { window.__engine.runRaw = window.__pivotOriginalRunRaw })
+  await page.evaluate(() => { delete window.__pivotGradingFault })
 
   // Cancel after display but before grading finishes must never save or paint a
   // green result. The raw DuckDB work can finish; its generation is stale.
   await page.evaluate(() => {
-    window.__pivotOriginalRunRaw = window.__engine.runRaw.bind(window.__engine)
-    window.__pivotCancelReachedGrading = false
-    let firstMine = true
-    window.__engine.runRaw = async (sql) => {
-      const result = await window.__pivotOriginalRunRaw(sql)
-      if (firstMine && /^CREATE TEMP TABLE _pivot_mine_/i.test(sql)) {
-        firstMine = false
-        window.__pivotCancelReachedGrading = true
-        await new Promise((resolve) => setTimeout(resolve, 1200))
-      }
-      return result
-    }
+    window.__pivotGradingDelayStarted = false
+    window.__pivotGradingDelayMs = 1200
   })
   await setEditor(page, m13.canonical)
   await runQuery(page)
-  await page.waitForFunction(() => window.__pivotCancelReachedGrading === true, null, { timeout: 30000 })
+  await page.waitForFunction(() => window.__pivotGradingDelayStarted === true, null, { timeout: 30000 })
   await page.locator('.editor .cm-content').click()
   await page.keyboard.press('Escape')
   await page.keyboard.press('Tab')
@@ -2994,7 +2965,7 @@ try {
     green: !!document.querySelector('.verdict-correct'),
   }))
   step('cancel during grading cannot deliver', !cancelledGrade.saved && !cancelledGrade.green, JSON.stringify(cancelledGrade))
-  await page.evaluate(() => { window.__engine.runRaw = window.__pivotOriginalRunRaw })
+  await page.evaluate(() => { delete window.__pivotGradingDelayMs; delete window.__pivotGradingDelayStarted })
 
   // A visible sentinel typed as text is not SQL NULL. The old canonicalizer
   // collapsed both to the same value and could falsely deliver m13.

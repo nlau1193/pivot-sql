@@ -308,12 +308,32 @@ function ScenarioLibrary({
 
 function ProgressPorter({ progress }: { progress: ProgressV2 }) {
   const [msg, setMsg] = useState('')
+  const writeProgressClipboard = async (value: string) => {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(value)
+        return
+      } catch {
+        // Some embedded and non-secure contexts expose the API but reject writes.
+      }
+    }
+    const textarea = document.createElement('textarea')
+    textarea.value = value
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    const copied = document.execCommand('copy')
+    textarea.remove()
+    if (!copied) throw new Error('Clipboard unavailable')
+  }
   const copyProgress = async () => {
     try {
-      await navigator.clipboard.writeText(exportProgress(progress))
+      await writeProgressClipboard(exportProgress(progress))
       setMsg('Progress code copied.')
     } catch {
-      setMsg('Copy failed. Your browser may block clipboard access.')
+      setMsg('Copy failed. Select the code from your browser tools and try again.')
     }
   }
   return (
@@ -326,7 +346,12 @@ function ProgressPorter({ progress }: { progress: ProgressV2 }) {
           const s = prompt('Paste your progress code:')
           if (!s) return
           const result = importProgress(s)
-          if (!result.ok) { setMsg(`That code didn't parse — double-check the copy.`); return }
+          if (!result.ok) {
+            setMsg(result.error === 'storage_unavailable'
+              ? `This browser couldn't save the imported progress. Keep this tab open and try again with more storage.`
+              : `That code didn't parse — double-check the copy.`)
+            return
+          }
           location.reload()
         }}>Paste a progress code</button>
         <span className="porter-msg">{msg}</span>

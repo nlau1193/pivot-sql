@@ -26,6 +26,19 @@ DuckDB and deterministic coaching run in your browser. There is no account,
 personal-data upload, or external AI API. Export your progress if you want to
 move it; clearing browser storage resets local progress.
 
+### Optional AI coaching (not enabled in the public build)
+
+The built-in Frosty coach is the reliable default: it is authored, private, and
+works offline. A host that owns a safe server boundary can opt into an
+OpenAI-compatible coaching bridge (for example, a local Luna-high bridge) by
+building with `VITE_STAR67_COACH_ENDPOINT=/api/coach`. The browser sends a
+bounded, visible-work snapshot only after you press the coaching button; it
+never sends the answer key, grading internals, or progress. The server owns any
+model credentials and must return the versioned `CoachResponseV1` contract.
+Malformed, timed-out, unavailable, or unsafe replies fall back to Frosty
+without changing SQL or progress. The hosted Star67 build leaves this variable
+unset, so it remains no-network and no-paid-tooling.
+
 ## For contributors
 
 Local setup is only for people changing the project. Requires Node.js 20+:

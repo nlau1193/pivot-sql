@@ -311,6 +311,8 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
   // Invalidate an older async closure during the render that changes focus;
   // waiting for an effect leaves a small window where the old mission can paint.
   if (activeKeyRef.current !== activeKey) {
+    abortRef.current?.abort()
+    abortRef.current = null
     activeKeyRef.current = activeKey
     runSeqRef.current += 1
     runningRef.current = false
@@ -357,7 +359,10 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
     draftTimerRef.current = setTimeout(flushDraft, 400)
   }, [draftAttemptId, draftQuestionId, flushDraft])
 
-  useEffect(() => () => flushDraft(), [activeKey, flushDraft])
+  useEffect(() => () => {
+    abortRef.current?.abort()
+    flushDraft()
+  }, [activeKey, flushDraft])
 
   useEffect(() => {
     const onPageHide = () => flushDraft()
@@ -827,6 +832,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
             >
               {active ? (
             <div className="ask-card">
+              <div className="ask-card__directive">{isSim ? 'Screen brief' : 'Riff’s ask'}</div>
               {activeScenario && selectedScenarioPart && activeScenarioProgress && (
                 <div className="scenario-context" data-scenario-context={activeScenario.id}>
                   <span className="scenario-context-title">{activeScenario.title}</span>
@@ -905,18 +911,6 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
             </div>
           </div>
 
-          {coachMission && (
-            <CoachPanel
-              key={`coach:${activeKey}`}
-              mission={coachMission}
-              query={runEvidence?.query ?? code}
-              moment={coachMoment}
-              attempt={coachAttempt}
-              attemptIsCurrent={runEvidence?.isCurrent ?? false}
-              onGuidanceUsed={() => setHintLevel(1)}
-            />
-          )}
-
           <ResultsPanel
             run={run}
             solvedThis={solvedThis}
@@ -945,8 +939,20 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
               ? ((simVariant?.questions.findIndex((q) => q.id === active?.id) ?? -1) < (simVariant?.questions.length ?? 0) - 1 ? 'Next question' : 'Finish the screen')
               : activeScenario
                 ? nextScenarioMission ? 'Next part' : 'Finish workday'
-                : globalNext && globalNext.id !== active?.id ? 'Next ask' : 'Explore the warehouse'}
+              : globalNext && globalNext.id !== active?.id ? 'Next ask' : 'Explore the warehouse'}
           />
+
+          {coachMission && (
+            <CoachPanel
+              key={`coach:${activeKey}`}
+              mission={coachMission}
+              query={runEvidence?.query ?? code}
+              moment={coachMoment}
+              attempt={coachAttempt}
+              attemptIsCurrent={runEvidence?.isCurrent ?? false}
+              onGuidanceUsed={() => setHintLevel(1)}
+            />
+          )}
             </div>
 
             {workbookOpen && !workbookFocusMode && (

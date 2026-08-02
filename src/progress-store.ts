@@ -81,6 +81,7 @@ export interface ProgressImportResult {
   progress: ProgressV2
   envelopeId: string | null
   alreadyImported: boolean
+  error?: 'invalid' | 'storage_unavailable'
 }
 
 type RecordValue = Record<string, unknown>
@@ -848,17 +849,26 @@ export function importProgress(code: string): ProgressImportResult {
   const current = loadProgress()
   try {
     const decoded = JSON.parse(decodeBase64(code)) as unknown
-    if (!isRecord(decoded)) return { ok: false, progress: current, envelopeId: null, alreadyImported: false }
+    if (!isRecord(decoded)) return { ok: false, progress: current, envelopeId: null, alreadyImported: false, error: 'invalid' }
     const isEnvelope = decoded.kind === PROGRESS_ENVELOPE_KIND && decoded.version === 2 && isRecord(decoded.progress)
     const envelopeId = isEnvelope && typeof decoded.envelopeId === 'string' ? decoded.envelopeId : makeId('legacy-envelope')
     if (current.importedEnvelopeIds.includes(envelopeId)) return { ok: true, progress: current, envelopeId, alreadyImported: true }
     const incoming = normalizeProgress(isEnvelope ? decoded.progress : decoded)
     incoming.importedEnvelopeIds.push(envelopeId)
     const progress = mergeProgress(current, incoming, { mode: 'import' })
-    progress.storageAvailable = saveProgress(progress)
+    if (!saveProgress(progress)) {
+      return {
+        ok: false,
+        progress: { ...current, storageAvailable: false },
+        envelopeId,
+        alreadyImported: false,
+        error: 'storage_unavailable',
+      }
+    }
+    progress.storageAvailable = true
     return { ok: true, progress, envelopeId, alreadyImported: false }
   } catch {
-    return { ok: false, progress: current, envelopeId: null, alreadyImported: false }
+    return { ok: false, progress: current, envelopeId: null, alreadyImported: false, error: 'invalid' }
   }
 }
 

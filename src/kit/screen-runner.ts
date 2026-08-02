@@ -18,8 +18,8 @@
  * This module is the executable contract for screen and audition runs.
  */
 
-import type { ScreenAttempt } from './progress-contracts'
-import { screenAttemptComplete } from './progress-contracts'
+import type { ScreenAttempt } from './progress-contracts.ts'
+import { screenAttemptComplete } from './progress-contracts.ts'
 
 /** A screen's question policy — the set of questions that compose one attempt. */
 export interface ScreenPolicy {

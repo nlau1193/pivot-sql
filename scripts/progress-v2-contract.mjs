@@ -8,10 +8,14 @@ const root = path.resolve(import.meta.dirname, '..')
 
 class MemoryStorage {
   #items = new Map()
+  failProgressWrites = false
   get length() { return this.#items.size }
   key(index) { return [...this.#items.keys()][index] ?? null }
   getItem(key) { return this.#items.has(String(key)) ? this.#items.get(String(key)) : null }
-  setItem(key, value) { this.#items.set(String(key), String(value)) }
+  setItem(key, value) {
+    if (this.failProgressWrites && String(key) === 'pivot.progress.v2') throw new Error('simulated progress storage interruption')
+    this.#items.set(String(key), String(value))
+  }
   removeItem(key) { this.#items.delete(String(key)) }
   clear() { this.#items.clear() }
 }
@@ -525,6 +529,22 @@ test('progression selectors ignore forged completedAt and accept exact evidence'
   exact.solveReceipts = receipts
   exact.auditionAttempts[attempt.attemptId] = attempt
   assert.deepEqual([...progression.completedAuditionIds(exact)], ['sim01'])
+})
+
+test('progress import refuses to claim success when the browser cannot persist it', () => {
+  storage.clear()
+  const source = progress.recordCampaignSolve(progress.emptyProgress(), {
+    missionId: 'm-import', sql: 'select 1', title: 'import', contentRevision: 'contract', hintLevel: 0,
+    completedAt: '2026-07-13T00:00:01Z',
+  }).progress
+  const code = progress.exportProgress(source)
+  storage.failProgressWrites = true
+  const result = progress.importProgress(code)
+  storage.failProgressWrites = false
+  assert.equal(result.ok, false)
+  assert.equal(result.error, 'storage_unavailable')
+  assert.equal(result.progress.storageAvailable, false)
+  assert.equal(progress.loadProgress().pulls['m-import'], undefined)
 })
 
 let failures = 0

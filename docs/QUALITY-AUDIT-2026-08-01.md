@@ -79,3 +79,63 @@ required or committed.
 - Contrast spot-check against the rendered paper palette: body 15.69:1,
   Frosty action 6.07:1, and route copy 7.24:1. These are all above the
   4.5:1 text target.
+
+## Takeover pass — 2026-08-02
+
+This pass re-read the public checkout, challenged the coaching boundary, and
+ran the real browser workbench after the UX hierarchy change.
+
+### Fixed or made explicit
+
+21. **Riff and Frosty competed for the learner's attention.** Riff is now the
+    only primary directive: the ask and deliverable come first, followed by the
+    editor and deterministic result. Frosty is a secondary, one-action advisory
+    card after the result, with copy that says it coaches rather than grades.
+22. **The shipped default was not LLM-driven.** The public build remains
+    browser-local and deterministic. A narrow `CoachTransport` seam now permits
+    a host-owned optional provider such as Luna-high only when an administrator
+    explicitly configures `VITE_STAR67_COACH_ENDPOINT`; no endpoint or paid
+    credential is present in this repository.
+23. **A remote coach could accidentally become an authority.** The request
+    contains only visible ask/schema/relationship/query context; responses are
+    schema-validated, answer-key material and runnable SQL are rejected, the
+    source is forced to `remote`, and timeout/malformed/provider failure falls
+    back to local Frosty. Grading and progress mutation remain deterministic and
+    local.
+24. **The screen-runner contract had only static coverage.** A direct contract
+    now starts an attempt, solves each policy question once, rejects duplicate or
+    out-of-policy evidence, and proves completion is derived rather than stored.
+25. **Progress import could claim success when storage failed.** Import now
+    refuses to reload after a failed write, reports a storage-specific message,
+    and the progress contract covers that failure. The progress-code copy path
+    also uses the same browser-safe fallback as result-cell copy.
+26. **The test facade exposed too much engine authority.** `window.__engine`
+    now exposes boolean cold-state and bounded read-only/test seams only; it no
+    longer publishes database handles or mutable run methods.
+
+### Release boundary and remaining work
+
+The real Luna-high server bridge is intentionally not shipped: the public app
+must not ask learners for a key or send their warehouse to an unreviewed
+endpoint. A future host may provide the endpoint behind its own consent,
+credential, retention, and rate-limit policy. Until then, Frosty is the truthful
+private default.
+
+Lower-risk follow-ups remain explicit: run the full browser smoke path in CI,
+publish per-artifact checksums, make generator output transactional, add a few
+relationship-field screen-reader labels, and keep the optional Workplace Tools
+surfaces visibly disconnected. These are not hidden release gates.
+
+### Fresh proof
+
+- `npm run build`: data generation, all deterministic/error/format/pack/
+  progression/crew/casebook/navigator/progress/screen/coaching contracts, TypeScript,
+  and Vite build all green.
+- `npm run smoke -- http://127.0.0.1:5198`: **174/174 steps green**, including
+  the Riff-first workbench, one-action Frosty flow, no-network local coaching,
+  narrow/desktop layouts, cancellation, progress persistence, and screen runs.
+- `npm run progress`: **15 ProgressV2 contracts green**.
+- `npm run screen`: direct immutable-evidence/completion contract green.
+- `npm run coaching`: local default, bounded optional provider, timeout,
+  malformed reply, unsafe reply, and cancellation contract green.
+- `git diff --check`: clean.

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { DESK_CREW, deskCrewAlt } from './characters/desk-crew'
-import { requestCoach } from './coaching-client'
+import { configuredCoachTransport, requestCoach } from './coaching-client'
 import {
   COACHING_CONTRACT_VERSION,
   type AttemptReviewAssessment,
@@ -118,6 +118,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
   const actionRef = useRef<HTMLButtonElement>(null)
   const restoreActionFocusRef = useRef(false)
   const frosty = DESK_CREW.frosty
+  const optionalTransport = configuredCoachTransport()
   const currentAttempt = attempt !== null && attemptIsCurrent
   // A result belongs to the query that produced it. Once the learner edits
   // the draft, the old verdict/error is still visible for context but cannot
@@ -177,7 +178,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
         moment,
         attempt,
       )
-      const next = await requestCoach(request, { signal: controller.signal })
+      const next = await requestCoach(request, { signal: controller.signal, transport: optionalTransport ?? undefined })
       if (!controller.signal.aborted && sequenceRef.current === sequence) setResponse(next)
     } catch {
       if (!controller.signal.aborted && sequenceRef.current === sequence) {
@@ -203,7 +204,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
             <h2 id="frosty-coach-title">Ask Frosty</h2>
             {visibleResponse && (
               <span className="coach-panel__source">
-                Built-in · private
+                {visibleResponse.source === 'remote' ? 'Optional AI · Luna-high' : 'Built-in · private'}
               </span>
             )}
           </div>
@@ -229,11 +230,17 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
         </button>
       </div>
 
-      <p className="coach-panel__route">Frosty is looking at {route.reason}. Guidance stays in this browser.</p>
+      <p className="coach-panel__route">
+        Frosty is looking at {route.reason}. {optionalTransport
+          ? 'Optional AI is off until you choose this action; the built-in fallback stays available.'
+          : 'Guidance stays in this browser.'}
+      </p>
 
       <details className="coach-panel__privacy">
         <summary>How coaching uses your work</summary>
-        <p>Frosty runs only when you choose an action. Guidance is authored into Star67 and stays in this browser. Frosty cannot run SQL, insert an answer, or mark work complete.</p>
+        <p>{optionalTransport
+          ? 'This build has an optional Luna-high bridge. Nothing is sent until you choose this action; the bridge receives only this query, a small visible result sample, and authored schema. It never receives the answer key or progress. Frosty cannot run SQL, insert an answer, or mark work complete.'
+          : 'Frosty runs only when you choose an action. Guidance is authored into Star67 and stays in this browser. Optional AI coaching is off in this build. Frosty cannot run SQL, insert an answer, or mark work complete.'}</p>
       </details>
 
       <div className="coach-panel__live" aria-live="polite" aria-atomic="true">
@@ -241,7 +248,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
         {visibleResponse && (
           <article className="coach-response">
             <div className="coach-response__eyebrow">
-              Frosty · built-in, private guidance
+              {visibleResponse.source === 'remote' ? 'Frosty · optional Luna-high guidance' : 'Frosty · built-in, private guidance'}
             </div>
             {assessment && (
               <div className="coach-response__assessment">

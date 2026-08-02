@@ -13,7 +13,7 @@ import {
   type CoachResponseV1,
   type AttemptReviewAssessment,
   type AttemptReviewEvidenceKind,
-} from './coaching-contract'
+} from './coaching-contract.ts'
 
 function clipped(value: string, max: number): string {
   if (value.length <= max) return value

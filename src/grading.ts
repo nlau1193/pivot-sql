@@ -14,6 +14,28 @@ export type Verdict =
 
 let gradingRunId = 0
 
+declare global {
+  interface Window {
+    /** Browser smoke controls: delay/fault grading only, never arbitrary SQL. */
+    __pivotGradingFault?: string
+    __pivotGradingDelayMs?: number
+    __pivotGradingDelayStarted?: boolean
+  }
+}
+
+async function runGradingSQL(sql: string) {
+  if (typeof window !== 'undefined') {
+    const fault = window.__pivotGradingFault
+    if (fault) throw new Error(fault)
+    const delay = Number(window.__pivotGradingDelayMs ?? 0)
+    if (delay > 0 && /^CREATE TEMP TABLE _pivot_mine_/i.test(sql)) {
+      window.__pivotGradingDelayStarted = true
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+  return engine.runInternal(sql)
+}
+
 export async function gradeMission(userSQL: string, mission: CompiledMission): Promise<Verdict> {
   const expected = mission.expected
   const sql = stripTrailingSemicolon(userSQL)
@@ -30,10 +52,10 @@ export async function gradeMission(userSQL: string, mission: CompiledMission): P
   try {
     // Materialize her full result once (temp table; no display cap). Keep the
     // create inside the cleanup boundary in case the worker reports late.
-    await engine.runRaw(`CREATE TEMP TABLE ${mineTable} AS SELECT * FROM (\n${sql}\n) __m`)
-    const meta = await engine.runRaw(`SELECT column_name, data_type FROM duckdb_columns() WHERE table_name = '${mineTable}' ORDER BY column_index`)
+    await runGradingSQL(`CREATE TEMP TABLE ${mineTable} AS SELECT * FROM (\n${sql}\n) __m`)
+    const meta = await runGradingSQL(`SELECT column_name, data_type FROM duckdb_columns() WHERE table_name = '${mineTable}' ORDER BY column_index`)
     const mineCols = meta.rows.map((r) => ({ name: String(r[0]), type: String(r[1]) }))
-    const mineCountRes = await engine.runRaw(`SELECT count(*)::BIGINT FROM ${mineTable}`)
+    const mineCountRes = await runGradingSQL(`SELECT count(*)::BIGINT FROM ${mineTable}`)
     const mineCount = Number(mineCountRes.rows[0][0])
 
     if (mineCols.length !== expected.columnCount) {
@@ -47,14 +69,14 @@ export async function gradeMission(userSQL: string, mission: CompiledMission): P
     }
 
     // Build the expected temp table from the frozen canonical rows.
-    await engine.runRaw(`CREATE TEMP TABLE ${expectedTable} (__row VARCHAR)`)
+    await runGradingSQL(`CREATE TEMP TABLE ${expectedTable} (__row VARCHAR)`)
     if (expected.rows.length > 0) {
       const values = expected.rows.map((row) => `(${sqlLit(row)})`).join(',')
-      await engine.runRaw(`INSERT INTO ${expectedTable} VALUES ${values}`)
+      await runGradingSQL(`INSERT INTO ${expectedTable} VALUES ${values}`)
     }
 
     const mineCanon = canonRowSelect(mineTable, mineCols)
-    const diff = await engine.runRaw(`
+    const diff = await runGradingSQL(`
       SELECT
         (SELECT count(*) FROM ((${mineCanon}) EXCEPT ALL (SELECT __row FROM ${expectedTable}))) AS extra,
         (SELECT count(*) FROM ((SELECT __row FROM ${expectedTable}) EXCEPT ALL (${mineCanon}))) AS missing
@@ -71,7 +93,7 @@ export async function gradeMission(userSQL: string, mission: CompiledMission): P
       }
       if (mission.ordered && expected.rows.length > 1) {
         // full positional check — her materialized order is her output order
-        const mineRows = await engine.runRaw(mineCanon)
+        const mineRows = await runGradingSQL(mineCanon)
         const seq = mineRows.rows.map((r) => String(r[0]))
         const inOrder = seq.every((v, i) => v === expected.rows[i])
         if (!inOrder) {
@@ -84,7 +106,7 @@ export async function gradeMission(userSQL: string, mission: CompiledMission): P
     // Authored trap fingerprints (precomputed at build time)
     for (const fp of mission.fingerprints ?? []) {
       if (fp.rowCount === mineCount) {
-        const fpDiff = await engine.runRaw(`
+        const fpDiff = await runGradingSQL(`
           SELECT
             (SELECT count(*) FROM ((${mineCanon}) EXCEPT ALL (SELECT unnest(${arrayLit(fp.rows)}) AS __row)))
             + (SELECT count(*) FROM ((SELECT unnest(${arrayLit(fp.rows)}) AS __row) EXCEPT ALL (${mineCanon})))
@@ -98,7 +120,7 @@ export async function gradeMission(userSQL: string, mission: CompiledMission): P
       return { kind: 'wrong', message: `Zero rows isn't an error — it means nothing matched your filters. Check the date range for the table you queried, and remember that text matches are exact, including capitalization.` }
     }
     if (mineCount === expected.rowCount) {
-      const dup = await engine.runRaw(`SELECT count(*) FROM (SELECT __row FROM (${mineCanon}) GROUP BY __row HAVING count(*) > 1)`)
+      const dup = await runGradingSQL(`SELECT count(*) FROM (SELECT __row FROM (${mineCanon}) GROUP BY __row HAVING count(*) > 1)`)
       if (Number(dup.rows[0][0]) > 0) {
         return {
           kind: 'wrong',
@@ -134,8 +156,8 @@ export async function gradeMission(userSQL: string, mission: CompiledMission): P
         : `You got ${fmtInt(mineCount)} rows — expected ${fmtInt(expected.rowCount)}. Missing rows usually mean a filter is too strict — check the date window and any spelling the spec quotes exactly.`,
     }
   } finally {
-    await engine.runRaw(`DROP TABLE IF EXISTS ${mineTable}`).catch(() => {})
-    await engine.runRaw(`DROP TABLE IF EXISTS ${expectedTable}`).catch(() => {})
+    await runGradingSQL(`DROP TABLE IF EXISTS ${mineTable}`).catch(() => {})
+    await runGradingSQL(`DROP TABLE IF EXISTS ${expectedTable}`).catch(() => {})
   }
 }
 

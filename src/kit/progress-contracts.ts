@@ -106,7 +106,6 @@ export function hasReceipt(evidence: PackEvidence, taskId: string): boolean {
 }
 
 export function screenAttemptComplete(attempt: ScreenAttempt, questionIds: readonly string[]): boolean {
-  if (attempt.completedAt === null) return false
   return questionIds.every((id) => typeof attempt.solves[id] === 'string' && attempt.solves[id].length > 0)
 }
 
