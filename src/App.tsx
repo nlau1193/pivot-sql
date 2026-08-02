@@ -253,8 +253,8 @@ function Intro({ returning, onBegin }: { returning: boolean; onBegin: () => void
           </>
         ) : (
           <>
-            <p className="story-year">New York · {STAR67_STORY.year}</p>
-            <h1>You've joined {DATA.company} as FP&amp;A Manager.</h1>
+            <p className="story-year">Fictional practice desk · {STAR67_STORY.year}</p>
+            <h1>Step into the FP&amp;A Manager seat at {DATA.company}.</h1>
             <p>
               {DATA.company} helps companies track the cost and results of work done by AI agents.
               Every action has an owner, a cost, and a business outcome.
