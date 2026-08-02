@@ -61,7 +61,7 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
     <div className="career-dossier">
       <section className="dossier-hero" aria-labelledby="dossier-title">
         <div>
-          <p className="dossier-kicker">Your FP&amp;A practice</p>
+          <p className="dossier-kicker">Your SQL practice</p>
           <h2 id="dossier-title">Your progress</h2>
           <p>
             {completedTaskCount} {completedTaskCount === 1 ? 'task' : 'tasks'} complete ·{' '}
@@ -105,7 +105,7 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
       {laterBadges.length > 0 && (
         <details className="future-skills">
           <summary>See {laterBadges.length} more skill{laterBadges.length === 1 ? '' : 's'}</summary>
-          <p>These unlock naturally as you finish more finance projects.</p>
+          <p>These unlock naturally as you finish more practice projects.</p>
           <div className="evidence-seal-grid">
             {laterBadges.map(badgeCard)}
           </div>

@@ -27,7 +27,7 @@ export function PathChooser({ screensUnlocked, onChoose }: PathChooserProps) {
       <div className="path-chooser-head">
         <h2 id="path-chooser-title">What would you like to do?</h2>
         <p>
-          Start with the next guided task, choose a finance project, or explore the data.
+          Start with the next guided task, choose a practice project, or explore the data.
           You can switch anytime, and your work stays saved.
         </p>
       </div>

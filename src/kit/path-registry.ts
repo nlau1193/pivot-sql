@@ -35,7 +35,7 @@ export function parklineDeskPaths(opts: { screensUnlocked: boolean; place?: stri
     },
     {
       id: 'scenario-library',
-      title: 'Finance projects',
+      title: 'Practice projects',
       summary: `Choose a realistic ${place} project, from planning and retention to workforce and close.`,
       actionLabel: 'Browse projects',
     },

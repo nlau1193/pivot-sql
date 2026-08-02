@@ -85,7 +85,7 @@ async function runQuery(page) {
 
 async function openScenarioLibrary(page) {
   await page.locator('.path-chooser').waitFor()
-  await page.getByRole('button', { name: /Browse projects: Finance projects/i }).click()
+  await page.getByRole('button', { name: /Browse projects: Practice projects/i }).click()
   await page.locator('.scenario-library').waitFor()
 }
 
@@ -2676,7 +2676,7 @@ try {
       && progressVisual.progressLabels === expectedBadgeCount
       && progressVisual.nextEvidence === expectedBadgeCount
       && progressVisual.companyCards === 0
-      && progressVisual.kicker === 'Your FP&A practice'
+      && progressVisual.kicker === 'Your SQL practice'
       && progressVisual.sealGridDisplay === 'grid'
       && progressVisual.futureClosed
       && /more skill/i.test(progressVisual.futureSummary)
@@ -2805,14 +2805,14 @@ try {
   await page.setViewportSize({ width: 1280, height: 800 })
 
   // Revisit: blank building badges never claim a one-shot reveal on reload of the tab.
-  await page.getByRole('button', { name: /Saved SQL/ }).click()
+  await page.getByRole('button', { name: /Saved queries/ }).click()
   await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).click()
   const revisitReveal = await page.evaluate(() =>
     Array.from(document.querySelectorAll('.evidence-seal')).every((seal) => seal.getAttribute('data-reveal') === 'false'),
   )
   step('skill reveals do not replay on revisit', revisitReveal)
 
-  await page.getByRole('button', { name: /Saved SQL/ }).click()
+  await page.getByRole('button', { name: /Saved queries/ }).click()
   const pulls = await page.locator('.pull-item').count()
   step('completed queries are saved', pulls >= 2, `${pulls} saved queries`)
 
@@ -3315,7 +3315,7 @@ try {
       && backfilledSeals.allAcknowledged,
     JSON.stringify(backfilledSeals),
   )
-  await page.locator('.desk-tabs').getByRole('button', { name: /Saved SQL/ }).click()
+  await page.locator('.desk-tabs').getByRole('button', { name: /Saved queries/ }).click()
   await page.locator('.desk-tabs').getByRole('button', { name: 'Progress', exact: true }).click()
   const backfillRevisitReveals = await page.locator('.evidence-seal[data-reveal="true"]').count()
   step('backfilled skill badges do not replay on Progress revisit', backfillRevisitReveals === 0, `${backfillRevisitReveals} replaying`)

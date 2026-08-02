@@ -121,7 +121,7 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
         <div className="desk-tabs">
           <button className={tab === 'queue' ? 'tab active' : 'tab'} onClick={() => setTab('queue')}>My work</button>
           <button className={tab === 'dossier' ? 'tab active' : 'tab'} onClick={() => setTab('dossier')}>Progress</button>
-          <button className={tab === 'pulls' ? 'tab active' : 'tab'} onClick={() => setTab('pulls')}>Saved SQL ({completedCount})</button>
+          <button className={tab === 'pulls' ? 'tab active' : 'tab'} onClick={() => setTab('pulls')}>Saved queries ({completedCount})</button>
         </div>
 
         {tab === 'queue' && (
@@ -266,8 +266,8 @@ function ScenarioLibrary({
     <section className="scenario-library" aria-labelledby="scenario-library-title">
       <div className="scenario-library-head">
         <button className="scenario-library-back" type="button" onClick={onBack}>← All directions</button>
-        <div className="scenario-library-era">Star67 · archived finance projects</div>
-        <h2 ref={titleRef} id="scenario-library-title" tabIndex={-1}>Choose a finance project</h2>
+        <div className="scenario-library-era">Star67 · practice projects</div>
+        <h2 ref={titleRef} id="scenario-library-title" tabIndex={-1}>Choose a practice project</h2>
         <p>
           Every project happens inside the same company: growth outruns controls, unit economics
           get strange, and Finance has to turn conflicting systems into one decision. Pick the
