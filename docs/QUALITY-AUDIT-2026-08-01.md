@@ -139,3 +139,22 @@ surfaces visibly disconnected. These are not hidden release gates.
 - `npm run coaching`: local default, bounded optional provider, timeout,
   malformed reply, unsafe reply, and cancellation contract green.
 - `git diff --check`: clean.
+
+### Additional bounded candidates (27–31)
+
+27. The static host does not currently emit a Content-Security-Policy or
+    Permissions-Policy header; a future hosted wrapper should add one without
+    breaking DuckDB workers or the explicitly optional coaching endpoint.
+28. The production bundle is about 2.6 MB before the 34–39 MB DuckDB WASM
+    artifact. Code-splitting the desk/workbook surfaces could reduce the first
+    JavaScript parse cost on slower laptops.
+29. Workbook tab buttons use `aria-controls` for panels that can be unmounted
+    when tabs close. A future accessibility pass should keep the referenced
+    panel in the accessibility tree or remove the relationship while it is
+    absent.
+30. The React root has no error boundary. An unexpected render exception would
+    lose the recovery copy and leave a blank shell instead of a local retry
+    message.
+31. The public debug seams used by browser proof are bounded today, but a
+    future release should keep test-only hooks behind an explicit development
+    build flag so production bundles expose fewer inspection affordances.
