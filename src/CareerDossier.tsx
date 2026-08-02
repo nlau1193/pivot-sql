@@ -3,7 +3,7 @@ import { DeskCrew } from './characters/DeskCrew'
 import { DESK_CREW } from './characters/desk-crew'
 import { DATA, missionById } from './missions'
 import type { ProgressV2 } from './progress-store'
-import { deriveBadges, newlyEarnedBadgeIds } from './progression'
+import { completedAuditionIds, deriveBadges, newlyEarnedBadgeIds } from './progression'
 
 interface CareerDossierProps {
   progress: ProgressV2
@@ -13,6 +13,7 @@ interface CareerDossierProps {
 export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierProps) {
   const badges = deriveBadges(progress)
   const completedTaskCount = Object.keys(progress.pulls).length
+  const completedPracticeSetCount = completedAuditionIds(progress).length
   const earnedBadges = badges.filter((badge) => badge.earned)
   const nextBadge = badges.find((badge) => !badge.earned) ?? null
   const laterBadges = nextBadge
@@ -30,13 +31,19 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
     )
     const nextMissionId = badge.missingMissionIds[0]
     const nextPracticeId = badge.missingAuditionIds[0]
-    const nextTaskLabel = nextMissionId
-      ? missionById(nextMissionId)?.title ?? nextMissionId
+    const nextEvidenceLabel = nextMissionId
+      ? `Guided task: ${missionById(nextMissionId)?.title ?? nextMissionId}`
       : nextPracticeId
-        ? DATA.sims.find((sim) => sim.id === nextPracticeId)?.title ?? nextPracticeId
+        ? `Practice set: ${DATA.sims.find((sim) => sim.id === nextPracticeId)?.title ?? nextPracticeId}`
         : undefined
-    const completedCount = completedTasks.length + completedPractice.length
-    const requiredCount = badge.rule.missionIds.length + badge.rule.auditionIds.length
+    const progressParts = [
+      badge.rule.missionIds.length > 0
+        ? `${completedTasks.length} of ${badge.rule.missionIds.length} guided task${badge.rule.missionIds.length === 1 ? '' : 's'}`
+        : null,
+      badge.rule.auditionIds.length > 0
+        ? `${completedPractice.length} of ${badge.rule.auditionIds.length} practice set${badge.rule.auditionIds.length === 1 ? '' : 's'}`
+        : null,
+    ].filter((part): part is string => part !== null)
     const guide = DESK_CREW[badge.rule.guideId]
 
     return (
@@ -46,12 +53,15 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
         title={learnerTitle}
         description={badge.rule.description}
         guideName={guide.name}
-        progressLabel={`${completedCount} of ${requiredCount} tasks complete`}
-        nextEvidenceLabel={nextTaskLabel}
+        progressLabel={`${progressParts.join(' · ')} complete`}
+        nextEvidenceLabel={nextEvidenceLabel}
         earned={badge.earned}
         acknowledged={progress.seenBadgeIds.includes(badge.rule.id)}
         animateReveal={badge.rule.id === revealBadgeId}
-        evidenceLabels={[...completedTasks, ...completedPractice]}
+        evidenceLabels={[
+          ...completedTasks.map((label) => `Guided task: ${label}`),
+          ...completedPractice.map((label) => `Practice set: ${label}`),
+        ]}
         onAcknowledge={onAcknowledgeBadge}
       />
     )
@@ -64,7 +74,7 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
           <p className="dossier-kicker">Your SQL practice</p>
           <h2 id="dossier-title">Your progress</h2>
           <p>
-            {completedTaskCount} {completedTaskCount === 1 ? 'task' : 'tasks'} complete ·{' '}
+            {completedTaskCount} guided task{completedTaskCount === 1 ? '' : 's'} · {completedPracticeSetCount} practice set{completedPracticeSetCount === 1 ? '' : 's'} ·{' '}
             {earnedCount} skill{earnedCount === 1 ? '' : 's'} earned
           </p>
         </div>
@@ -75,7 +85,7 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
         <section className="dossier-section" aria-labelledby="next-skill-title">
           <div className="dossier-section-head">
             <h2 id="next-skill-title">Your next skill to practice</h2>
-            <p>Complete the listed tasks to add it to your progress. No points, streaks, or hidden scoring.</p>
+            <p>Complete the listed guided tasks or practice sets to add the skill to your progress. No points, streaks, or hidden scoring.</p>
           </div>
           <div className="evidence-seal-grid evidence-seal-grid--focus">
             {badgeCard(nextBadge)}

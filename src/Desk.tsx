@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { DATA, nextMission, simByQuestionId, simIsComplete } from './missions'
 import { exportProgress, importProgress, type ProgressV2 } from './progress-store'
 import { CareerDossier } from './CareerDossier'
@@ -20,9 +20,12 @@ interface Props {
 type Tab = 'queue' | 'dossier' | 'pulls'
 type QueueView = 'directions' | 'scenarios' | 'practice'
 
+const DESK_TABS: readonly Tab[] = ['queue', 'dossier', 'pulls']
+
 export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigate, onAcknowledgeBadge }: Props) {
   const [tab, setTab] = useState<Tab>('queue')
   const [queueView, setQueueView] = useState<QueueView>('directions')
+  const tabRefs = useRef<Partial<Record<Tab, HTMLButtonElement | null>>>({})
   const dialogRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const completed = progress.pulls
@@ -59,6 +62,26 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
       if (!capstoneDone) return
       setQueueView('practice')
     }
+  }
+
+  const handleTabKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    const currentIndex = DESK_TABS.indexOf(tab)
+    if (currentIndex < 0) return
+
+    let nextIndex = currentIndex
+    if (event.key === 'ArrowLeft') nextIndex = currentIndex === 0 ? DESK_TABS.length - 1 : currentIndex - 1
+    else if (event.key === 'ArrowRight') nextIndex = currentIndex === DESK_TABS.length - 1 ? 0 : currentIndex + 1
+    else if (event.key === 'Home') nextIndex = 0
+    else if (event.key === 'End') nextIndex = DESK_TABS.length - 1
+    else return
+
+    event.preventDefault()
+    const nextTab = DESK_TABS[nextIndex]
+    // The tab DOM nodes stay mounted while the panel swaps. Focusing the
+    // destination before the state update keeps the roving tab stop and the
+    // visible selection in lockstep for keyboard users.
+    tabRefs.current[nextTab]?.focus()
+    setTab(nextTab)
   }
 
   useEffect(() => {
@@ -120,10 +143,10 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
           </div>
         )}
 
-        <div className="desk-tabs" role="tablist" aria-label="Desk views">
-          <button id="desk-tab-work" role="tab" aria-selected={tab === 'queue'} aria-controls="desk-panel-work" tabIndex={tab === 'queue' ? 0 : -1} className={tab === 'queue' ? 'tab active' : 'tab'} onClick={() => setTab('queue')}>My work</button>
-          <button id="desk-tab-progress" role="tab" aria-selected={tab === 'dossier'} aria-controls="desk-panel-progress" tabIndex={tab === 'dossier' ? 0 : -1} className={tab === 'dossier' ? 'tab active' : 'tab'} onClick={() => setTab('dossier')}>Progress</button>
-          <button id="desk-tab-saved" role="tab" aria-selected={tab === 'pulls'} aria-controls="desk-panel-saved" tabIndex={tab === 'pulls' ? 0 : -1} className={tab === 'pulls' ? 'tab active' : 'tab'} onClick={() => setTab('pulls')}>Saved queries ({completedCount})</button>
+        <div className="desk-tabs" role="tablist" aria-orientation="horizontal" aria-label="Desk views">
+          <button ref={(node) => { tabRefs.current.queue = node }} id="desk-tab-work" type="button" role="tab" aria-selected={tab === 'queue'} aria-controls="desk-panel-work" tabIndex={tab === 'queue' ? 0 : -1} className={tab === 'queue' ? 'tab active' : 'tab'} onClick={() => setTab('queue')} onKeyDown={handleTabKeyDown}>My work</button>
+          <button ref={(node) => { tabRefs.current.dossier = node }} id="desk-tab-progress" type="button" role="tab" aria-selected={tab === 'dossier'} aria-controls="desk-panel-progress" tabIndex={tab === 'dossier' ? 0 : -1} className={tab === 'dossier' ? 'tab active' : 'tab'} onClick={() => setTab('dossier')} onKeyDown={handleTabKeyDown}>Progress</button>
+          <button ref={(node) => { tabRefs.current.pulls = node }} id="desk-tab-saved" type="button" role="tab" aria-selected={tab === 'pulls'} aria-controls="desk-panel-saved" tabIndex={tab === 'pulls' ? 0 : -1} className={tab === 'pulls' ? 'tab active' : 'tab'} onClick={() => setTab('pulls')} onKeyDown={handleTabKeyDown}>Saved queries ({completedCount})</button>
         </div>
 
         {tab === 'queue' && (
@@ -161,7 +184,7 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
 
         {tab === 'pulls' && (
           <div id="desk-panel-saved" role="tabpanel" aria-labelledby="desk-tab-saved" className="pulls">
-            {completedCount === 0 && <p className="ready-intro">Every task you complete saves its final query here. Reuse one as a starting point at work.</p>}
+            {completedCount === 0 && <p className="ready-intro">Every guided task you complete saves its final query here. Reuse one as a starting point at work.</p>}
             {Object.values(completed).sort((a, b) => b.completedAt.localeCompare(a.completedAt)).map((p) => (
               <div key={p.missionId} className="pull-item">
                 <div className="pull-head">

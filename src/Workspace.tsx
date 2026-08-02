@@ -770,7 +770,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
               ? `${activeScenarioProgress.completed} of ${activeScenarioProgress.total} tasks in this project`
               : completedCount === 0
                 ? 'Your first task is ready'
-                : `${completedCount} ${completedCount === 1 ? 'task' : 'tasks'} complete`}
+                : `${completedCount} guided task${completedCount === 1 ? '' : 's'} complete`}
           </span>
           <button ref={deskButtonRef} className="btn-ghost" onClick={(event) => { event.currentTarget.focus(); onOpenDesk() }}>Your desk</button>
         </div>

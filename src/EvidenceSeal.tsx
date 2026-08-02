@@ -66,18 +66,18 @@ export function EvidenceSeal({
         {description && <p className="evidence-seal__description">{description}</p>}
         {progressLabel && <p className="evidence-seal__progress">{progressLabel}</p>}
         {evidenceLabels.length > 0 ? (
-          <ul className="evidence-seal__evidence" aria-label={`${title} completed tasks`}>
+          <ul className="evidence-seal__evidence" aria-label={`${title} supporting evidence`}>
             {evidenceLabels.map((label, index) => (
               <li key={`${id}-${index}`}>{label}</li>
             ))}
           </ul>
         ) : (
           <p className="evidence-seal__empty">
-            {earned ? 'The supporting work is saved with your progress.' : 'Completed tasks will appear here.'}
+            {earned ? 'The supporting work is saved with your progress.' : 'Supporting evidence will appear here.'}
           </p>
         )}
         {!earned && nextEvidenceLabel && (
-          <p className="evidence-seal__next"><strong>Next task:</strong> {nextEvidenceLabel}</p>
+          <p className="evidence-seal__next"><strong>Next:</strong> {nextEvidenceLabel}</p>
         )}
       </div>
     </article>

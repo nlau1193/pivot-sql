@@ -86,6 +86,19 @@ check('small buttons and progress tabs keep visible keyboard targets', () => {
   assert.match(css, /\.tab:focus-visible/)
 })
 
+check('desk tabs implement the complete keyboard tab pattern', () => {
+  assert.match(desk, /role="tablist" aria-orientation="horizontal" aria-label="Desk views"/)
+  assert.match(desk, /const DESK_TABS: readonly Tab\[\] = \['queue', 'dossier', 'pulls'\]/)
+  assert.match(desk, /const tabRefs = useRef<Partial<Record<Tab, HTMLButtonElement \| null>>>/)
+  assert.match(desk, /onKeyDown=\{handleTabKeyDown\}/)
+  assert.match(desk, /event\.key === 'ArrowLeft'/)
+  assert.match(desk, /event\.key === 'ArrowRight'/)
+  assert.match(desk, /event\.key === 'Home'/)
+  assert.match(desk, /event\.key === 'End'/)
+  assert.match(desk, /setTab\(nextTab\)/)
+  assert.match(desk, /tabRefs\.current\[nextTab\]\?\.focus\(\)/)
+})
+
 check('narrow screens keep Database objects in a viewport-safe drawer', () => {
   const narrow = css.slice(css.indexOf('@media (max-width: 900px)'))
   assert.match(workspace, /database-navigator__mobile-open/)
@@ -104,6 +117,18 @@ check('plain-language progress layout is styled, not bare unstyled markup', () =
   assert.match(progressView, />Your progress</)
   assert.match(progressView, />Your next skill to practice</)
   assert.doesNotMatch(progressView, /Target-company readiness|Career dossier|saved pulls/i)
+})
+
+check('progress names guided tasks and practice sets separately', () => {
+  assert.match(progressView, /completedAuditionIds\(progress\)/)
+  assert.match(progressView, /guided task/)
+  assert.match(progressView, /practice set/)
+  assert.match(progressView, /Guided task: \$\{label\}/)
+  assert.match(progressView, /Practice set: \$\{label\}/)
+  assert.match(progressView, /Guided task: \$\{missionById\(nextMissionId\)/)
+  assert.match(progressView, /Practice set: \$\{DATA\.sims\.find\(\(sim\) => sim\.id === nextPracticeId\)/)
+  assert.match(seal, /supporting evidence/)
+  assert.doesNotMatch(seal, /completed tasks|Completed tasks/)
 })
 
 check('local save state is plain copy while actionable sync states keep emphasis', () => {
@@ -126,7 +151,7 @@ check('learner-facing setup and guidance state the simple local contract', () =>
   assert.match(app, /one-time local download includes the practice warehouse/i)
   assert.match(coach, /Built-in first · optional AI/)
   assert.match(coach, /Built-in · private/)
-  assert.match(desk, /role="tablist" aria-label="Desk views"/)
+  assert.match(desk, /role="tablist" aria-orientation="horizontal" aria-label="Desk views"/)
   assert.match(desk, /aria-selected=\{tab === 'queue'\}/)
   assert.match(index, /guided questions and a realistic local warehouse/)
 })

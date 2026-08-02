@@ -2591,6 +2591,36 @@ try {
     focused: document.activeElement?.textContent?.trim() ?? '',
   }))
   step('desk wraps Tab from its true last control to Close', deskTrapped.inside && deskTrapped.focused === 'Close', JSON.stringify(deskTrapped))
+
+  // The desk tabs use the APG automatic-activation pattern: arrow navigation
+  // moves focus and selection together, with Home/End and wraparound.
+  const deskTabKeys = ['ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowLeft', 'Home', 'End']
+  const savedTabLabel = (await page.locator('.desk-tabs').getByRole('tab', { name: /Saved queries/ }).textContent())?.trim() ?? 'Saved queries'
+  const deskTabExpected = ['Progress', savedTabLabel, 'My work', savedTabLabel, 'My work', savedTabLabel]
+  await page.locator('.desk-tabs').getByRole('tab', { name: 'My work', exact: true }).focus()
+  const deskTabStates = []
+  for (const key of deskTabKeys) {
+    await page.keyboard.press(key)
+    deskTabStates.push(await page.evaluate(() => {
+      const selected = document.querySelector('.desk-tabs [role="tab"][aria-selected="true"]')
+      const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null
+      return {
+        selected: selected?.textContent?.trim() ?? '',
+        focused: focused?.textContent?.trim() ?? '',
+        focusedRole: focused?.getAttribute('role') ?? '',
+        focusedTabIndex: focused?.getAttribute('tabindex') ?? '',
+      }
+    }))
+  }
+  step(
+    'desk tabs activate and focus together across arrows, Home, and End',
+    deskTabStates.length === deskTabExpected.length
+      && deskTabStates.every((state, index) => state.selected === deskTabExpected[index]
+        && state.focused === deskTabExpected[index]
+        && state.focusedRole === 'tab'
+        && state.focusedTabIndex === '0'),
+    JSON.stringify(deskTabStates),
+  )
   await page.locator('.desk-tabs').getByRole('tab', { name: 'Progress', exact: true }).click()
   const hightouchSim = SCREEN_SIMS.find((sim) => sim.id === 'sim01')
   const affirmSim = SCREEN_SIMS.find((sim) => sim.id === 'sim05')
@@ -2649,9 +2679,12 @@ try {
       companyCards: document.querySelectorAll('.company-card').length,
       heroOk: !!hero && !!document.getElementById('dossier-title'),
       kicker: kicker?.textContent?.trim() ?? '',
+      heroCopy: hero?.textContent?.replace(/\s+/g, ' ').trim() ?? '',
       sealGridDisplay: sealGrid ? getComputedStyle(sealGrid).display : '',
       futureClosed: !!future && !future.hasAttribute('open'),
       futureSummary: future?.querySelector('summary')?.textContent?.trim() ?? '',
+      evidenceAriaLabels: seals.map((seal) => seal.querySelector('.evidence-seal__evidence')?.getAttribute('aria-label') ?? ''),
+      progressCopy: seals.map((seal) => seal.querySelector('.evidence-seal__progress')?.textContent?.trim() ?? ''),
       overflow,
       runtime: document.querySelector('.topbar-runtime')?.textContent?.trim() ?? '',
     }
@@ -2677,6 +2710,10 @@ try {
       && progressVisual.nextEvidence === expectedBadgeCount
       && progressVisual.companyCards === 0
       && progressVisual.kicker === 'Your SQL practice'
+      && /guided tasks/i.test(progressVisual.heroCopy)
+      && /practice sets/i.test(progressVisual.heroCopy)
+      && progressVisual.evidenceAriaLabels.filter(Boolean).every((label) => /supporting evidence/i.test(label))
+      && progressVisual.progressCopy.filter(Boolean).every((label) => /guided task/i.test(label))
       && progressVisual.sealGridDisplay === 'grid'
       && progressVisual.futureClosed
       && /more skill/i.test(progressVisual.futureSummary)
