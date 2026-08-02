@@ -16,6 +16,7 @@ import { mkdirSync, writeFileSync, statSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
+import { acquireGenerationLock } from './generation-lock.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = join(ROOT, 'public', 'data')
@@ -1095,4 +1096,13 @@ async function scalar(sql) {
   return typeof v === 'bigint' ? Number(v) : v
 }
 
-main().catch((e) => { console.error(e); process.exit(1) })
+async function runWithGenerationLock() {
+  const release = await acquireGenerationLock(join(OUT, '.generate-data.lock'))
+  try {
+    await main()
+  } finally {
+    release()
+  }
+}
+
+runWithGenerationLock().catch((e) => { console.error(e); process.exitCode = 1 })

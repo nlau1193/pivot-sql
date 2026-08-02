@@ -6,7 +6,7 @@ import { DuckDBInstance } from '@duckdb/node-api'
 import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -23,6 +23,21 @@ function run(script) {
     process.stderr.write(result.stderr)
     process.exit(result.status ?? 1)
   }
+}
+
+function runAsync(script) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [join(ROOT, 'scripts', script)], {
+      cwd: ROOT,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    let stdout = ''
+    let stderr = ''
+    child.stdout.on('data', (chunk) => { stdout += chunk })
+    child.stderr.on('data', (chunk) => { stderr += chunk })
+    child.once('error', reject)
+    child.once('close', (code, signal) => resolve({ code, signal, stdout, stderr }))
+  })
 }
 
 function sha256(path) {
@@ -95,6 +110,23 @@ async function buildSnapshot() {
   return snapshot()
 }
 
+async function concurrentSnapshot() {
+  const results = await Promise.all([
+    runAsync('generate-data.mjs'),
+    runAsync('generate-data.mjs'),
+  ])
+  const failures = results.filter((result) => result.code !== 0)
+  if (failures.length) {
+    for (const result of failures) {
+      process.stdout.write(result.stdout)
+      process.stderr.write(result.stderr)
+      if (result.signal) process.stderr.write(`generator signal: ${result.signal}\n`)
+    }
+    throw new Error(`concurrent generator run failed (${failures.length}/2 processes)`)
+  }
+  return snapshot()
+}
+
 const snapshots = []
 try {
   for (let build = 0; build < 3; build += 1) {
@@ -104,6 +136,12 @@ try {
     // silent long enough for a provider watchdog to terminate a healthy build.
     console.log(`DETERMINISM PASS ${build + 1}/3 — shipping artifacts compiled and invariants verified.`)
   }
+  const concurrent = await concurrentSnapshot()
+  const concurrentChanged = Object.keys(snapshots[0]).filter((path) => concurrent[path] !== snapshots[0][path])
+  if (concurrentChanged.length) {
+    throw new Error(`CONCURRENCY FAILED — concurrent generator changed artifacts: ${concurrentChanged.join(', ')}`)
+  }
+  console.log('CONCURRENCY GREEN — two simultaneous generator processes completed with byte-identical artifacts.')
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error))
   process.exit(1)
