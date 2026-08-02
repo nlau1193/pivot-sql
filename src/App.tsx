@@ -52,7 +52,7 @@ export default function App() {
   const activeAuditionRef = useRef<ActiveAudition | null>(null)
   const syncStatus: PivotSyncStatus = { pendingCount: 0, conflictCount: 0, error: null }
   const errorHeadingRef = useRef<HTMLHeadingElement>(null)
-  const returning = useMemo(() => Object.keys(progress.pulls).length > 0, [])
+  const returning = useMemo(() => Object.keys(progress.pulls).length > 0, [progress.pulls])
 
   useEffect(() => {
     if (phase === 'error') errorHeadingRef.current?.focus()

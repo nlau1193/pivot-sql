@@ -282,3 +282,35 @@ advertises the retired FP&A-manager copy.
 - The `impeccable` package is not installed; the `npx` detector fallback found
   one pre-existing amber semantic state stripe in `src/styles.css`, which was
   retained intentionally rather than changed for churn.
+
+## Thermo/Ponytail simplification and state correctness — 2026-08-02
+
+The product call is deliberately small: Riff owns the task, the SQL editor and
+Run button are the workbench, results follow, and Frosty is optional help. The
+current desk already expresses that hierarchy, so no bottom toolbar, second
+directive, or column redesign was added. The tracked desktop screenshot was
+visually checked against the current local desk and already matches that path;
+there was no stale-image diff to publish.
+
+One reproduced correctness bug was fixed: the welcome screen's returning-user
+state was memoized forever on first render. It now follows the current saved
+progress object, so a storage/import update cannot leave “Your first task is
+ready” stale after work exists.
+
+Fresh proof:
+
+- `npm test` → green: deterministic artifacts, error corpus, format, pack,
+  progression, crew, casebook, navigator, ProgressV2, screen, and coaching
+  contracts.
+- `npm run build` → green: **2,930,845 rows / 25.7 MB**, TypeScript, and Vite
+  production output; largest JS bundle **2.61 MB** before DuckDB WASM.
+- `node scripts/smoke.mjs http://127.0.0.1:5350` → **176/176 steps green**,
+  including Riff-first hierarchy, one local Frosty action, narrow/200% layout,
+  keyboard/focus, progress, cancellation, retakes, and no uncaught page errors.
+- `npm run crew:proof -- http://127.0.0.1:5350` → green for wide, 320px, 200%
+  zoom, and Progress screenshots.
+- `npx tsc -b --pretty false` and `npm audit --omit=dev --audit-level=high` →
+  green / **0 high-severity vulnerabilities**.
+- Taste lint remains **0 errors, 0 warnings, 0 suggestions**. The requested
+  Impeccable source is unavailable; the local fallback found no issue in the
+  touched `src/App.tsx`, and no style churn was introduced.
