@@ -1,4 +1,4 @@
-import { DATA, type BadgeRule, type CompanyCardRule, type StageRule } from './missions'
+import { DATA, type BadgeRule, type StageRule } from './missions'
 import { exactAuditionCompletion, type ProgressV2 } from './progress-store'
 
 export interface BadgeEvidence {
@@ -8,14 +8,6 @@ export interface BadgeEvidence {
   completedAuditionIds: string[]
   missingMissionIds: string[]
   missingAuditionIds: string[]
-}
-
-export interface CompanyReadiness {
-  card: CompanyCardRule
-  status: 'Building evidence' | 'Evidence ready' | 'Audition ready' | 'Practice complete'
-  completedMissionIds: string[]
-  missingMissionIds: string[]
-  auditionComplete: boolean
 }
 
 type AuditionEvidence = Pick<ProgressV2, 'auditionAttempts' | 'solveReceipts'>
@@ -55,23 +47,6 @@ export function deriveStage(progress: ProgressionEvidence): StageRule {
   return [...DATA.progression.stages].reverse().find((stage) =>
     stage.requiredBadgeIds.every((id) => earned.has(id))
       && stage.requiredAuditionIds.every((id) => auditions.has(id))) ?? DATA.progression.stages[0]
-}
-
-export function deriveCompanyReadiness(progress: ProgressionEvidence): CompanyReadiness[] {
-  const auditions = new Set(completedAuditionIds(progress))
-  return DATA.progression.companyCards.map((card) => {
-    const completedMissionIds = card.evidenceMissionIds.filter((id) => !!progress.pulls[id])
-    const missingMissionIds = card.evidenceMissionIds.filter((id) => !progress.pulls[id])
-    const auditionComplete = !!card.auditionId && auditions.has(card.auditionId)
-    const status = auditionComplete
-      ? 'Practice complete'
-      : missingMissionIds.length > 0
-        ? 'Building evidence'
-        : card.auditionId
-          ? 'Audition ready'
-          : 'Evidence ready'
-    return { card, status, completedMissionIds, missingMissionIds, auditionComplete }
-  })
 }
 
 export function newlyEarnedBadgeIds(progress: Pick<ProgressV2, 'pulls' | 'auditionAttempts' | 'solveReceipts' | 'seenBadgeIds'>): string[] {

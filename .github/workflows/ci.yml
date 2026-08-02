@@ -22,7 +22,7 @@ jobs:
       - name: Run browser smoke against a local production server
         run: |
           set -euo pipefail
-          npx vite --host 127.0.0.1 --port 5199 > /tmp/star67-vite.log 2>&1 &
+          npm run preview -- --host 127.0.0.1 --port 5199 > /tmp/star67-vite.log 2>&1 &
           server_pid=$!
           cleanup() { kill "$server_pid" 2>/dev/null || true; }
           trap cleanup EXIT
