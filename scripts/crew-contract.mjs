@@ -10,6 +10,7 @@ const app = await readFile(new URL('../src/App.tsx', import.meta.url), 'utf8')
 const studio = await readFile(new URL('crew-studio.mjs', import.meta.url), 'utf8')
 const assetLicense = await readFile(new URL('ASSET_LICENSE.md', ROOT), 'utf8')
 const rootLicense = await readFile(new URL('../LICENSE', import.meta.url), 'utf8')
+const thirdPartyNotices = await readFile(new URL('../THIRD_PARTY_NOTICES.md', import.meta.url), 'utf8')
 
 function pngInfo(bytes) {
   assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', 'PNG signature')
@@ -67,6 +68,7 @@ assert.match(studio, /stroke granularity/)
 assert.match(studio, /visible surface tooth/)
 assert.match(studio, /globally polish/)
 assert.match(assetLicense, /not.*licensed under Star67's MIT License/is)
-assert.match(rootLicense, /does not cover the Animina artwork/)
+assert.match(rootLicense, /Permission is hereby granted/)
+assert.match(thirdPartyNotices, /Animina artwork[\s\S]*not covered by/)
 
 console.log('Animina crew contract: 6/6 canonical anchors + world + UI wiring verified')

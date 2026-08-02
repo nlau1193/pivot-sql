@@ -35,3 +35,9 @@ upstream notice distributed with the installed package are preserved at:
 - `third_party/apache-arrow/NOTICE.txt`
 
 Upstream: https://github.com/apache/arrow
+
+The Star67 source code is available under the MIT License in [`LICENSE`](LICENSE).
+The Animina artwork under `public/characters/desk-crew/` is not covered by
+Star67's MIT License. That artwork is governed by the separate
+[`ASSET_LICENSE.md`](public/characters/desk-crew/ASSET_LICENSE.md) in that
+directory.

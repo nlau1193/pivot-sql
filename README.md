@@ -46,7 +46,8 @@ npm run dev
 
 Before opening a pull request, run `npm test` and `npm run build`. The source
 code is MIT licensed; the Animina artwork has a separate
-[asset license](public/characters/desk-crew/ASSET_LICENSE.md).
+[asset license](public/characters/desk-crew/ASSET_LICENSE.md), described in
+the [third-party notices](THIRD_PARTY_NOTICES.md).
 
 The optional coaching bridge is a developer integration, not part of setup. A
 host that owns a safe server boundary may build with
