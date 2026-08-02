@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
-import { DATA, nextMission, simByQuestionId, simIsComplete } from './missions'
+import { DATA, knownCampaignPulls, nextMission, simByQuestionId, simIsComplete } from './missions'
 import { exportProgress, importProgress, type ProgressV2 } from './progress-store'
 import { CareerDossier } from './CareerDossier'
 import { PathChooser } from './PathChooser'
@@ -28,7 +28,7 @@ export function Desk({ progress, currentId, activeScenarioId, onClose, onNavigat
   const tabRefs = useRef<Partial<Record<Tab, HTMLButtonElement | null>>>({})
   const dialogRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
-  const completed = progress.pulls
+  const completed = useMemo(() => knownCampaignPulls(progress.pulls), [progress.pulls])
   const completedCount = Object.keys(completed).length
   const unlockId = screenUnlockMissionId()
   const capstoneDone = unlockId ? !!completed[unlockId] : false

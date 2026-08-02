@@ -1,7 +1,7 @@
 import { BadgeReveal } from './BadgeReveal'
 import { DeskCrew } from './characters/DeskCrew'
 import { DESK_CREW } from './characters/desk-crew'
-import { DATA, missionById } from './missions'
+import { DATA, knownCampaignPulls, missionById } from './missions'
 import type { ProgressV2 } from './progress-store'
 import { completedAuditionIds, deriveBadges, newlyEarnedBadgeIds } from './progression'
 
@@ -12,7 +12,8 @@ interface CareerDossierProps {
 
 export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierProps) {
   const badges = deriveBadges(progress)
-  const completedTaskCount = Object.keys(progress.pulls).length
+  const completed = knownCampaignPulls(progress.pulls)
+  const completedTaskCount = Object.keys(completed).length
   const completedPracticeSetCount = completedAuditionIds(progress).length
   const earnedBadges = badges.filter((badge) => badge.earned)
   const nextBadge = badges.find((badge) => !badge.earned) ?? null
@@ -24,7 +25,7 @@ export function CareerDossier({ progress, onAcknowledgeBadge }: CareerDossierPro
   const badgeCard = (badge: (typeof badges)[number]) => {
     const learnerTitle = badge.rule.id === 'warehouse-navigator' ? 'SQL foundations' : badge.rule.title
     const completedTasks = badge.missionReceipts.map(
-      (id) => progress.pulls[id]?.title ?? missionById(id)?.title ?? id,
+      (id) => completed[id]?.title ?? missionById(id)?.title ?? id,
     )
     const completedPractice = badge.completedAuditionIds.map(
       (id) => DATA.sims.find((sim) => sim.id === id)?.title ?? id,

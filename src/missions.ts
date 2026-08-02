@@ -1,5 +1,5 @@
 import compiled from './missions.compiled.json'
-import { exactAuditionCompletion, type ProgressV2 } from './progress-store'
+import { exactAuditionCompletion, type ProgressV2, type SolveReceipt } from './progress-store'
 import { MISSION_SENDERS, type DeskCrewId, type MissionSenderId } from './characters/desk-crew'
 
 export interface ExpectedResult {
@@ -111,6 +111,18 @@ export interface CompiledData {
 export const DATA = compiled as unknown as CompiledData
 
 export const PEOPLE = MISSION_SENDERS
+
+/**
+ * Keep imported/stale campaign evidence out of learner-facing counts and rows.
+ * The receipt stays in the progress ledger for compatibility, but only an
+ * authored mission can become visible practice progress.
+ */
+export function knownCampaignPulls(pulls: Record<string, SolveReceipt>): Record<string, SolveReceipt> {
+  const knownIds = new Set(DATA.missions.map((mission) => mission.id))
+  return Object.fromEntries(Object.entries(pulls).filter(([id, receipt]) => (
+    knownIds.has(id) && receipt.missionId === id && receipt.mode === 'campaign'
+  )))
+}
 
 /** The next incomplete mission in queue order. */
 export function nextMission(p: { pulls: Record<string, unknown> }): CompiledMission | null {

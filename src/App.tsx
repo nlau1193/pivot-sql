@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { engine } from './db'
-import { DATA, nextMission, missionById, simByQuestionId, type CompiledMission, type SimQuestion } from './missions'
+import { DATA, knownCampaignPulls, nextMission, missionById, simByQuestionId, type CompiledMission, type SimQuestion } from './missions'
 import {
   acknowledgeBadge,
   draftEntityId,
@@ -52,7 +52,7 @@ export default function App() {
   const activeAuditionRef = useRef<ActiveAudition | null>(null)
   const syncStatus: PivotSyncStatus = { pendingCount: 0, conflictCount: 0, error: null }
   const errorHeadingRef = useRef<HTMLHeadingElement>(null)
-  const returning = useMemo(() => Object.keys(progress.pulls).length > 0, [progress.pulls])
+  const returning = useMemo(() => Object.keys(knownCampaignPulls(progress.pulls)).length > 0, [progress.pulls])
 
   useEffect(() => {
     if (phase === 'error') errorHeadingRef.current?.focus()

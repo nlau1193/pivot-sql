@@ -5,7 +5,7 @@ import { EditorView } from '@codemirror/view'
 import { engine, type QueryResult } from './db'
 import { translateError, type FriendlyError } from './errors'
 import { gradeMission, type Verdict } from './grading'
-import { DATA, PEOPLE, nextMission, type CompiledMission, type CompiledSim, type SimQuestion } from './missions'
+import { DATA, PEOPLE, knownCampaignPulls, nextMission, type CompiledMission, type CompiledSim, type SimQuestion } from './missions'
 import { COMMON_JOINS, TABLE_NOTES, TABLE_ORDER } from './schema-notes'
 import { formatCell, fmtInt, fmtMs } from './format'
 import { draftEntityId, type HintEvidence, type ProgressV2 } from './progress-store'
@@ -298,7 +298,8 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
     }
   }, [focusAfterEditor])
 
-  const alreadyDelivered = !!active && (isSim ? !!progress.simDone[active.id] : !!progress.pulls[active.id])
+  const completedPulls = useMemo(() => knownCampaignPulls(progress.pulls), [progress.pulls])
+  const alreadyDelivered = !!active && (isSim ? !!progress.simDone[active.id] : !!completedPulls[active.id])
   // A completed set can be retaken. Historical progress should keep the set in
   // the Desk history, but a fresh blank attempt is not delivered until this
   // attempt's query passes again.
@@ -650,8 +651,8 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
     },
   }), [doRun, focusAfterEditor])
 
-  const completedCount = Object.keys(progress.pulls).length
-  const globalNext = nextMission({ pulls: progress.pulls } as never)
+  const completedCount = Object.keys(completedPulls).length
+  const globalNext = nextMission({ pulls: completedPulls })
   // Scenario identity is explicit navigation state. Mission IDs overlap between
   // workdays, so never infer a scenario from the current mission alone.
   const selectedScenario = !isSim ? scenarioById(activeScenarioId) : undefined

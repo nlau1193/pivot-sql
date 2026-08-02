@@ -309,6 +309,40 @@ try {
   step('overlapping missions keep grading isolated', raceState.m02 && raceState.correct && raceState.currentTitle.includes(MISSIONS[1].title), JSON.stringify(raceState))
   await raceContext.close()
 
+  // Imported/stale campaign receipts can carry an ID that is not in the
+  // authored pack. Preserve that evidence for migration, but never let it
+  // become a learner-facing completion, title, or reopen target.
+  const unknownProgressContext = await browser.newContext()
+  await keepFirstParty(unknownProgressContext)
+  await unknownProgressContext.addInitScript(() => {
+    const receipt = {
+      receiptId: 'receipt:campaign:mystery',
+      missionId: 'mystery',
+      completedAt: new Date().toISOString(),
+      sql: 'SELECT 1;',
+      title: 'mystery',
+      contentRevision: 'smoke',
+      mode: 'campaign',
+      hintLevel: 0,
+      attemptId: null,
+    }
+    localStorage.setItem('pivot.progress.v2', JSON.stringify({ version: 2, pulls: { mystery: receipt } }))
+  })
+  const unknownProgressPage = await unknownProgressContext.newPage()
+  await unknownProgressPage.goto(BASE)
+  await unknownProgressPage.getByRole('button', { name: 'Open my desk', exact: true }).waitFor()
+  const unknownIntro = await unknownProgressPage.locator('body').innerText()
+  await unknownProgressPage.getByRole('button', { name: 'Open my desk', exact: true }).click()
+  await unknownProgressPage.locator('.workspace').waitFor({ timeout: 120000 })
+  await unknownProgressPage.getByRole('button', { name: 'Your desk', exact: true }).click()
+  const unknownDesk = await unknownProgressPage.getByRole('dialog').innerText()
+  const unknownProgressHidden = !unknownIntro.includes('Welcome back')
+    && unknownIntro.includes('Learn SQL one clear question at a time')
+    && unknownDesk.includes('Saved queries (0)')
+    && !unknownDesk.includes('mystery')
+  step('unknown imported progress stays out of learner-facing counts and copy', unknownProgressHidden, JSON.stringify({ introReturning: unknownIntro.includes('Welcome back'), desk: unknownDesk.slice(0, 240) }))
+  await unknownProgressContext.close()
+
   // The coaching surface has one visible action. It is advisory; the
   // deterministic editor/grader remains the only path that can change work.
   const solutionContext = await browser.newContext()
