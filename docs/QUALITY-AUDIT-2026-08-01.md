@@ -314,3 +314,24 @@ Fresh proof:
 - Taste lint remains **0 errors, 0 warnings, 0 suggestions**. The requested
   Impeccable source is unavailable; the local fallback found no issue in the
   touched `src/App.tsx`, and no style churn was introduced.
+
+## Cross-browser smoke receipt — 2026-08-02
+
+Thermo/Ponytail kept the existing smoke harness as the single owner and used
+its `PW_BROWSER` switch for Chromium, Firefox, and WebKit. The workflow now
+uses the same three-engine matrix.
+
+- `PW_BROWSER=chromium npm run smoke -- http://127.0.0.1:5205`: **179/179
+  steps green**.
+- `PW_BROWSER=firefox npm run smoke -- http://127.0.0.1:5205`: **179/179
+  steps green**.
+- `PW_BROWSER=webkit npm run smoke -- http://127.0.0.1:5205`: **179/179
+  steps green**.
+- Firefox exposed a harness-only edge case: `keyboard.insertText('')` fails
+  under Firefox even though an empty editor is already in the requested state.
+  The helper now skips the no-op insertion while retaining the real visible
+  keyboard path for non-empty SQL. No learner behavior changed.
+- Serial `npm test` and `npm run build` are green after the matrix run; the
+  earlier concurrent invocation was discarded because generated parquet data is
+  intentionally rebuilt in place. No hosted connection, paid model, or
+  progress mutation was introduced.

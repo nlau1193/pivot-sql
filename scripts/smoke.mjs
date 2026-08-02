@@ -76,7 +76,7 @@ async function setEditor(page, sql) {
   // Use the same visible keyboard path a learner has. A private CodeMirror
   // instance is not a stable automation API, and dispatching into an adapter
   // that is between React renders can leave the controlled value stale.
-  await page.keyboard.insertText(sql)
+  if (sql) await page.keyboard.insertText(sql)
 }
 
 async function runQuery(page) {
