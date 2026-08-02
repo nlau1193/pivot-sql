@@ -10,7 +10,7 @@ export function DeskCrew({
   return (
     <div
       className={`desk-crew desk-crew--${presentation}`}
-      aria-label="Meet the Animina crew at Star67"
+      aria-label="Meet the Star67 crew at your desk"
     >
       {ids.map((id) => {
         const character = DESK_CREW[id]

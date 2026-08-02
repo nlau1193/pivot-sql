@@ -2659,7 +2659,7 @@ try {
   step(
     'progress mounts the Star67 crew, one next skill, earned skills, and a closed later-skills list',
     progressVisual.heroOk
-      && /Animina crew at Star67/i.test(progressVisual.crewLabel)
+      && /Star67 crew at your desk/i.test(progressVisual.crewLabel)
       && progressVisual.crewMembers === expectedDeskCrew.length
       && JSON.stringify(progressVisual.crewNames) === JSON.stringify(expectedDeskCrew)
       && new Set(progressVisual.crewImages.map((image) => image.src)).size === expectedDeskCrew.length

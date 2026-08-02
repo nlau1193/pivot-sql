@@ -43,6 +43,7 @@ pre { font-family: var(--mono); }
 .intro-card h1 { font-family: var(--serif); font-size: 27px; font-weight: 600; line-height: 1.25; margin: 20px 0 14px; }
 .intro-card h1:focus { outline: none; }
 .intro-card p { margin-bottom: 12px; color: var(--ink-soft); }
+.intro-card--crew > p { max-width: 65ch; }
 .intro-card p strong { color: var(--ink); }
 .story-year, .scenario-library-era { color: var(--green); font-size: 12px; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; }
 .wordmark { font-family: var(--serif); font-size: 30px; font-weight: 700; letter-spacing: -0.02em; color: var(--green); }

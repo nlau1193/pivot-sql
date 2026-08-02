@@ -43,7 +43,7 @@ check('path advance is tied to one explicit chapter id', () => {
 check('Star67 desk crew is exactly six named, contextual characters', () => {
   for (const name of ['Riff', 'Rex', 'Coco', 'Zi', 'Fin', 'Frosty']) assert.match(crewRegistry, new RegExp(`name: '${name}'`))
   assert.match(crewRegistry, /DESK_CREW_ORDER[^\n]*\['riff', 'rex', 'coco', 'zi', 'fin', 'frosty'\]/)
-  assert.match(crew, /aria-label="Meet the Animina crew at Star67"/)
+  assert.match(crew, /aria-label="Meet the Star67 crew at your desk"/)
   assert.match(crew, /deskCrewAlt\(character\)/)
   assert.match(css, /\.desk-crew__portrait-frame img[^}]*object-fit:\s*contain/)
 })

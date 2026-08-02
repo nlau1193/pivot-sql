@@ -267,7 +267,6 @@ function Intro({ returning, onBegin }: { returning: boolean; onBegin: () => void
             </p>
             <section className="intro-crew" aria-labelledby="intro-crew-title">
               <div className="intro-crew__copy">
-                <p className="story-year">From Animina to Star67</p>
                 <h2 id="intro-crew-title">Meet the crew at your desk.</h2>
                 <p>Six guides, six kinds of judgment, one finance team. They help you reason—not collect points.</p>
               </div>
