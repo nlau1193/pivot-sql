@@ -290,8 +290,8 @@ function Intro({ returning, onBegin }: { returning: boolean; onBegin: () => void
         )}
         {!returning && (
           <p className="fineprint intro-privacy">
-            Nothing to install and no account. Queries and built-in coaching run privately in
-            your browser.
+            No account or sign-in. Start takes care of the local setup, and your queries and
+            built-in coaching stay in your browser.
           </p>
         )}
       </div>
