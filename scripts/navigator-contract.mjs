@@ -36,7 +36,7 @@ check('direct Database objects copy is source-bound', () => {
     'Warehouse status',
     'Ready on this device',
     'Star67',
-    'Finance warehouse',
+    'Practice warehouse',
     'One warehouse, 12 tables. Open a table to inspect its columns and sample rows.',
     'The warehouse runs here and stays on this device.',
     'Table details',
@@ -45,6 +45,7 @@ check('direct Database objects copy is source-bound', () => {
     'Sample rows',
     'Used in this ask',
   ]) assert.ok(workspace.includes(copy), `missing copy: ${copy}`)
+  assert.doesNotMatch(workspace, />Finance warehouse</)
 })
 
 check('catalog identity, relations, and columns come from live DuckDB', () => {

@@ -248,7 +248,7 @@ function Intro({ returning, onBegin }: { returning: boolean; onBegin: () => void
           <>
             <h1>Welcome back to {DATA.company}.</h1>
             <p>
-              Your completed queries are saved, and your next finance task is ready.
+              Your completed queries are saved, and your next guided task is ready.
             </p>
           </>
         ) : (

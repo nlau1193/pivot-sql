@@ -851,6 +851,34 @@ try {
   // 2. Warehouse loads
   await page.locator('.ask-card').waitFor({ timeout: 120000 })
   step('warehouse loaded, workspace visible', true)
+
+  const abortListenerProbe = await page.evaluate(async () => {
+    let target = null
+    const probe = { adds: 0, removes: 0 }
+    const add = AbortSignal.prototype.addEventListener
+    const remove = AbortSignal.prototype.removeEventListener
+    AbortSignal.prototype.addEventListener = function (type, listener, options) {
+      if (type === 'abort' && target?.signal === this) probe.adds += 1
+      return add.call(this, type, listener, options)
+    }
+    AbortSignal.prototype.removeEventListener = function (type, listener, options) {
+      if (type === 'abort' && target?.signal === this) probe.removes += 1
+      return remove.call(this, type, listener, options)
+    }
+    try {
+      target = new AbortController()
+      for (let i = 0; i < 3; i += 1) await window.__engine.runDisplay('SELECT 1 AS listener_probe', target.signal)
+      return { ...probe, signalAborted: target.signal.aborted }
+    } finally {
+      AbortSignal.prototype.addEventListener = add
+      AbortSignal.prototype.removeEventListener = remove
+    }
+  })
+  step(
+    'display queries release caller abort listeners',
+    abortListenerProbe.adds === 3 && abortListenerProbe.removes === 3 && !abortListenerProbe.signalAborted,
+    JSON.stringify(abortListenerProbe),
+  )
   const missionGuide = await page.locator('.ask-byline--character').evaluate(async (byline) => {
     const image = byline.querySelector('img')
     if (image && !image.complete) {
@@ -891,7 +919,8 @@ try {
   step(
     'learner-visible workplace copy says Star67 without leaking the legacy pack name',
     visibleWorkplaceCopy.some((copy) => /Star67/i.test(copy))
-      && visibleWorkplaceCopy.every((copy) => !/Parkline/i.test(copy)),
+      && visibleWorkplaceCopy.some((copy) => /Star67 practice workspace/i.test(copy))
+      && visibleWorkplaceCopy.every((copy) => !/Parkline|finance workspace/i.test(copy)),
     visibleWorkplaceCopy.join(' | ').slice(0, 180),
   )
   step('warehouse boots first-party-only', true, blockedThirdParty.length ? `blocked ${[...new Set(blockedThirdParty.map((u) => new URL(u).host))].join(', ')}` : 'no third-party requests')
@@ -935,7 +964,8 @@ try {
   const navigatorText = await databaseNavigator.textContent()
   const navigatorIdentityOK = semanticNavigator === 1
     && /Warehouse status\s*Ready on this device/.test(navigatorText)
-    && /Star67\s*\/\s*Finance warehouse\s*\/\s*main/.test(navigatorText)
+    && /Star67\s*\/\s*Practice warehouse\s*\/\s*main/.test(navigatorText)
+    && !/Finance warehouse/.test(navigatorText)
     && navigatorText.includes(`Local catalog · ${navigatorRuntime.database}.${navigatorRuntime.schema}`)
     && navigatorRuntime.schema === 'main'
   step('Database objects separates product hierarchy from live DuckDB identity', navigatorIdentityOK, `${navigatorRuntime.database}.${navigatorRuntime.schema}`)

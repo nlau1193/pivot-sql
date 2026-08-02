@@ -743,7 +743,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
       <header className="topbar">
         <div className="topbar-left">
           <span className="wordmark small">Star67</span>
-          <span className="topbar-sub">{DATA.company} finance workspace</span>
+          <span className="topbar-sub">{DATA.company} practice workspace</span>
         </div>
         <div className="topbar-right">
           <button
@@ -1093,7 +1093,7 @@ function DatabaseNavigator({
       </div>
       <nav className="database-navigator__breadcrumb" aria-label="Database hierarchy">
         <span>{DATA.company}</span><span aria-hidden="true">/</span>
-        <span>Finance warehouse</span><span aria-hidden="true">/</span>
+        <span>Practice warehouse</span><span aria-hidden="true">/</span>
         <strong>{schema}</strong>
       </nav>
       <p className="database-navigator__technical">Local catalog · {catalogIdentity}</p>

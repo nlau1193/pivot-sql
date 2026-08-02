@@ -217,10 +217,35 @@ class Engine {
     let timedOut = false
     let aborted = false
     const exec = conn.query(wrapped)
+    let timeout: ReturnType<typeof setTimeout> | null = null
+    let onAbort: (() => void) | null = null
+    let cleaned = false
+    const cleanupWatchdog = () => {
+      if (cleaned) return
+      cleaned = true
+      if (timeout !== null) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+      if (signal && onAbort) {
+        signal.removeEventListener('abort', onAbort)
+        onAbort = null
+      }
+    }
     const watchdog = new Promise<never>((_, reject) => {
-      const t = setTimeout(() => { timedOut = true; reject(new Error('__timeout__')) }, QUERY_TIMEOUT_MS)
-      signal?.addEventListener('abort', () => { clearTimeout(t); aborted = true; reject(new Error('__cancelled__')) })
-      exec.catch(() => {}).finally(() => clearTimeout(t))
+      timeout = setTimeout(() => { timedOut = true; reject(new Error('__timeout__')) }, QUERY_TIMEOUT_MS)
+      onAbort = () => {
+        if (timeout !== null) clearTimeout(timeout)
+        aborted = true
+        reject(new Error('__cancelled__'))
+      }
+      if (signal) {
+        signal.addEventListener('abort', onAbort, { once: true })
+        // An abort can happen between the early check above and listener
+        // registration. Re-check after registration so a caller-retained
+        // signal cannot leave this query running without cancellation.
+        if (signal.aborted) onAbort()
+      }
     })
 
     let table: Awaited<typeof exec>
@@ -228,11 +253,16 @@ class Engine {
       table = await Promise.race([exec, watchdog])
     } catch (e) {
       if (timedOut || aborted) {
+        // Remove the caller's listener before recovery so a retained signal
+        // cannot accumulate one closure per completed or cancelled query.
+        cleanupWatchdog()
         // the friendly message must reach her even if the restart itself hiccups
         try { await this.restart() } catch { /* reload remains the last resort */ }
         throw new Error(timedOut ? '__timeout__' : '__cancelled__')
       }
       throw e
+    } finally {
+      cleanupWatchdog()
     }
 
     const elapsedMs = performance.now() - start
