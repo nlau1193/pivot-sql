@@ -1341,7 +1341,10 @@ try {
     }
   })
   await page.locator('.editor-block').evaluate((editor) => {
-    editor.scrollIntoView({ block: 'nearest' })
+    // Centering the mounted editor makes the same user-visible scroll
+    // deterministic on WebKit Linux, where `nearest` can leave the editor's
+    // bottom edge just outside the flex scroll pane while the sheet is fixed.
+    editor.scrollIntoView({ block: 'center' })
   })
   const scrolledTaskShape = await page.evaluate(({ sheetTop, sheetHeight }) => {
     const task = document.querySelector('[data-task-workspace]')
