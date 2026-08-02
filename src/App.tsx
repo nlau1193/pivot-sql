@@ -253,30 +253,41 @@ function Intro({ returning, onBegin }: { returning: boolean; onBegin: () => void
           </>
         ) : (
           <>
-            <p className="story-year">Fictional practice desk · {STAR67_STORY.year}</p>
-            <h1>Step into the FP&amp;A Manager seat at {DATA.company}.</h1>
+            <p className="story-year">Fictional practice desk · SQL practice · {STAR67_STORY.year}</p>
+            <h1>Learn SQL one clear question at a time.</h1>
             <p>
-              {DATA.company} helps companies track the cost and results of work done by AI agents.
-              Every action has an owner, a cost, and a business outcome.
+              Practice on fictional company data. Start with one guided task, run the query,
+              and get clear feedback.
             </p>
-            <p>
-              Riff, the CFO, is waiting. She opens the <strong>{fmtInt(DATA.totalRows)}-row finance
-              database frozen on June 30, 2026</strong>. Usage exploded, ARR and revenue stopped
-              agreeing, and Finance needs one trusted answer. You will rebuild those controls
-              with SQL before touching the live 2030 plan.
-            </p>
-            <section className="intro-crew" aria-labelledby="intro-crew-title">
-              <div className="intro-crew__copy">
-                <h2 id="intro-crew-title">Meet the crew at your desk.</h2>
-                <p>Six guides, six kinds of judgment, one finance team. They help you reason—not collect points.</p>
-              </div>
-              <DeskCrew presentation="welcome" />
-            </section>
           </>
         )}
         <button className="btn-primary btn-large" onClick={onBegin}>
           {returning ? 'Back to my desk' : 'Open my desk'}
         </button>
+        {!returning && (
+          <details className="intro-story">
+            <summary>About Star67 and the guides</summary>
+            <div className="intro-story__body">
+              <p>
+                {DATA.company} helps companies track the cost and results of work done by AI agents.
+                Every action has an owner, a cost, and a business outcome.
+              </p>
+              <p>
+                Riff, the CFO, is waiting. She opens the <strong>{fmtInt(DATA.totalRows)}-row finance
+                database frozen on June 30, 2026</strong>. Usage exploded, ARR and revenue stopped
+                agreeing, and Finance needs one trusted answer. You will rebuild those controls
+                with SQL before touching the live 2030 plan.
+              </p>
+              <section className="intro-crew" aria-labelledby="intro-crew-title">
+                <div className="intro-crew__copy">
+                  <h2 id="intro-crew-title">Meet the crew at your desk.</h2>
+                  <p>Six guides, six kinds of judgment, one finance team. They help you reason—not collect points.</p>
+                </div>
+                <DeskCrew presentation="welcome" />
+              </section>
+            </div>
+          </details>
+        )}
         {!returning && (
           <p className="fineprint intro-privacy">
             Nothing to install and no account. Queries and built-in coaching run privately in

@@ -92,6 +92,11 @@ pre { font-family: var(--mono); }
 .btn-ghost:hover { border-color: var(--ink-faint); }
 .btn-cancel { background: var(--clay); color: #fff; font-weight: 600; padding: 9px 20px; border-radius: 9px; }
 .kbd { font-family: var(--mono); font-size: 11px; opacity: 0.75; margin-left: 6px; }
+.intro-story { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; color: var(--ink-soft); font-size: 14px; }
+.intro-story summary { width: fit-content; cursor: pointer; color: var(--ink-soft); font-weight: 600; }
+.intro-story summary:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; border-radius: 3px; }
+.intro-story__body { margin-top: 14px; }
+.intro-story__body > p { margin-bottom: 12px; }
 
 /* ---------- workspace layout ---------- */
 .workspace { height: 100vh; display: flex; flex-direction: column; }

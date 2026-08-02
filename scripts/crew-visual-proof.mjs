@@ -41,6 +41,7 @@ page.on('console', (message) => {
 page.on('pageerror', (error) => errors.push(error.message))
 
 await page.goto(base, { waitUntil: 'networkidle' })
+await page.locator('.intro-story summary').click()
 await page.locator('.intro-crew').waitFor()
 await page.screenshot({ path: artifactPath('intro-1280.png'), fullPage: true })
 
