@@ -839,7 +839,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
             >
               {active ? (
             <div className="ask-card">
-              <div className="ask-card__directive">{isSim ? 'Screen brief' : 'Riff’s ask'}</div>
+              <div className="ask-card__directive">{isSim ? 'Screen brief' : 'Start here · Riff’s task'}</div>
               {activeScenario && selectedScenarioPart && activeScenarioProgress && (
                 <div className="scenario-context" data-scenario-context={activeScenario.id}>
                   <span className="scenario-context-title">{activeScenario.title}</span>

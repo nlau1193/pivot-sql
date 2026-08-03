@@ -390,16 +390,20 @@ try {
   await solutionCoachButton.click()
   await solutionPage.locator('.coach-response').waitFor({ timeout: 15000 })
   const solutionCoachProof = await solutionPage.evaluate(() => ({
+    directive: document.querySelector('.ask-card__directive')?.textContent?.trim() ?? '',
     source: document.querySelector('.coach-response__eyebrow')?.textContent?.trim() ?? '',
     route: document.querySelector('.coach-panel__route')?.textContent?.trim() ?? '',
     controls: Array.from(document.querySelectorAll('.coach-panel__actions button')).map((button) => button.textContent?.trim() ?? ''),
+    actionClass: document.querySelector('.coach-panel__action')?.className ?? '',
   }))
   step(
     'the learner sees one private built-in next step before running a query',
-    /built-in.*private/i.test(solutionCoachProof.source)
+    /Start here.*Riff’s task/i.test(solutionCoachProof.directive)
+      && /built-in.*private/i.test(solutionCoachProof.source)
       && /current result|current draft|draft has not produced/i.test(solutionCoachProof.route)
       && solutionCoachProof.controls.length === 1
-      && solutionCoachProof.controls[0] === 'Give me the next step',
+      && solutionCoachProof.controls[0] === 'Give me the next step'
+      && /btn-ghost/.test(solutionCoachProof.actionClass),
     JSON.stringify(solutionCoachProof),
   )
   await setEditor(solutionPage, verifiedM02)

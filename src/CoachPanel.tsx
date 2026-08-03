@@ -201,6 +201,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
           <img src={frosty.portraitSrc} alt={deskCrewAlt(frosty)} />
         </span>
         <div className="coach-panel__identity">
+          <div className="coach-panel__eyebrow">Optional coaching</div>
           <div className="coach-panel__title-row">
             <h2 id="frosty-coach-title">Ask Frosty</h2>
             <span className="coach-panel__source">
@@ -217,7 +218,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
         <button
           ref={actionRef}
           type="button"
-          className="btn-primary btn-small coach-panel__action"
+          className="btn-ghost btn-small coach-panel__action"
           disabled={pendingMode !== null}
           onClick={() => {
             if (pendingMode !== null) return
