@@ -343,8 +343,11 @@ Action exposed one browser-proof reliability gap and a free-form SQL privacy
 regression. It does not claim that the hosted Vercel preview has been
 redeployed.
 
-- Public source is `afcbe0f` on `nlau1193/pivot-sql`, authored and pushed as
-  Nicole. The source remains local-first, free, and browser-only by default.
+- Public source is `afcbe0f`, authored and pushed as Nicole. At the time of
+  this receipt GitHub still called the repository `nlau1193/pivot-sql`; the
+  intended public product name is Star67, and the repository rename to
+  `star67-learn-sql` remains an owner-admin action. The source remains
+  local-first, free, and browser-only by default.
 - The failed exact-head Action `30768083244` reached **65/66** Chromium smoke
   steps before a CI click timed out after a 200%-equivalent viewport change;
   Firefox and WebKit were cancelled by the matrix. This was a harness
