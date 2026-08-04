@@ -14,12 +14,3 @@ and progress stay in your browser.
 The question, tables, query editor, and feedback stay together in one view:
 
 ![Star67 practice desk](docs/star67-practice-desk.png)
-
-## Run it on your computer
-
-The link above is the easiest way to start. For a local copy, install
-[Node.js 20+](https://nodejs.org/), clone this repository, and run:
-
-```bash
-./start
-```
