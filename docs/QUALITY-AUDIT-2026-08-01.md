@@ -29,7 +29,7 @@ one adaptive next-step action, deterministic and browser-local today.
 8. **The README had no working desk capture.** Desktop and phone screenshots
    now show the real local app and the current coaching surface; a clean Chrome
    Guest Computer Use pass is also saved as
-   [`pivot-computer-desk.png`](pivot-computer-desk.png).
+   [`star67-practice-desk.png`](star67-practice-desk.png).
 9. **The desk displayed disconnected GitHub/Slack cards and not-installed
    future desks.** Those were static placeholders with no connection or install
    action, so they added decision noise without capability. The learner surface
@@ -79,7 +79,7 @@ required or committed.
   decorative card stripe.
 - Browser proof: Playwright smoke is **174/174 steps green**; the clean Chrome
   Guest Computer Use pass opened the local desk and captured
-  [`pivot-computer-desk.png`](pivot-computer-desk.png) with the warehouse,
+  [`star67-practice-desk.png`](star67-practice-desk.png) with the warehouse,
   editor, single coach action, and private response visible together.
 - Contrast spot-check against the rendered paper palette: body 15.69:1,
   Frosty action 6.07:1, and route copy 7.24:1. These are all above the
@@ -220,7 +220,7 @@ claim.
   uncaught page errors and no hosted/private API requests. The proof covers
   Riff-first hierarchy, the one-action local Frosty coach, desktop/narrow
   workbench behavior, progress language, cancellation, and screen practice.
-- Visual proof remains [`pivot-computer-desk.png`](pivot-computer-desk.png),
+- Visual proof remains [`star67-practice-desk.png`](star67-practice-desk.png),
   showing the ask, editor, result area, and secondary Frosty card in one desk.
 - Taste lint: **0 errors, 0 warnings, 0 suggestions** across `docs/` and
   `README.md`.
