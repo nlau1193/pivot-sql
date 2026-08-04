@@ -32,13 +32,17 @@ full AI-scan coverage.
 - Sensitive-file sweep: no tracked `.env`, private-key, certificate, or
   credentials filename.
 - Production headers: HSTS, `X-Content-Type-Options: nosniff`,
-  `X-Frame-Options: DENY`, and strict referrer policy are present. A CSP and
-  `Permissions-Policy` are not currently set; adding them is deferred until
-  the DuckDB WASM/worker runtime contract is tested rather than risking a
-  broken browser workspace.
+  `X-Frame-Options: DENY`, and strict referrer policy are present. A restrictive
+  `Permissions-Policy` is now set because the application does not request
+  camera, microphone, location, payment, or device permissions. A CSP remains
+  deferred until the DuckDB WASM/worker runtime contract is tested rather than
+  risking a broken browser workspace.
 
 ## Follow-up
 
 Rerun Codex Security with an account/model that has access and enough budget to
 reach `progress.coverage.closedRows > 0`; only then treat a zero finding count
 as a completed AI audit.
+
+The header change above is a low-risk hardening measure, not a substitute for
+that incomplete AI scan or a production deployment readback.
