@@ -24,7 +24,7 @@ jobs:
           name: star67-production-${{ github.sha }}
           path: |
             dist
-            public/data/manifest.json
+            public/data
           if-no-files-found: error
           retention-days: 1
   web:
