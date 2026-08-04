@@ -1,6 +1,6 @@
 # Quality audit — 2026-08-01
 
-This public audit records the bounded takeover pass for Pivot. The product call
+This public audit records the bounded takeover pass for Star67. The product call
 is documented in [`COACHING_DECISION_2026-08-01.md`](COACHING_DECISION_2026-08-01.md):
 one adaptive next-step action, deterministic and browser-local today.
 
