@@ -16,7 +16,7 @@ and progress stay in your browser.
 The practice desk keeps the question, tables, query editor, and feedback
 together in one view:
 
-![Star67 practice desk](docs/pivot-computer-desk.png)
+![Star67 practice desk](docs/star67-practice-desk.png)
 
 ## Run it on your computer
 
