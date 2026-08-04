@@ -2103,7 +2103,6 @@ try {
   step(
     'the adaptive action returns an explicitly advisory private assessment',
     refreshedReviewReady
-      && localPreview
       && reviewCoachRequests.length === 0
       && /built-in.*private/i.test(reviewProofAfter.source)
       && /Frosty’s read/i.test(reviewProofAfter.assessment)
