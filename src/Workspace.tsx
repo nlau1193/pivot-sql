@@ -839,7 +839,7 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
             >
               {active ? (
             <div className="ask-card">
-              <div className="ask-card__directive">{isSim ? 'Screen brief' : 'Start here · Riff’s task'}</div>
+              <div className="ask-card__directive">{isSim ? 'Screen practice' : 'Main task · Riff’s request'}</div>
               {activeScenario && selectedScenarioPart && activeScenarioProgress && (
                 <div className="scenario-context" data-scenario-context={activeScenario.id}>
                   <span className="scenario-context-title">{activeScenario.title}</span>
@@ -914,10 +914,10 @@ export function Workspace({ mission, simQuestion, simVariant, simStartedAt, atte
               className="editor"
             />
             <div className="editor-actions">
-              <span className="editor-keyboard-hint">Esc, then Tab leaves the editor</span>
+              <span className="editor-keyboard-hint">Press Esc, then Tab to move to Run</span>
               <div className="editor-buttons">
                 <button ref={runButtonRef} className="btn-primary" onClick={(event) => { if (event.detail < 2) doRun() }} disabled={!code.trim() || run.kind === 'running'}>
-                  {run.kind === 'running' ? 'Running…' : <>Run <span className="kbd">⌘⏎</span></>}
+                  {run.kind === 'running' ? 'Running…' : <>Run <span className="kbd">⌘/Ctrl&nbsp;↵</span></>}
                 </button>
                 {run.kind === 'running' && <button ref={cancelButtonRef} className="btn-cancel" onClick={cancel}>Cancel</button>}
               </div>

@@ -426,8 +426,8 @@ pre { font-family: var(--mono); }
 /* ---------- Frosty coach ---------- */
 .coach-panel {
   min-width: 0;
-  border: 1px solid rgba(27, 110, 83, 0.26); border-radius: 14px; padding: 14px 16px;
-  background: var(--paper-raised); box-shadow: 0 5px 18px rgba(33, 29, 22, 0.05);
+  border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px;
+  background: var(--paper-raised); box-shadow: 0 2px 8px rgba(33, 29, 22, 0.04);
 }
 .coach-panel__header { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .coach-panel__portrait {

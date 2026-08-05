@@ -201,9 +201,9 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
           <img src={frosty.portraitSrc} alt={deskCrewAlt(frosty)} />
         </span>
         <div className="coach-panel__identity">
-          <div className="coach-panel__eyebrow">Optional coaching</div>
+          <div className="coach-panel__eyebrow">Optional help if you’re stuck</div>
           <div className="coach-panel__title-row">
-            <h2 id="frosty-coach-title">Ask Frosty</h2>
+            <h2 id="frosty-coach-title">Ask Frosty for a hint</h2>
             <span className="coach-panel__source">
               {visibleResponse?.source === 'remote'
                 ? `Optional AI · ${providerLabel}`
@@ -214,7 +214,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
         </div>
       </div>
 
-      <div className="coach-panel__actions" aria-label="Get the next coaching step">
+      <div className="coach-panel__actions" aria-label="Get a hint from Frosty">
         <button
           ref={actionRef}
           type="button"
@@ -227,7 +227,7 @@ export function CoachPanel({ mission, query, moment, attempt = null, attemptIsCu
             void askFrosty(route.mode)
           }}
         >
-          {pendingMode !== null ? 'Thinking…' : 'Give me the next step'}
+          {pendingMode !== null ? 'Thinking…' : 'Get a hint'}
         </button>
       </div>
 
