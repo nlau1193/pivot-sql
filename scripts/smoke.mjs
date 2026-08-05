@@ -386,7 +386,7 @@ try {
   await solutionPage.getByRole('button', { name: /Next ask/ }).click()
   await solutionPage.locator('.ask-title', { hasText: MISSIONS[1].title }).waitFor({ timeout: 30000 })
   const verifiedM02 = compiledContent.missions.find((mission) => mission.id === 'm02')?.solution ?? ''
-  const solutionCoachButton = solutionPage.getByRole('button', { name: 'Give me the next step', exact: true })
+  const solutionCoachButton = solutionPage.getByRole('button', { name: 'Get a hint', exact: true })
   await solutionCoachButton.click()
   await solutionPage.locator('.coach-response').waitFor({ timeout: 15000 })
   const solutionCoachProof = await solutionPage.evaluate(() => ({
@@ -398,11 +398,11 @@ try {
   }))
   step(
     'the learner sees one private built-in next step before running a query',
-    /Start here.*Riff’s task/i.test(solutionCoachProof.directive)
+    /Main task.*Riff’s request/i.test(solutionCoachProof.directive)
       && /built-in.*private/i.test(solutionCoachProof.source)
       && /current result|current draft|draft has not produced/i.test(solutionCoachProof.route)
       && solutionCoachProof.controls.length === 1
-      && solutionCoachProof.controls[0] === 'Give me the next step'
+      && solutionCoachProof.controls[0] === 'Get a hint'
       && /btn-ghost/.test(solutionCoachProof.actionClass),
     JSON.stringify(solutionCoachProof),
   )
@@ -1931,7 +1931,7 @@ try {
   }))
   step('blank SQL can leave the editor without a disabled-focus trap', blankEditorExit.outside && blankEditorExit.focused === 'Your desk', JSON.stringify(blankEditorExit))
   await setEditor(page, editorText)
-  const adaptiveHelpButton = page.getByRole('button', { name: 'Give me the next step', exact: true })
+  const adaptiveHelpButton = page.getByRole('button', { name: 'Get a hint', exact: true })
   step('one adaptive coaching action is visible before a completed result', await adaptiveHelpButton.isVisible())
   const t0 = Date.now()
   await runQuery(page)
@@ -1973,7 +1973,7 @@ try {
   // One stable action adapts to the evidence already on screen. Its evidence
   // is bound to the SQL that produced the result and the local response never
   // leaves the browser.
-  const reviewButton = page.getByRole('button', { name: 'Give me the next step', exact: true })
+  const reviewButton = page.getByRole('button', { name: 'Get a hint', exact: true })
   step(
     'a completed result keeps the single coaching action available',
     await reviewButton.isVisible() && await reviewButton.isEnabled(),
@@ -2180,7 +2180,7 @@ try {
       && /current draft|draft has not produced a current result/i.test(draftCoachProof.route)
       && !draftCoachProof.assessment
       && draftCoachProof.controls.length === 1
-      && draftCoachProof.controls[0] === 'Give me the next step'
+      && draftCoachProof.controls[0] === 'Get a hint'
       && draftCoachProof.hiddenOldControls.length === 0,
     JSON.stringify({ ...draftCoachProof, requests: draftCoachRequests.length }),
   )
@@ -2264,7 +2264,7 @@ try {
     `requests=${coachRequests.length} responses=${coachResponseBeforeClick}`,
   )
   const sqlBeforeCoach = await readEditorText(page)
-  const explainErrorButton = page.getByRole('button', { name: 'Give me the next step', exact: true })
+  const explainErrorButton = page.getByRole('button', { name: 'Get a hint', exact: true })
   await explainErrorButton.click()
   await page.locator('.coach-response').waitFor({ timeout: 15000 })
   const coachState = await page.evaluate(() => ({
@@ -2286,7 +2286,7 @@ try {
       && sqlAfterCoach === sqlBeforeCoach
       && coachState.stillError
       && verdictAfterCoach === errText
-      && coachState.focused === 'Give me the next step'
+      && coachState.focused === 'Get a hint'
       && /Frosty · (?:AI coaching|built-in, private guidance)/i.test(coachState.source),
     JSON.stringify({
       requests: coachRequests.length,

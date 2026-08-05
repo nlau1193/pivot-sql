@@ -171,4 +171,14 @@ check('SQL editor exposes its name on the editable CodeMirror surface', () => {
   assert.match(workspace, /<h1 className="sr-only">Star67 SQL practice workspace<\/h1>/)
 })
 
+check('main task stays primary and optional help stays secondary', () => {
+  assert.match(workspace, /Main task · Riff’s request/)
+  assert.match(workspace, /Press Esc, then Tab to move to Run/)
+  assert.match(workspace, /⌘\/Ctrl&nbsp;↵/)
+  assert.match(coach, /Optional help if you’re stuck/)
+  assert.match(coach, /Ask Frosty for a hint/)
+  assert.match(coach, /Get a hint/)
+  assert.match(css, /\.coach-panel\s*\{[^}]*border: 1px solid var\(--line\)/)
+})
+
 console.log(`Casebook visual contract: ${passed}/${passed}`)
