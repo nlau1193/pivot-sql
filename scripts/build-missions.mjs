@@ -44,6 +44,17 @@ async function freeze(id, sql, ordered) {
   } catch (e) {
     errors.push(`${id}: canonical FAILED: ${String(e.message).slice(0, 300)}`)
     return null
+  } finally {
+    // Every mission and trap reuses this scratch name. Dropping it after the
+    // canonical rows are materialized keeps repeated compiler passes from
+    // retaining stale DuckDB plans/handles (which can otherwise poison a later
+    // mission with "database has been invalidated" after an internal error).
+    try {
+      await conn.run('DROP TABLE IF EXISTS _ref')
+    } catch {
+      // Preserve the original compile error; the next fresh process is the
+      // final recovery boundary if DuckDB itself is already unhealthy.
+    }
   }
 }
 
